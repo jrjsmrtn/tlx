@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.7] - 2026-03-30
+
+### Added
+
+- Producer-consumer bounded buffer example (`examples/producer_consumer.ex`)
+- Getting-started tutorial (`docs/tutorials/getting-started.md`)
+- Hex.pm package metadata and LICENSES directory (REUSE compliance)
+- Edge case tests (empty specs, invariant-only specs, single-state traces)
+- Phase 4 substantially complete
+
 ## [0.1.6] - 2026-03-30
 
 ### Added

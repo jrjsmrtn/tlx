@@ -47,15 +47,16 @@ Enable Elixir developers to write formally verifiable TLA+/PlusCal specification
 **Target**: v1.0.0
 **Focus**: Hardening, documentation, public release
 
-- [ ] Comprehensive test suite
-- [ ] Diátaxis documentation (tutorials, how-to, reference, explanation)
-- [ ] Hex.pm publication
-- [ ] Real-world example specs (Raft, mutex, producer-consumer)
+- [x] Comprehensive test suite
+- [x] Diátaxis documentation (tutorials, how-to, reference, explanation)
+- [ ] Hex.pm publication (package metadata ready, publish when public)
+- [x] Real-world example specs (Raft, mutex, producer-consumer)
 
 ## Sprint History
 
 | Sprint | Phase               | Version | Summary                                       |
 | ------ | ------------------- | ------- | --------------------------------------------- |
+| 7      | Production Ready    | v0.1.7  | Examples, tutorial, Hex prep, edge case tests |
 | 6      | Simulation/Tooling  | v0.1.6  | Trace formatting, Spark docs generation       |
 | 5      | Simulation/Tooling  | v0.1.5  | Mutex example, Elixir simulator               |
 | 4      | PlusCal/Concurrency | v0.1.4  | Temporal properties, fairness, quantifiers    |

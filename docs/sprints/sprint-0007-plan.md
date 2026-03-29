@@ -2,8 +2,9 @@
 
 **Target Version**: v0.1.7
 **Phase**: Phase 4: Production Readiness
-**Status**: In Progress
+**Status**: Complete
 **Started**: 2026-03-30
+**Completed**: 2026-03-30
 
 ## Goal
 
@@ -48,7 +49,7 @@ Prepare for public release: add a producer-consumer example, write a getting-sta
 
 ## Acceptance Criteria
 
-- [ ] Producer-consumer example compiles, emits, and passes simulation
+- [x] Producer-consumer example compiles, emits, and passes simulation
 - [ ] Getting-started tutorial is self-contained and accurate
 - [ ] `mix hex.build` succeeds
 - [ ] Edge case tests pass
