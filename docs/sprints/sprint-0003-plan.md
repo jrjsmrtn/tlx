@@ -2,8 +2,9 @@
 
 **Target Version**: v0.1.3
 **Phase**: Phase 2: PlusCal and Concurrency
-**Status**: In Progress
+**Status**: Complete
 **Started**: 2026-03-30
+**Completed**: 2026-03-30
 
 ## Goal
 
@@ -70,10 +71,10 @@ Enable concurrent actor specifications with `process` declarations and close the
 
 ## Acceptance Criteria
 
-- [ ] A spec with `process` declarations compiles without errors
-- [ ] PlusCal emitter generates valid multi-process PlusCal
-- [ ] `.cfg` file generation includes SPECIFICATION, CONSTANTS, INVARIANTS
-- [ ] `mix tlx.check MySpec` runs TLC and reports pass/fail
-- [ ] Counterexample traces are extracted and displayed on failure
-- [ ] All tests pass
-- [ ] Code quality gates pass (format, credo --strict, dialyzer)
+- [x] A spec with `process` declarations compiles without errors
+- [x] PlusCal emitter generates valid multi-process PlusCal
+- [x] `.cfg` file generation includes SPECIFICATION, CONSTANTS, INVARIANTS
+- [x] `mix tlx.check MySpec` runs TLC and reports pass/fail
+- [x] Counterexample traces are extracted and displayed on failure
+- [x] All tests pass
+- [x] Code quality gates pass (format, credo --strict, dialyzer)

@@ -11,10 +11,10 @@ A Spark DSL for writing TLA+/PlusCal specifications, with TLA+ emission for TLC 
 
 ## Current Development Status
 
-- **Current Sprint**: Sprint 3 (see docs/sprints/sprint-0003-plan.md)
-- **Sprint Goal**: Processes and TLC integration
-- **Status**: In Progress
-- **Next Milestone**: v0.1.3
+- **Current Sprint**: Between sprints (Sprint 3 complete)
+- **Latest Release**: v0.1.3
+- **Next Sprint**: Sprint 4 (planning)
+- **Next Milestone**: v0.1.4
 
 ## Foundational ADRs
 
@@ -100,6 +100,7 @@ Key TLA+/PlusCal concepts mapped to DSL constructs:
 - Use `mix usage_rules.search_docs` and `mix usage_rules.docs` to consult Spark API docs
 - TLA+ and PlusCal emitters share `format_ast`/`format_value` logic — extract to shared module if a third emitter is added
 - The `{:expr, quoted}` wrapper carries Elixir AST through Spark schema validation without interpretation
+- Spark 2.6 emits a non-fatal `FunctionClauseError` warning during `__verify_spark_dsl__/1` for 3+ level nested entities (process > action > transition) — does not affect compilation or runtime
 
 <!-- usage-rules-start -->
 <!-- usage_rules-start -->

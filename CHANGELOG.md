@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-03-30
+
+### Added
+
+- Process declarations: `process :name do set(:const); action ... end`
+- Multi-process PlusCal emission with `process (Name \in Set)` blocks
+- TLC integration (`Tlx.TLC`) — invoke TLC, parse output, extract counterexample traces
+- Config file generation (`Tlx.Emitter.Config`) — SPECIFICATION, CONSTANTS, INVARIANTS
+- `mix tlx.check` task — emit, translate, run TLC, report pass/fail
+- Verifier checks process action transitions for undeclared variables
+
 ## [0.1.2] - 2026-03-30
 
 ### Added
