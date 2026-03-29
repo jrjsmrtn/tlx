@@ -38,7 +38,7 @@ TLx has three layers:
              │ Spark Transformers
              ▼
 ┌─────────────────────────────┐
-│  Internal IR                │  ← %TLx.Spec{variables, actions, ...}
+│  Internal IR                │  ← %Tlx.Spec{variables, actions, ...}
 │  (plain Elixir structs)     │
 └────────┬───────────┬────────┘
          │           │

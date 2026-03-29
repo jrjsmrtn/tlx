@@ -1,4 +1,4 @@
-defmodule TLx.MixProject do
+defmodule Tlx.MixProject do
   use Mix.Project
 
   @version "0.1.0"
@@ -10,7 +10,7 @@ defmodule TLx.MixProject do
       elixir: "~> 1.19",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      name: "TLx",
+      name: "Tlx",
       description: "A Spark DSL for writing TLA+/PlusCal specifications",
       docs: docs()
     ]

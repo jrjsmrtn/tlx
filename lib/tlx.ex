@@ -1,4 +1,4 @@
-defmodule TLx do
+defmodule Tlx do
   @moduledoc """
   A Spark DSL for writing TLA+/PlusCal specifications.
 

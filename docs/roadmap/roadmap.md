@@ -12,7 +12,7 @@ Enable Elixir developers to write formally verifiable TLA+/PlusCal specification
 **Focus**: Core DSL, internal IR, TLA+ emitter
 
 - [ ] Spark DSL for variables, constants, init, actions (guard + next)
-- [ ] Internal IR structs (`%TLx.Spec{}`, `%TLx.Action{}`, etc.)
+- [ ] Internal IR structs (`%Tlx.Spec{}`, `%Tlx.Action{}`, etc.)
 - [ ] TLA+ emitter (generate valid `.tla` files from IR)
 - [ ] Invariant declarations
 - [ ] First example spec: simple state machine

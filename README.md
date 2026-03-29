@@ -12,7 +12,7 @@ Early development. Not yet published.
 
 ```elixir
 defmodule MySpec do
-  use TLx.Spec
+  use Tlx.Spec
 
   tla do
     variables do
