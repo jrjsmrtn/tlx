@@ -5,10 +5,10 @@ defmodule Examples.MutexTest do
   alias Tlx.Emitter.TLA
   alias Tlx.Simulator
 
-  # Load the example
+  # Load both correct and buggy examples
   Code.require_file("examples/mutex.ex", File.cwd!())
 
-  describe "mutex example compilation" do
+  describe "correct mutex" do
     test "emits valid TLA+" do
       output = TLA.emit(Examples.Mutex)
 
@@ -28,12 +28,30 @@ defmodule Examples.MutexTest do
       assert output =~ "p1_try:"
       assert output =~ "p2_enter:"
     end
-  end
 
-  describe "mutex simulation" do
+    test "turn is set in try phase (entry), not exit" do
+      output = TLA.emit(Examples.Mutex)
+
+      # p1_try sets turn' = 2 (yields to process 2)
+      assert output =~ "p1_try ==\n    /\\ pc1 = idle\n    /\\ flag1' = TRUE\n    /\\ turn' = 2"
+      # p1_exit does NOT set turn
+      refute output =~ "p1_exit ==\n" <> "    /\\ pc1 = cs\n    /\\ flag1' = FALSE\n    /\\ turn'"
+    end
+
     test "mutual exclusion holds under random walks" do
       assert {:ok, stats} = Simulator.simulate(Examples.Mutex, runs: 500, steps: 100, seed: 42)
       assert stats.runs == 500
+    end
+  end
+
+  describe "buggy mutex (turn set on exit)" do
+    test "simulator finds mutual exclusion violation" do
+      assert {:error, {:invariant, :mutual_exclusion}, trace} =
+               Simulator.simulate(Examples.MutexBuggy, runs: 500, steps: 100, seed: 42)
+
+      # The violating state has both processes in the critical section
+      violating = List.last(trace)
+      assert violating.pc1 == :cs and violating.pc2 == :cs
     end
   end
 end
