@@ -1,0 +1,18 @@
+# Architecture Decision Records — TLx
+
+foundational:
+  - id: 1
+    file: 0001-record-architecture-decisions.md
+    title: Record Architecture Decisions
+    purpose: HOW TO DECIDE
+    status: Accepted
+  - id: 2
+    file: 0002-adopt-development-best-practices.md
+    title: Adopt Development Best Practices
+    purpose: HOW TO DEVELOP
+    status: Accepted
+  - id: 3
+    file: 0003-adopt-elixir-spark-stack.md
+    title: Use Elixir with Spark DSL Framework
+    purpose: WHAT TECH
+    status: Accepted
