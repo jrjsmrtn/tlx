@@ -11,10 +11,10 @@ A Spark DSL for writing TLA+/PlusCal specifications, with TLA+ emission for TLC 
 
 ## Current Development Status
 
-- **Current Sprint**: Sprint 2 (see docs/sprints/sprint-0002-plan.md)
-- **Sprint Goal**: PlusCal emitter and Mix task
-- **Status**: In Progress
-- **Next Milestone**: v0.1.2
+- **Current Sprint**: Between sprints (Sprint 2 complete)
+- **Latest Release**: v0.1.2
+- **Next Sprint**: Sprint 3 (planning)
+- **Next Milestone**: v0.1.3
 
 ## Foundational ADRs
 
@@ -98,6 +98,8 @@ Key TLA+/PlusCal concepts mapped to DSL constructs:
 - Spark entity target structs must include `__identifier__` and `__spark_metadata__` fields
 - Schema options are set as bare calls inside `do` blocks, not as keyword args on entity calls
 - Use `mix usage_rules.search_docs` and `mix usage_rules.docs` to consult Spark API docs
+- TLA+ and PlusCal emitters share `format_ast`/`format_value` logic — extract to shared module if a third emitter is added
+- The `{:expr, quoted}` wrapper carries Elixir AST through Spark schema validation without interpretation
 
 <!-- usage-rules-start -->
 <!-- usage_rules-start -->

@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-03-30
+
+### Added
+
+- PlusCal emitter (`Tlx.Emitter.PlusCal`) — C-syntax with labels, await, either/or
+- Non-deterministic choice: `branch` entity for either/or within actions
+- `mix tlx.emit` task — emit TLA+ or PlusCal from CLI
+- Multi-variable UNCHANGED handling verified and tested
+- Verifier now checks branch transitions for undeclared variables
+
 ## [0.1.1] - 2026-03-29
 
 ### Added

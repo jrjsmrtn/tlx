@@ -2,8 +2,9 @@
 
 **Target Version**: v0.1.2
 **Phase**: Phase 1/2 bridge (completing Phase 1 usability, starting Phase 2 PlusCal)
-**Status**: In Progress
+**Status**: Complete
 **Started**: 2026-03-29
+**Completed**: 2026-03-30
 
 ## Goal
 
@@ -65,11 +66,11 @@ Sprint 1 delivered the core DSL and a TLA+ emitter. The emitter works for simple
 
 ## Acceptance Criteria
 
-- [ ] A spec with 2+ variables emits correct UNCHANGED clauses
-- [ ] `Tlx.Emitter.PlusCal.emit(MySpec)` returns valid PlusCal C-syntax
-- [ ] PlusCal output includes algorithm header, labels, await, assignments
-- [ ] `either/or` branches emit correctly in both TLA+ and PlusCal
-- [ ] `mix tlx.emit MySpec` works from the CLI
-- [ ] `mix tlx.emit MySpec --format pluscal` works
-- [ ] All tests pass
-- [ ] Code quality gates pass (format, credo --strict, dialyzer)
+- [x] A spec with 2+ variables emits correct UNCHANGED clauses
+- [x] `Tlx.Emitter.PlusCal.emit(MySpec)` returns valid PlusCal C-syntax
+- [x] PlusCal output includes algorithm header, labels, await, assignments
+- [x] `either/or` branches emit correctly in both TLA+ and PlusCal
+- [x] `mix tlx.emit MySpec` works from the CLI
+- [x] `mix tlx.emit MySpec --format pluscal` works
+- [x] All tests pass
+- [x] Code quality gates pass (format, credo --strict, dialyzer)
