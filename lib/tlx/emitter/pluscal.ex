@@ -186,7 +186,12 @@ defmodule Tlx.Emitter.PlusCal do
     do: Atom.to_string(name)
 
   defp format_ast(int) when is_integer(int), do: Integer.to_string(int)
-  defp format_ast(atom) when is_atom(atom), do: Atom.to_string(atom)
+  defp format_ast(true), do: "TRUE"
+  defp format_ast(false), do: "FALSE"
+
+  defp format_ast(atom) when is_atom(atom),
+    do: "\"#{Atom.to_string(atom)}\""
+
   defp format_ast(other), do: inspect(other)
 
   defp format_value(val) when is_integer(val), do: Integer.to_string(val)

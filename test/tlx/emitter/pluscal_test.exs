@@ -104,15 +104,15 @@ defmodule Tlx.Emitter.PlusCalTest do
     test "emits await from process action guards" do
       output = PlusCal.emit(MutexSpec)
 
-      assert output =~ "await local_state = idle;"
-      assert output =~ "await local_state = waiting;"
+      assert output =~ ~s(await local_state = "idle";)
+      assert output =~ ~s(await local_state = "waiting";)
     end
 
     test "emits process-local variable assignments" do
       output = PlusCal.emit(MutexSpec)
 
-      assert output =~ "local_state := waiting;"
-      assert output =~ "local_state := in_cs;"
+      assert output =~ ~s(local_state := "waiting";)
+      assert output =~ ~s(local_state := "in_cs";)
     end
 
     test "includes process-local variables in global variables block" do
@@ -160,11 +160,11 @@ defmodule Tlx.Emitter.PlusCalTest do
       output = PlusCal.emit(Provisioner)
 
       assert output =~ "provision:"
-      assert output =~ "await state = reachable;"
+      assert output =~ ~s(await state = "reachable";)
       assert output =~ "either {"
-      assert output =~ "state := provisioned;"
+      assert output =~ ~s(state := "provisioned";)
       assert output =~ "or {"
-      assert output =~ "state := degraded;"
+      assert output =~ ~s(state := "degraded";)
     end
 
     test "emits invariants after algorithm block" do

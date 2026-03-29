@@ -284,13 +284,15 @@ defmodule Tlx.Emitter.TLA do
 
   # Literals
   defp format_ast(int) when is_integer(int), do: Integer.to_string(int)
+  defp format_ast(true), do: "TRUE"
+  defp format_ast(false), do: "FALSE"
   defp format_ast(atom) when is_atom(atom), do: Atom.to_string(atom)
   defp format_ast(other), do: inspect(other)
 
   defp format_value(val) when is_integer(val), do: Integer.to_string(val)
 
   defp format_value(val) when is_atom(val) and val not in [true, false, nil],
-    do: "\"#{Atom.to_string(val)}\""
+    do: Atom.to_string(val)
 
   defp format_value(true), do: "TRUE"
   defp format_value(false), do: "FALSE"
