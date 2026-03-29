@@ -25,9 +25,9 @@ Enable Elixir developers to write formally verifiable TLA+/PlusCal specification
 
 - [x] Process declarations (concurrent actors)
 - [x] PlusCal emitter (labels, await, either/or, with)
-- [ ] Temporal properties (always, eventually)
-- [ ] Fairness annotations (weak/strong)
-- [ ] Quantifiers (exists, forall)
+- [x] Temporal properties (always, eventually)
+- [x] Fairness annotations (weak/strong)
+- [x] Quantifiers (exists, forall)
 - [x] Non-deterministic choice
 - [x] TLC integration (invoke TLC as subprocess, parse results)
 
@@ -37,7 +37,7 @@ Enable Elixir developers to write formally verifiable TLA+/PlusCal specification
 **Focus**: Elixir simulator, Mix tasks, developer experience
 
 - [ ] Elixir simulator (random walk state exploration)
-- [ ] `mix tlx.check` task (emit + run TLC)
+- [x] `mix tlx.check` task (emit + run TLC)
 - [ ] `mix tlx.simulate` task (Elixir random exploration)
 - [ ] Counterexample trace formatting
 - [ ] Spark introspection and documentation generation
@@ -56,6 +56,7 @@ Enable Elixir developers to write formally verifiable TLA+/PlusCal specification
 
 | Sprint | Phase               | Version | Summary                                       |
 | ------ | ------------------- | ------- | --------------------------------------------- |
+| 4      | PlusCal/Concurrency | v0.1.4  | Temporal properties, fairness, quantifiers    |
 | 3      | PlusCal/Concurrency | v0.1.3  | Processes, TLC integration, config generation |
 | 2      | Foundation/PlusCal  | v0.1.2  | PlusCal emitter, either/or, mix tlx.emit task |
 | 1      | Foundation          | v0.1.1  | Core DSL (Spark), TLA+ emitter, quality gates |

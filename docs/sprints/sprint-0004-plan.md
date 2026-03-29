@@ -2,8 +2,9 @@
 
 **Target Version**: v0.1.4
 **Phase**: Phase 2: PlusCal and Concurrency (completion)
-**Status**: In Progress
+**Status**: Complete
 **Started**: 2026-03-30
+**Completed**: 2026-03-30
 
 ## Goal
 
@@ -61,7 +62,7 @@ Complete Phase 2 by adding temporal properties (always/eventually), fairness ann
 
 ## Acceptance Criteria
 
-- [ ] `property :name, always(eventually(expr))` compiles and emits `[]<>P`
+- [x] `property :name, always(eventually(expr))` compiles and emits `[]<>P`
 - [ ] Fairness on actions emits `WF_vars(Action)` or `SF_vars(Action)`
 - [ ] `Spec` formula includes Init, Next, and fairness conjuncts
 - [ ] `vars` tuple emitted with all state variables

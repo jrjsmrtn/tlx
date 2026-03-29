@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-03-30
+
+### Added
+
+- Temporal properties: `always`, `eventually`, `leads_to` via `Tlx.Temporal`
+- Fairness annotations: `:weak` (WF) and `:strong` (SF) on actions and processes
+- Quantifiers: `forall` and `exists` emit `\A` / `\E` in TLA+
+- `Spec` formula generation: `Init /\ [][Next]_vars /\ Fairness`
+- `vars` tuple emission for all state variables
+- `PROPERTY` declarations in `.cfg` output
+- Phase 2 complete
+
 ## [0.1.3] - 2026-03-30
 
 ### Added
