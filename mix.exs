@@ -13,7 +13,8 @@ defmodule Tlx.MixProject do
       name: "Tlx",
       description: "A Spark DSL for writing TLA+/PlusCal specifications",
       docs: docs(),
-      usage_rules: usage_rules()
+      usage_rules: usage_rules(),
+      dialyzer: [plt_add_apps: [:mix]]
     ]
   end
 
