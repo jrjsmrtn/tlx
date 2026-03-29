@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.6] - 2026-03-30
+
+### Added
+
+- Trace formatter (`Tlx.Trace`) — numbered states with variable diffs, compact/verbose modes
+- Spark formatter config (`spark_locals_without_parens`) for DSL calls
+- Spark cheat sheet generation (`documentation/dsls/DSL-Tlx.md`)
+- ExDoc includes DSL reference as extra
+- Phase 3 complete
+
 ## [0.1.5] - 2026-03-30
 
 ### Added

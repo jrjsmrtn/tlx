@@ -2,8 +2,9 @@
 
 **Target Version**: v0.1.6
 **Phase**: Phase 3: Simulation and Tooling (completion)
-**Status**: In Progress
+**Status**: Complete
 **Started**: 2026-03-30
+**Completed**: 2026-03-30
 
 ## Goal
 
@@ -43,7 +44,7 @@ Complete Phase 3 by adding pretty-printed counterexample traces and Spark-powere
 
 ## Acceptance Criteria
 
-- [ ] Traces show numbered states with variable values
+- [x] Traces show numbered states with variable values
 - [ ] Changed variables are highlighted in diffs
 - [ ] `mix tlx.check` and `mix tlx.simulate` use the new formatter
 - [ ] `mix spark.cheat_sheets` generates DSL reference
