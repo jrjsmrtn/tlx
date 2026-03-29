@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.5] - 2026-03-30
+
+### Added
+
+- Elixir simulator (`Tlx.Simulator`) — random walk state exploration with invariant checking
+- `mix tlx.simulate` task — run simulations from CLI with configurable steps/runs/seed
+- Peterson's mutual exclusion example (`examples/mutex.ex`)
+- Simulator found and helped fix a real bug in the initial mutex spec
+
+### Fixed
+
+- Atom formatting consistency: TLA+ emitter uses bare model values, PlusCal uses quoted strings
+- Boolean literals emit as `TRUE`/`FALSE` in both emitters
+
 ## [0.1.4] - 2026-03-30
 
 ### Added

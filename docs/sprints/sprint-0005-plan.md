@@ -2,8 +2,9 @@
 
 **Target Version**: v0.1.5
 **Phase**: Phase 3: Simulation and Tooling
-**Status**: In Progress
+**Status**: Complete
 **Started**: 2026-03-30
+**Completed**: 2026-03-30
 
 ## Goal
 
@@ -53,7 +54,7 @@ Validate the DSL end-to-end with a real mutual exclusion spec (from the TLA+ les
 
 ## Acceptance Criteria
 
-- [ ] Mutex example compiles and emits valid TLA+ and PlusCal
+- [x] Mutex example compiles and emits valid TLA+ and PlusCal
 - [ ] Simulator finds invariant violations in intentionally buggy specs
 - [ ] Simulator passes on correct specs within configured runs
 - [ ] `mix tlx.simulate MySpec` works from CLI

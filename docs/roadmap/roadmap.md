@@ -36,9 +36,9 @@ Enable Elixir developers to write formally verifiable TLA+/PlusCal specification
 **Target**: v0.3.x
 **Focus**: Elixir simulator, Mix tasks, developer experience
 
-- [ ] Elixir simulator (random walk state exploration)
+- [x] Elixir simulator (random walk state exploration)
 - [x] `mix tlx.check` task (emit + run TLC)
-- [ ] `mix tlx.simulate` task (Elixir random exploration)
+- [x] `mix tlx.simulate` task (Elixir random exploration)
 - [ ] Counterexample trace formatting
 - [ ] Spark introspection and documentation generation
 
@@ -56,6 +56,7 @@ Enable Elixir developers to write formally verifiable TLA+/PlusCal specification
 
 | Sprint | Phase               | Version | Summary                                       |
 | ------ | ------------------- | ------- | --------------------------------------------- |
+| 5      | Simulation/Tooling  | v0.1.5  | Mutex example, Elixir simulator               |
 | 4      | PlusCal/Concurrency | v0.1.4  | Temporal properties, fairness, quantifiers    |
 | 3      | PlusCal/Concurrency | v0.1.3  | Processes, TLC integration, config generation |
 | 2      | Foundation/PlusCal  | v0.1.2  | PlusCal emitter, either/or, mix tlx.emit task |
