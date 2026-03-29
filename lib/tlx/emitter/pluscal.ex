@@ -14,13 +14,14 @@ defmodule Tlx.Emitter.PlusCal do
     constants = Extension.get_entities(module, [:constants])
     actions = Extension.get_entities(module, [:actions])
     invariants = Extension.get_entities(module, [:invariants])
+    processes = Extension.get_entities(module, [:processes])
 
     module_name = module_name(module)
 
     [
       emit_header(module_name),
       emit_extends(constants),
-      emit_algorithm(module_name, variables, actions),
+      emit_algorithm(module_name, variables, actions, processes),
       emit_invariants(invariants),
       emit_footer()
     ]
@@ -45,16 +46,42 @@ defmodule Tlx.Emitter.PlusCal do
     "EXTENDS Integers, FiniteSets\n\nCONSTANTS #{names}\n"
   end
 
-  defp emit_algorithm(name, variables, actions) do
+  defp emit_algorithm(name, variables, actions, processes) do
+    all_vars = variables ++ Enum.flat_map(processes, & &1.variables)
+
+    global_block =
+      if actions != [] do
+        ["{", emit_pluscal_actions(actions), "}"]
+      else
+        []
+      end
+
+    process_blocks = Enum.map(processes, &emit_pluscal_process/1)
+
     [
       "(* --algorithm #{name}",
-      emit_pluscal_variables(variables),
-      "{",
-      emit_pluscal_actions(actions),
-      "}",
+      emit_pluscal_variables(all_vars),
+      global_block,
+      process_blocks,
       "*)\\* end algorithm\n"
     ]
   end
+
+  defp emit_pluscal_process(process) do
+    name = Atom.to_string(process.name)
+    set = format_set(process.set)
+    actions = emit_pluscal_actions(process.actions)
+
+    [
+      "process (#{name} \\in #{set})",
+      "{",
+      actions,
+      "}"
+    ]
+  end
+
+  defp format_set(atom) when is_atom(atom), do: Atom.to_string(atom)
+  defp format_set(other), do: inspect(other)
 
   defp emit_pluscal_variables(variables) do
     decls =

@@ -55,6 +55,73 @@ defmodule Tlx.Emitter.PlusCalTest do
     end
   end
 
+  defmodule MutexSpec do
+    use Tlx.Spec
+
+    variables do
+      variable(:flag, default: [])
+    end
+
+    constants do
+      constant(:procs)
+    end
+
+    processes do
+      process :worker do
+        set(:procs)
+        variable(:local_state, default: :idle)
+
+        action :try_enter do
+          guard({:expr, quote(do: local_state == :idle)})
+          next(:local_state, {:expr, :waiting})
+        end
+
+        action :enter_cs do
+          guard({:expr, quote(do: local_state == :waiting)})
+          next(:local_state, {:expr, :in_cs})
+        end
+      end
+    end
+
+    invariants do
+    end
+  end
+
+  describe "PlusCal process emission" do
+    test "emits process block with set" do
+      output = PlusCal.emit(MutexSpec)
+
+      assert output =~ "process (worker \\in procs)"
+    end
+
+    test "emits process actions as labeled blocks" do
+      output = PlusCal.emit(MutexSpec)
+
+      assert output =~ "try_enter:"
+      assert output =~ "enter_cs:"
+    end
+
+    test "emits await from process action guards" do
+      output = PlusCal.emit(MutexSpec)
+
+      assert output =~ "await local_state = idle;"
+      assert output =~ "await local_state = waiting;"
+    end
+
+    test "emits process-local variable assignments" do
+      output = PlusCal.emit(MutexSpec)
+
+      assert output =~ "local_state := waiting;"
+      assert output =~ "local_state := in_cs;"
+    end
+
+    test "includes process-local variables in global variables block" do
+      output = PlusCal.emit(MutexSpec)
+
+      assert output =~ "local_state = \"idle\""
+    end
+  end
+
   describe "PlusCal emission" do
     test "emits valid PlusCal structure" do
       output = PlusCal.emit(Counter)

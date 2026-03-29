@@ -147,7 +147,37 @@ defmodule Tlx.Dsl do
     entities: [@invariant]
   }
 
+  @process %Spark.Dsl.Entity{
+    name: :process,
+    target: Tlx.Process,
+    args: [:name],
+    identifier: :name,
+    schema: [
+      name: [
+        type: :atom,
+        required: true,
+        doc: "Process name."
+      ],
+      set: [
+        type: :any,
+        required: true,
+        doc: "The set of process identifiers (e.g., a constant name or literal set)."
+      ]
+    ],
+    entities: [
+      actions: [@action],
+      variables: [@variable]
+    ],
+    describe: "Declare a concurrent process (PlusCal `process (Name \\in Set)`)."
+  }
+
+  @processes %Spark.Dsl.Section{
+    name: :processes,
+    describe: "Concurrent process declarations.",
+    entities: [@process]
+  }
+
   use Spark.Dsl.Extension,
-    sections: [@variables, @constants, @actions, @invariants],
+    sections: [@variables, @constants, @actions, @invariants, @processes],
     verifiers: [Tlx.Verifiers.TransitionTargets]
 end
