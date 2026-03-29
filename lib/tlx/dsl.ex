@@ -94,6 +94,10 @@ defmodule Tlx.Dsl do
       guard: [
         type: :any,
         doc: "A quoted boolean expression that must be true for this action to fire."
+      ],
+      fairness: [
+        type: {:one_of, [:weak, :strong]},
+        doc: "Fairness constraint: :weak (WF) or :strong (SF)."
       ]
     ],
     entities: [
@@ -162,6 +166,10 @@ defmodule Tlx.Dsl do
         type: :any,
         required: true,
         doc: "The set of process identifiers (e.g., a constant name or literal set)."
+      ],
+      fairness: [
+        type: {:one_of, [:weak, :strong]},
+        doc: "Default fairness for all actions in this process: :weak (WF) or :strong (SF)."
       ]
     ],
     entities: [
@@ -177,7 +185,33 @@ defmodule Tlx.Dsl do
     entities: [@process]
   }
 
+  @property %Spark.Dsl.Entity{
+    name: :property,
+    target: Tlx.Property,
+    args: [:name],
+    identifier: :name,
+    schema: [
+      name: [
+        type: :atom,
+        required: true,
+        doc: "Property name."
+      ],
+      expr: [
+        type: :any,
+        required: true,
+        doc: "A temporal expression: always(P), eventually(P), leads_to(P, Q)."
+      ]
+    ],
+    describe: "Declare a temporal property (liveness or safety over traces)."
+  }
+
+  @properties %Spark.Dsl.Section{
+    name: :properties,
+    describe: "Temporal properties checked over infinite traces.",
+    entities: [@property]
+  }
+
   use Spark.Dsl.Extension,
-    sections: [@variables, @constants, @actions, @invariants, @processes],
+    sections: [@variables, @constants, @actions, @invariants, @processes, @properties],
     verifiers: [Tlx.Verifiers.TransitionTargets]
 end

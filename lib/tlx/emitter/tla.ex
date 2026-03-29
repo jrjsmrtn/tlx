@@ -13,6 +13,12 @@ defmodule Tlx.Emitter.TLA do
     constants = Extension.get_entities(module, [:constants])
     actions = Extension.get_entities(module, [:actions])
     invariants = Extension.get_entities(module, [:invariants])
+    processes = Extension.get_entities(module, [:processes])
+    properties = Extension.get_entities(module, [:properties])
+
+    all_actions = actions ++ Enum.flat_map(processes, & &1.actions)
+    all_variables = variables ++ Enum.flat_map(processes, & &1.variables)
+    var_names = Enum.map(all_variables, & &1.name)
 
     module_name = module_name(module)
 
@@ -20,11 +26,15 @@ defmodule Tlx.Emitter.TLA do
       emit_header(module_name),
       emit_extends(),
       emit_constants(constants),
-      emit_variables(variables),
-      emit_init(variables),
-      emit_actions(actions, variables),
-      emit_next(actions),
+      emit_variables(all_variables),
+      emit_vars_tuple(var_names),
+      emit_init(all_variables),
+      emit_actions(all_actions, MapSet.new(var_names)),
+      emit_next(all_actions),
+      emit_fairness(actions, processes, var_names),
+      emit_spec(actions, processes),
       emit_invariants(invariants),
+      emit_properties(properties),
       emit_footer()
     ]
     |> Enum.reject(&is_nil/1)
@@ -74,11 +84,9 @@ defmodule Tlx.Emitter.TLA do
     end
   end
 
-  defp emit_actions([], _variables), do: nil
+  defp emit_actions([], _var_names), do: nil
 
-  defp emit_actions(actions, variables) do
-    var_names = MapSet.new(variables, & &1.name)
-
+  defp emit_actions(actions, var_names) do
     Enum.map_join(actions, "\n", &emit_action(&1, var_names))
   end
 
@@ -140,6 +148,54 @@ defmodule Tlx.Emitter.TLA do
     "Next ==\n    \\/ #{clauses}\n"
   end
 
+  defp emit_vars_tuple([]), do: nil
+
+  defp emit_vars_tuple(var_names) do
+    names = Enum.map_join(var_names, ", ", &Atom.to_string/1)
+    "vars == << #{names} >>\n"
+  end
+
+  defp emit_fairness(actions, processes, _var_names) do
+    all_actions =
+      actions ++
+        Enum.flat_map(processes, fn process ->
+          Enum.map(process.actions, &%{&1 | fairness: &1.fairness || process.fairness})
+        end)
+
+    fairness_clauses = Enum.flat_map(all_actions, &fairness_clause/1)
+
+    case fairness_clauses do
+      [] ->
+        nil
+
+      _ ->
+        body = Enum.map_join(fairness_clauses, "\n    /\\ ", & &1)
+        "Fairness ==\n    /\\ #{body}\n"
+    end
+  end
+
+  defp fairness_clause(%{fairness: :weak, name: name}),
+    do: ["WF_vars(#{Atom.to_string(name)})"]
+
+  defp fairness_clause(%{fairness: :strong, name: name}),
+    do: ["SF_vars(#{Atom.to_string(name)})"]
+
+  defp fairness_clause(_), do: []
+
+  defp emit_spec(actions, processes) do
+    has_fairness =
+      Enum.any?(actions, & &1.fairness) ||
+        Enum.any?(processes, fn p ->
+          p.fairness || Enum.any?(p.actions, & &1.fairness)
+        end)
+
+    if has_fairness do
+      "Spec == Init /\\ [][Next]_vars /\\ Fairness\n"
+    else
+      "Spec == Init /\\ [][Next]_vars\n"
+    end
+  end
+
   defp emit_invariants([]), do: nil
 
   defp emit_invariants(invariants) do
@@ -148,9 +204,27 @@ defmodule Tlx.Emitter.TLA do
     end) <> "\n"
   end
 
+  defp emit_properties([]), do: nil
+
+  defp emit_properties(properties) do
+    Enum.map_join(properties, "\n", fn prop ->
+      "#{Atom.to_string(prop.name)} == #{format_temporal(prop.expr)}"
+    end) <> "\n"
+  end
+
   defp emit_footer do
     "===="
   end
+
+  # Temporal formula formatting
+  defp format_temporal({:always, inner}), do: "[](#{format_temporal(inner)})"
+  defp format_temporal({:eventually, inner}), do: "<>(#{format_temporal(inner)})"
+
+  defp format_temporal({:leads_to, p, q}),
+    do: "(#{format_temporal(p)}) ~> (#{format_temporal(q)})"
+
+  defp format_temporal({:expr, ast}), do: format_ast(ast)
+  defp format_temporal(other), do: format_expr(other)
 
   defp format_guard({:expr, expr}), do: "    /\\ #{format_ast(expr)}"
   defp format_guard(other), do: "    /\\ #{inspect(other)}"
@@ -196,6 +270,13 @@ defmodule Tlx.Emitter.TLA do
 
   defp format_ast({:*, _, [left, right]}),
     do: "#{format_ast(left)} * #{format_ast(right)}"
+
+  # Quantifiers
+  defp format_ast({:forall, var, set, expr}),
+    do: "\\A #{Atom.to_string(var)} \\in #{format_ast(set)} : #{format_ast(expr)}"
+
+  defp format_ast({:exists, var, set, expr}),
+    do: "\\E #{Atom.to_string(var)} \\in #{format_ast(set)} : #{format_ast(expr)}"
 
   # Variable reference: {name, _meta, _context} — standard Elixir AST for a variable
   defp format_ast({name, _meta, context}) when is_atom(name) and is_atom(context),
