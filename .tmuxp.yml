@@ -1,0 +1,32 @@
+session_name: tlx
+
+windows:
+  - window_name: shell
+    layout: even-horizontal
+    options:
+      automatic-rename: false
+    panes:
+      - blank
+
+  - window_name: code
+    layout: even-horizontal
+    focus: true
+    options:
+      automatic-rename: false
+    panes:
+      - $EDITOR .
+
+  - window_name: chat
+    layout: main-vertical
+    options:
+      automatic-rename: false
+    panes:
+      - vibe --chat
+
+  - window_name: commit
+    layout: main-vertical
+    options:
+      automatic-rename: false
+    panes:
+      - >
+        [ -d .git ] && [ -n "$(command -v lazygit)" ] && lazygit || git status
