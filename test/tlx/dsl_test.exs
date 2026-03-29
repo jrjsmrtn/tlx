@@ -1,6 +1,8 @@
 defmodule Tlx.DslTest do
   use ExUnit.Case
 
+  alias Spark.Dsl.Extension
+
   defmodule Counter do
     use Tlx.Spec
 
@@ -30,7 +32,7 @@ defmodule Tlx.DslTest do
 
   describe "DSL compilation" do
     test "variables are declared" do
-      variables = Spark.Dsl.Extension.get_entities(Counter, [:variables])
+      variables = Extension.get_entities(Counter, [:variables])
       assert length(variables) == 1
 
       [var] = variables
@@ -40,13 +42,13 @@ defmodule Tlx.DslTest do
     end
 
     test "constants are declared" do
-      constants = Spark.Dsl.Extension.get_entities(Counter, [:constants])
+      constants = Extension.get_entities(Counter, [:constants])
       assert length(constants) == 1
       assert hd(constants).name == :max
     end
 
     test "actions are declared with transitions" do
-      actions = Spark.Dsl.Extension.get_entities(Counter, [:actions])
+      actions = Extension.get_entities(Counter, [:actions])
       assert length(actions) == 2
 
       increment = Enum.find(actions, &(&1.name == :increment))
@@ -60,7 +62,7 @@ defmodule Tlx.DslTest do
     end
 
     test "invariants are declared" do
-      invariants = Spark.Dsl.Extension.get_entities(Counter, [:invariants])
+      invariants = Extension.get_entities(Counter, [:invariants])
       assert length(invariants) == 1
       assert hd(invariants).name == :non_negative
       assert hd(invariants).expr != nil

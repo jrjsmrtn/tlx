@@ -2,14 +2,17 @@ defmodule Tlx.Verifiers.TransitionTargets do
   @moduledoc false
   use Spark.Dsl.Verifier
 
+  alias Spark.Dsl.Verifier, as: V
+  alias Spark.Error.DslError
+
   def verify(dsl_state) do
     variables =
       dsl_state
-      |> Spark.Dsl.Verifier.get_entities([:variables])
+      |> V.get_entities([:variables])
       |> MapSet.new(& &1.name)
 
-    actions = Spark.Dsl.Verifier.get_entities(dsl_state, [:actions])
-    module = Spark.Dsl.Verifier.get_persisted(dsl_state, :module)
+    actions = V.get_entities(dsl_state, [:actions])
+    module = V.get_persisted(dsl_state, :module)
 
     Enum.reduce_while(actions, :ok, fn action, :ok ->
       case find_bad_target(action, variables) do
@@ -19,7 +22,7 @@ defmodule Tlx.Verifiers.TransitionTargets do
         bad_var ->
           {:halt,
            {:error,
-            Spark.Error.DslError.exception(
+            DslError.exception(
               message:
                 "Action #{inspect(action.name)} references undeclared variable #{inspect(bad_var)}. " <>
                   "Declared variables: #{inspect(MapSet.to_list(variables))}",

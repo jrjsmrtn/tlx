@@ -3,14 +3,16 @@ defmodule Tlx.Emitter.TLA do
   Emits a TLA+ module from a compiled `Tlx.Spec` module.
   """
 
+  alias Spark.Dsl.Extension
+
   @doc """
   Generate a TLA+ string from a compiled spec module.
   """
   def emit(module) do
-    variables = Spark.Dsl.Extension.get_entities(module, [:variables])
-    constants = Spark.Dsl.Extension.get_entities(module, [:constants])
-    actions = Spark.Dsl.Extension.get_entities(module, [:actions])
-    invariants = Spark.Dsl.Extension.get_entities(module, [:invariants])
+    variables = Extension.get_entities(module, [:variables])
+    constants = Extension.get_entities(module, [:constants])
+    actions = Extension.get_entities(module, [:actions])
+    invariants = Extension.get_entities(module, [:invariants])
 
     module_name = module_name(module)
 
@@ -77,9 +79,7 @@ defmodule Tlx.Emitter.TLA do
   defp emit_actions(actions, variables) do
     var_names = MapSet.new(variables, & &1.name)
 
-    actions
-    |> Enum.map(&emit_action(&1, var_names))
-    |> Enum.join("\n")
+    Enum.map_join(actions, "\n", &emit_action(&1, var_names))
   end
 
   defp emit_action(action, all_variables) do
@@ -122,12 +122,9 @@ defmodule Tlx.Emitter.TLA do
   defp emit_invariants([]), do: nil
 
   defp emit_invariants(invariants) do
-    invariants
-    |> Enum.map(fn inv ->
+    Enum.map_join(invariants, "\n", fn inv ->
       "#{Atom.to_string(inv.name)} == #{format_expr(inv.expr)}"
-    end)
-    |> Enum.join("\n")
-    |> Kernel.<>("\n")
+    end) <> "\n"
   end
 
   defp emit_footer do
