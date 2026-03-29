@@ -12,6 +12,7 @@ defmodule Tlx.MixProject do
       deps: deps(),
       name: "Tlx",
       description: "A Spark DSL for writing TLA+/PlusCal specifications",
+      package: package(),
       docs: docs(),
       usage_rules: usage_rules(),
       dialyzer: [plt_add_apps: [:mix]]
@@ -50,6 +51,17 @@ defmodule Tlx.MixProject do
           ]
         ]
       ]
+    ]
+  end
+
+  defp package do
+    [
+      licenses: ["MIT"],
+      links: %{
+        "GitHub" => "https://github.com/jrjsmrtn/tlx",
+        "Changelog" => "https://github.com/jrjsmrtn/tlx/blob/main/CHANGELOG.md"
+      },
+      files: ~w(lib examples .formatter.exs mix.exs README.md LICENSE CHANGELOG.md)
     ]
   end
 
