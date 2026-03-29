@@ -56,7 +56,14 @@ defmodule Tlx.MixProject do
   defp docs do
     [
       main: "TLx",
-      extras: ["README.md", "CHANGELOG.md"]
+      extras: [
+        "README.md",
+        "CHANGELOG.md",
+        "documentation/dsls/DSL-Tlx.md"
+      ],
+      groups_for_extras: [
+        "DSL Reference": ~r/documentation\/dsls\//
+      ]
     ]
   end
 end

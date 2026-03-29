@@ -53,17 +53,9 @@ defmodule Mix.Tasks.Tlx.Simulate do
           "OK: #{stats.runs} runs, max depth #{stats.max_depth}, #{stats.deadlocks} deadlocks"
         )
 
-      {:error, {:invariant, name}, trace} ->
-        Mix.shell().error("INVARIANT VIOLATED: #{name}")
-        Mix.shell().error("\nCounterexample trace (#{length(trace)} states):")
-
-        trace
-        |> Enum.with_index()
-        |> Enum.each(fn {state, i} ->
-          Mix.shell().error("  State #{i}: #{inspect(state)}")
-        end)
-
-        Mix.raise("Simulation failed: invariant #{name} violated")
+      {:error, violation, trace} ->
+        Mix.shell().error(Tlx.Trace.format_violation(violation, trace))
+        Mix.raise("Simulation failed")
     end
   end
 end

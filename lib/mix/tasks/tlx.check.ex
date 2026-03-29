@@ -95,8 +95,9 @@ defmodule Mix.Tasks.Tlx.Check do
 
     if result.violation, do: Mix.shell().error("Violation: #{inspect(result.violation)}")
 
-    for {state, i} <- Enum.with_index(result.trace, 1) do
-      Mix.shell().error("  State #{i}: #{state}")
+    if result.trace != [] do
+      Mix.shell().error("\nCounterexample trace:")
+      Mix.shell().error(Enum.map_join(result.trace, "\n", &"  #{&1}"))
     end
 
     Mix.raise("TLC verification failed")
