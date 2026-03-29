@@ -20,11 +20,11 @@ A Spark DSL for writing TLA+/PlusCal specifications, with TLA+ emission for TLC 
 
 Read these at the start of each AI session for complete context:
 
-| ADR | Purpose | Summary |
-|-----|---------|---------|
-| [ADR-0001](docs/adr/0001-record-architecture-decisions.md) | HOW TO DECIDE | Decision methodology |
+| ADR                                                           | Purpose        | Summary               |
+| ------------------------------------------------------------- | -------------- | --------------------- |
+| [ADR-0001](docs/adr/0001-record-architecture-decisions.md)    | HOW TO DECIDE  | Decision methodology  |
 | [ADR-0002](docs/adr/0002-adopt-development-best-practices.md) | HOW TO DEVELOP | Development practices |
-| [ADR-0003](docs/adr/0003-adopt-elixir-spark-stack.md) | WHAT TECH | Technology stack |
+| [ADR-0003](docs/adr/0003-adopt-elixir-spark-stack.md)         | WHAT TECH      | Technology stack      |
 
 ## Architecture
 
@@ -53,7 +53,7 @@ This project follows [AI-Assisted Project Orchestration patterns](https://github
 
 - **Testing**: TDD with ExUnit
 - **Versioning**: Semantic versioning (0.1.x during development)
-- **Git Workflow**: Gitflow (main, develop, feature/*, release/*, hotfix/*)
+- **Git Workflow**: Gitflow (main, develop, feature/_, release/_, hotfix/*)
 - **Documentation**: Diátaxis framework
 - **Architecture**: C4 DSL models in architecture/
 
@@ -75,21 +75,22 @@ mix compile --warnings-as-errors
 
 Key TLA+/PlusCal concepts mapped to DSL constructs:
 
-| TLA+ Concept | DSL Construct | Nature |
-|---|---|---|
-| State variables | `variable :name, type: ..., default: ...` | Named mutable slots |
-| Init predicate | `init do ... end` | Constraint on initial values |
-| Actions | `action :name do ... end` with `guard` and `next` | Guarded transitions |
-| Invariants `[]P` | `invariant :name do ... end` | Safety properties |
-| Liveness `<>P` | `property :name, always(eventually(...))` | Temporal properties |
-| Constants | `constant :name` | Model parameters |
-| Processes | `process :name, in: set do ... end` | Concurrent actors |
-| Non-determinism | `either/or`, `with` | Branching exploration |
-| Quantifiers | `exists/forall` | Set predicates |
+| TLA+ Concept     | DSL Construct                                     | Nature                       |
+| ---------------- | ------------------------------------------------- | ---------------------------- |
+| State variables  | `variable :name, type: ..., default: ...`         | Named mutable slots          |
+| Init predicate   | `init do ... end`                                 | Constraint on initial values |
+| Actions          | `action :name do ... end` with `guard` and `next` | Guarded transitions          |
+| Invariants `[]P` | `invariant :name do ... end`                      | Safety properties            |
+| Liveness `<>P`   | `property :name, always(eventually(...))`         | Temporal properties          |
+| Constants        | `constant :name`                                  | Model parameters             |
+| Processes        | `process :name, in: set do ... end`               | Concurrent actors            |
+| Non-determinism  | `either/or`, `with`                               | Branching exploration        |
+| Quantifiers      | `exists/forall`                                   | Set predicates               |
 
 ## AI Collaboration Notes
 
 **What AI should know:**
+
 - The DSL emits TLA+/PlusCal — it does not reimplement TLC
 - Primed variables (`x'` in TLA+) are expressed via `next :var, expr` in the DSL
 - Spark provides introspection, transformers, and verifiers for free

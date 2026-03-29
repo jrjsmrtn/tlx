@@ -23,12 +23,14 @@ We evaluated several approaches for building the DSL.
 We will use **Elixir** with the **Spark** DSL framework.
 
 **Core Technologies**:
+
 - **Language**: Elixir 1.19+ / Erlang/OTP 28
 - **DSL Framework**: Spark 2.6+
 - **Testing**: ExUnit + StreamData
 - **Documentation**: ExDoc
 
 **Rationale**:
+
 - Spark provides battle-tested DSL infrastructure: entity definitions, transformers, verifiers, introspection — all of which TLx needs
 - Elixir's macro system and quoted expressions are a natural fit for capturing predicates and transitions as AST nodes without executing them
 - The BEAM's actor model aligns conceptually with TLA+'s process/action semantics, making simulation straightforward
@@ -37,16 +39,17 @@ We will use **Elixir** with the **Spark** DSL framework.
 
 **Alternatives Considered**:
 
-| Option | Pros | Cons | Decision |
-|--------|------|------|----------|
-| Elixir + Spark | Battle-tested DSL infra, introspection, transformers | Spark learning curve, dependency weight | **Selected** |
-| Elixir + plain macros | No external dependency, full control | Reimplements DSL infrastructure (validation, introspection, docs) | Rejected |
-| Rust + proc macros | Performance, type safety | No BEAM runtime for simulation, harder DSL ergonomics | Rejected |
-| Python + metaclasses | Large TLA+ community overlap | No compile-time validation, weaker DSL patterns | Rejected |
+| Option                | Pros                                                 | Cons                                                              | Decision     |
+| --------------------- | ---------------------------------------------------- | ----------------------------------------------------------------- | ------------ |
+| Elixir + Spark        | Battle-tested DSL infra, introspection, transformers | Spark learning curve, dependency weight                           | **Selected** |
+| Elixir + plain macros | No external dependency, full control                 | Reimplements DSL infrastructure (validation, introspection, docs) | Rejected     |
+| Rust + proc macros    | Performance, type safety                             | No BEAM runtime for simulation, harder DSL ergonomics             | Rejected     |
+| Python + metaclasses  | Large TLA+ community overlap                         | No compile-time validation, weaker DSL patterns                   | Rejected     |
 
 ## Consequences
 
 **Positive**:
+
 - Spark handles DSL boilerplate (entity registration, compile-time checks, documentation generation)
 - Transformers validate spec consistency at compile time (e.g., every `next` references a declared variable)
 - Verifiers enforce structural rules before emission
@@ -54,11 +57,13 @@ We will use **Elixir** with the **Spark** DSL framework.
 - The Elixir ecosystem provides StreamData for property-based testing of emission correctness
 
 **Negative**:
+
 - Spark is a significant dependency for a library
 - Users must have Elixir/OTP installed (no standalone binary)
 - TLA+ community is predominantly Python/Java — Elixir is unfamiliar territory
 
 **Risks**:
+
 - Spark API changes could require adaptation (mitigated by pinning `~> 2.6`)
 - The DSL must not leak Spark internals to users — the public API should feel like TLx, not Spark
 

@@ -1,0 +1,19 @@
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Project-specific allowlist for test data and documentation"
+
+paths = [
+    '''test/fixtures/.*''',
+    '''test/support/.*''',
+]
+
+stopwords = [
+    "test",
+    "example",
+    "sample",
+    "dummy",
+    "fake",
+    "mock",
+]

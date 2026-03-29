@@ -1,0 +1,28 @@
+pre-commit:
+  parallel: true
+  commands:
+    gitleaks:
+      run: gitleaks protect --staged --verbose
+    format-elixir:
+      run: mix format --check-formatted
+      glob: "*.{ex,exs}"
+    format-markdown:
+      run: dprint check
+      glob: "*.md"
+
+pre-push:
+  parallel: true
+  commands:
+    compile:
+      run: mix compile --warnings-as-errors
+    credo:
+      run: mix credo --strict
+      glob: "*.{ex,exs}"
+    test:
+      run: mix test --exclude slow --exclude integration
+    dialyzer:
+      run: mix dialyzer
+    deps-audit:
+      run: mix deps.audit
+    hex-audit:
+      run: mix hex.audit

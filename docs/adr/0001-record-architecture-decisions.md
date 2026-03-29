@@ -19,6 +19,7 @@ We will use Architecture Decision Records (ADRs) to document significant archite
 **ADR Location**: All ADRs stored in `docs/adr/` directory
 
 **ADR Format**: Following the format established by Michael Nygard:
+
 - **Title**: Short noun phrase (ADR-NNNN: Title)
 - **Status**: Proposed, Accepted, Deprecated, Superseded
 - **Context**: Forces at play, including technical, business, and social
@@ -30,6 +31,7 @@ We will use Architecture Decision Records (ADRs) to document significant archite
 **Title format**: `# N. Title` using adr-tools format (e.g., `# 1. Record Architecture Decisions`). This is required for Structurizr `!adrs` integration.
 
 **What Warrants an ADR**:
+
 - Technology stack choices
 - Architectural patterns adopted
 - DSL design decisions (entity types, syntax choices)
@@ -41,12 +43,14 @@ We will use Architecture Decision Records (ADRs) to document significant archite
 ## Consequences
 
 **Positive**:
+
 - Clear record of why decisions were made
 - Context preserved for future maintainers and AI assistants
 - Reduced repeated discussions about settled decisions
 - Audit trail for architectural evolution
 
 **Negative**:
+
 - Overhead of writing and maintaining ADRs
 - Risk of ADRs becoming outdated if not maintained
 

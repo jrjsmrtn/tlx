@@ -7,6 +7,7 @@ Enable Elixir developers to write formally verifiable TLA+/PlusCal specification
 ## Phases
 
 ### Phase 1: Foundation
+
 **Target**: v0.1.x
 **Focus**: Core DSL, internal IR, TLA+ emitter
 
@@ -18,6 +19,7 @@ Enable Elixir developers to write formally verifiable TLA+/PlusCal specification
 - [ ] Foundational ADRs (0001, 0002, 0003)
 
 ### Phase 2: PlusCal and Concurrency
+
 **Target**: v0.2.x
 **Focus**: Process support, PlusCal emission, temporal properties
 
@@ -30,6 +32,7 @@ Enable Elixir developers to write formally verifiable TLA+/PlusCal specification
 - [ ] TLC integration (invoke TLC as subprocess, parse results)
 
 ### Phase 3: Simulation and Tooling
+
 **Target**: v0.3.x
 **Focus**: Elixir simulator, Mix tasks, developer experience
 
@@ -40,6 +43,7 @@ Enable Elixir developers to write formally verifiable TLA+/PlusCal specification
 - [ ] Spark introspection and documentation generation
 
 ### Phase 4: Production Readiness
+
 **Target**: v1.0.0
 **Focus**: Hardening, documentation, public release
 
@@ -51,4 +55,4 @@ Enable Elixir developers to write formally verifiable TLA+/PlusCal specification
 ## Sprint History
 
 | Sprint | Phase | Version | Summary |
-|--------|-------|---------|---------|
+| ------ | ----- | ------- | ------- |

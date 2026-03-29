@@ -53,6 +53,7 @@ This project follows [AI-Assisted Project Orchestration patterns](https://github
 ### 6. Documentation Framework
 
 **Diátaxis** structure in `docs/`:
+
 - `tutorials/` — learning-oriented
 - `howto/` — problem-oriented
 - `reference/` — information-oriented
@@ -77,10 +78,12 @@ ADRs in `docs/adr/`, sprint plans in `docs/sprints/`, roadmap in `docs/roadmap/`
 **Git hooks** — lefthook (preferred):
 
 **Pre-commit** (fast, <30s):
+
 - Code formatting check (`mix format --check-formatted`)
 - Secret scanning (gitleaks)
 
 **Pre-push** (thorough):
+
 - Static analysis (`mix credo --strict`)
 - Type checking (Dialyzer)
 - Dependency audit (`mix deps.audit`)
@@ -98,12 +101,14 @@ ADRs in `docs/adr/`, sprint plans in `docs/sprints/`, roadmap in `docs/roadmap/`
 ## Consequences
 
 **Positive**:
+
 - Consistent practices across development sessions
 - AI assistants have clear guidance on standards
 - Quality gates catch issues early
 - Automated enforcement reduces review burden
 
 **Negative**:
+
 - Initial setup overhead for tooling
 - Dialyzer PLT build time on first run
 
