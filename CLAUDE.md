@@ -11,9 +11,9 @@ A Spark DSL for writing TLA+/PlusCal specifications, with TLA+ emission for TLC 
 
 ## Current Development Status
 
-- **Current Sprint**: Between sprints (Sprint 1 complete)
-- **Latest Release**: v0.1.1
-- **Next Sprint**: Sprint 2 (planning)
+- **Current Sprint**: Sprint 2 (see docs/sprints/sprint-0002-plan.md)
+- **Sprint Goal**: PlusCal emitter and Mix task
+- **Status**: In Progress
 - **Next Milestone**: v0.1.2
 
 ## Foundational ADRs
