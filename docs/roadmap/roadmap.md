@@ -11,12 +11,12 @@ Enable Elixir developers to write formally verifiable TLA+/PlusCal specification
 **Target**: v0.1.x
 **Focus**: Core DSL, internal IR, TLA+ emitter
 
-- [ ] Spark DSL for variables, constants, init, actions (guard + next)
-- [ ] Internal IR structs (`%Tlx.Spec{}`, `%Tlx.Action{}`, etc.)
-- [ ] TLA+ emitter (generate valid `.tla` files from IR)
-- [ ] Invariant declarations
-- [ ] First example spec: simple state machine
-- [ ] Foundational ADRs (0001, 0002, 0003)
+- [x] Spark DSL for variables, constants, init, actions (guard + next)
+- [x] Internal IR structs (`%Tlx.Spec{}`, `%Tlx.Action{}`, etc.)
+- [x] TLA+ emitter (generate valid `.tla` files from IR)
+- [x] Invariant declarations
+- [x] First example spec: simple state machine
+- [x] Foundational ADRs (0001, 0002, 0003)
 
 ### Phase 2: PlusCal and Concurrency
 
@@ -54,5 +54,6 @@ Enable Elixir developers to write formally verifiable TLA+/PlusCal specification
 
 ## Sprint History
 
-| Sprint | Phase | Version | Summary |
-| ------ | ----- | ------- | ------- |
+| Sprint | Phase      | Version | Summary                                       |
+| ------ | ---------- | ------- | --------------------------------------------- |
+| 1      | Foundation | v0.1.1  | Core DSL (Spark), TLA+ emitter, quality gates |

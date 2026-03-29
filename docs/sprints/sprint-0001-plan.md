@@ -2,7 +2,8 @@
 
 **Target Version**: v0.1.1
 **Phase**: Phase 1: Foundation
-**Status**: In Progress
+**Status**: Complete
+**Completed**: 2026-03-29
 **Started**: 2026-03-29
 
 ## Goal
@@ -60,10 +61,10 @@ Define the Spark DSL core entities (variables, constants, actions, invariants) a
 
 ## Acceptance Criteria
 
-- [ ] A spec defined with the Spark DSL compiles without errors
-- [ ] `Tlx.Emitter.TLA.emit(MySpec)` returns a valid TLA+ string
-- [ ] The emitted TLA+ contains correct MODULE, VARIABLES, Init, Next, and invariant sections
-- [ ] Spark introspection (`Spark.Dsl.Extension.get_entities/2`) returns declared entities
-- [ ] Referencing an undeclared variable in `next` produces a compile-time error
-- [ ] All tests pass
-- [ ] Code quality gates pass (format, credo)
+- [x] A spec defined with the Spark DSL compiles without errors
+- [x] `Tlx.Emitter.TLA.emit(MySpec)` returns a valid TLA+ string
+- [x] The emitted TLA+ contains correct MODULE, VARIABLES, Init, Next, and invariant sections
+- [x] Spark introspection (`Spark.Dsl.Extension.get_entities/2`) returns declared entities
+- [x] Referencing an undeclared variable in `next` produces a compile-time error
+- [x] All tests pass
+- [x] Code quality gates pass (format, credo)

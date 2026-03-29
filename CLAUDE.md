@@ -11,10 +11,10 @@ A Spark DSL for writing TLA+/PlusCal specifications, with TLA+ emission for TLC 
 
 ## Current Development Status
 
-- **Current Sprint**: Sprint 1 (see docs/sprints/sprint-0001-plan.md)
-- **Sprint Goal**: Core DSL skeleton and TLA+ emitter proof-of-concept
-- **Status**: In Progress
-- **Next Milestone**: v0.1.1
+- **Current Sprint**: Between sprints (Sprint 1 complete)
+- **Latest Release**: v0.1.1
+- **Next Sprint**: Sprint 2 (planning)
+- **Next Milestone**: v0.1.2
 
 ## Foundational ADRs
 
@@ -95,6 +95,9 @@ Key TLA+/PlusCal concepts mapped to DSL constructs:
 - Primed variables (`x'` in TLA+) are expressed via `next :var, expr` in the DSL
 - Spark provides introspection, transformers, and verifiers for free
 - The target audience is Elixir developers who want formal verification without learning TLA+ syntax directly
+- Spark entity target structs must include `__identifier__` and `__spark_metadata__` fields
+- Schema options are set as bare calls inside `do` blocks, not as keyword args on entity calls
+- Use `mix usage_rules.search_docs` and `mix usage_rules.docs` to consult Spark API docs
 
 <!-- usage-rules-start -->
 <!-- usage_rules-start -->
