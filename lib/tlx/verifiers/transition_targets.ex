@@ -34,7 +34,11 @@ defmodule Tlx.Verifiers.TransitionTargets do
   end
 
   defp find_bad_target(action, variables) do
-    Enum.find_value(action.transitions, fn transition ->
+    all_transitions =
+      action.transitions ++
+        Enum.flat_map(action.branches, & &1.transitions)
+
+    Enum.find_value(all_transitions, fn transition ->
       unless MapSet.member?(variables, transition.variable), do: transition.variable
     end)
   end

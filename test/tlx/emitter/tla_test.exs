@@ -3,6 +3,30 @@ defmodule Tlx.Emitter.TLATest do
 
   alias Tlx.Emitter.TLA
 
+  defmodule TwoVarSpec do
+    use Tlx.Spec
+
+    variables do
+      variable(:x, default: 0)
+      variable(:y, default: 0)
+    end
+
+    actions do
+      action :inc_x do
+        next(:x, {:expr, quote(do: x + 1)})
+      end
+
+      action :inc_both do
+        next(:x, {:expr, quote(do: x + 1)})
+        next(:y, {:expr, quote(do: y + 1)})
+      end
+    end
+
+    invariants do
+      invariant(:bounded, expr: {:expr, quote(do: x >= 0 and y >= 0)})
+    end
+  end
+
   defmodule Counter do
     use Tlx.Spec
 
@@ -84,6 +108,75 @@ defmodule Tlx.Emitter.TLATest do
       output = TLA.emit(Counter)
 
       assert output =~ "non_negative == x >= 0"
+    end
+  end
+
+  defmodule BranchedSpec do
+    use Tlx.Spec
+
+    variables do
+      variable(:state, default: :reachable)
+    end
+
+    actions do
+      action :provision do
+        guard({:expr, quote(do: state == :reachable)})
+
+        branch :success do
+          next(:state, {:expr, :provisioned})
+        end
+
+        branch :failure do
+          next(:state, {:expr, :degraded})
+        end
+      end
+    end
+
+    invariants do
+    end
+  end
+
+  describe "either/or branches" do
+    test "emits disjunction for branched actions" do
+      output = TLA.emit(BranchedSpec)
+
+      assert output =~ "provision =="
+      # TLA+ uses = for equality (Elixir == maps to TLA+ =)
+      assert output =~ "state = reachable"
+      assert output =~ "\\/"
+      assert output =~ "state' = provisioned"
+      assert output =~ "state' = degraded"
+    end
+  end
+
+  describe "multi-variable specs" do
+    test "emits UNCHANGED for untouched variables" do
+      output = TLA.emit(TwoVarSpec)
+
+      # inc_x only touches x, so y must be UNCHANGED
+      assert output =~ "UNCHANGED << y >>"
+    end
+
+    test "no UNCHANGED when all variables are touched" do
+      output = TLA.emit(TwoVarSpec)
+
+      # inc_both touches both x and y — no UNCHANGED line in that action
+      [_, inc_both_block] = String.split(output, "inc_both ==")
+      [inc_both_body, _] = String.split(inc_both_block, "Next ==")
+      refute inc_both_body =~ "UNCHANGED"
+    end
+
+    test "emits Init with all variables" do
+      output = TLA.emit(TwoVarSpec)
+
+      assert output =~ "/\\ x = 0"
+      assert output =~ "/\\ y = 0"
+    end
+
+    test "emits compound invariants" do
+      output = TLA.emit(TwoVarSpec)
+
+      assert output =~ "bounded == (x >= 0 /\\ y >= 0)"
     end
   end
 end

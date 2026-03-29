@@ -83,19 +83,42 @@ defmodule Tlx.Emitter.TLA do
   end
 
   defp emit_action(action, all_variables) do
-    parts = []
+    if action.branches != [] do
+      emit_branched_action(action, all_variables)
+    else
+      emit_simple_action(action, all_variables)
+    end
+  end
 
-    parts =
-      if action.guard do
-        [format_guard(action.guard) | parts]
-      else
-        parts
-      end
+  defp emit_simple_action(action, all_variables) do
+    guard_parts = if action.guard, do: [format_guard(action.guard)], else: []
+    transition_parts = format_transitions(action.transitions, all_variables)
+    body = guard_parts ++ transition_parts
 
-    transition_vars = MapSet.new(action.transitions, & &1.variable)
+    "#{Atom.to_string(action.name)} ==\n#{Enum.join(body, "\n")}\n"
+  end
+
+  defp emit_branched_action(action, all_variables) do
+    guard_parts = if action.guard, do: [format_guard(action.guard)], else: []
+
+    branch_lines =
+      Enum.map(action.branches, fn branch ->
+        branch_guard = if branch.guard, do: [format_guard(branch.guard)], else: []
+        transitions = format_transitions(branch.transitions, all_variables)
+        Enum.join(branch_guard ++ transitions, "\n")
+      end)
+
+    disjunction = Enum.map_join(branch_lines, "\n    \\/ ", &"#{&1}")
+    body = guard_parts ++ ["    \\/ #{disjunction}"]
+
+    "#{Atom.to_string(action.name)} ==\n#{Enum.join(body, "\n")}\n"
+  end
+
+  defp format_transitions(transitions, all_variables) do
+    transition_vars = MapSet.new(transitions, & &1.variable)
 
     transition_parts =
-      Enum.map(action.transitions, fn t ->
+      Enum.map(transitions, fn t ->
         "    /\\ #{Atom.to_string(t.variable)}' = #{format_expr(t.expr)}"
       end)
 
@@ -107,9 +130,7 @@ defmodule Tlx.Emitter.TLA do
         vars -> ["    /\\ UNCHANGED << #{Enum.map_join(vars, ", ", &Atom.to_string/1)} >>"]
       end
 
-    body = Enum.reverse(parts) ++ transition_parts ++ unchanged
-
-    "#{Atom.to_string(action.name)} ==\n#{Enum.join(body, "\n")}\n"
+    transition_parts ++ unchanged
   end
 
   defp emit_next([]), do: nil
@@ -186,7 +207,10 @@ defmodule Tlx.Emitter.TLA do
   defp format_ast(other), do: inspect(other)
 
   defp format_value(val) when is_integer(val), do: Integer.to_string(val)
-  defp format_value(val) when is_atom(val) and val not in [true, false, nil], do: inspect(val)
+
+  defp format_value(val) when is_atom(val) and val not in [true, false, nil],
+    do: "\"#{Atom.to_string(val)}\""
+
   defp format_value(true), do: "TRUE"
   defp format_value(false), do: "FALSE"
   defp format_value(val) when is_binary(val), do: inspect(val)

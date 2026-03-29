@@ -58,6 +58,28 @@ defmodule Tlx.Dsl do
     describe: "Declare a model constant."
   }
 
+  @branch %Spark.Dsl.Entity{
+    name: :branch,
+    target: Tlx.Branch,
+    args: [:name],
+    identifier: :name,
+    schema: [
+      name: [
+        type: :atom,
+        required: true,
+        doc: "Branch name (for documentation)."
+      ],
+      guard: [
+        type: :any,
+        doc: "A quoted boolean expression that must be true for this branch."
+      ]
+    ],
+    entities: [
+      transitions: [@transition]
+    ],
+    describe: "A non-deterministic branch within an action (either/or)."
+  }
+
   @action %Spark.Dsl.Entity{
     name: :action,
     target: Tlx.Action,
@@ -75,7 +97,8 @@ defmodule Tlx.Dsl do
       ]
     ],
     entities: [
-      transitions: [@transition]
+      transitions: [@transition],
+      branches: [@branch]
     ],
     describe: "Define a guarded state transition."
   }
