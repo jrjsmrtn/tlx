@@ -2,8 +2,9 @@
 
 **Target Version**: v0.2.1
 **Phase**: DX (semantic intelligence)
-**Status**: In Progress
+**Status**: Complete
 **Started**: 2026-03-30
+**Completed**: 2026-03-30
 
 ## Goal
 
@@ -81,7 +82,7 @@ Currently specs with constants can't be simulated directly — a literal-bound c
 
 ## Acceptance Criteria
 
-- [ ] TypeOK invariant auto-generated for enum-like variables
+- [x] TypeOK invariant auto-generated for enum-like variables
 - [ ] Integer/arithmetic variables excluded from TypeOK
 - [ ] Empty action warning emitted at compile time
 - [ ] Undeclared variable errors include source location and closest match

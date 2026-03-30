@@ -11,10 +11,10 @@ A Spark DSL for writing TLA+/PlusCal specifications, with TLA+ emission for TLC 
 
 ## Current Development Status
 
-- **Current Sprint**: Sprint 9 (see docs/sprints/sprint-0009-plan.md)
-- **Sprint Goal**: DSL semantic improvements
-- **Status**: In Progress
-- **Next Milestone**: v0.2.1
+- **Current Sprint**: Between sprints (Sprint 9 complete)
+- **Latest Release**: v0.2.1
+- **Status**: Phases 1-5 complete
+- **Next Milestone**: v0.2.2
 
 ## Foundational ADRs
 

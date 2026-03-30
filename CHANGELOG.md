@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-03-30
+
+### Added
+
+- Auto-generated TypeOK invariant for enum-like variables
+- Empty action compile-time warning (actions with no transitions)
+- "Did you mean?" suggestions for undeclared variable errors (Levenshtein)
+- Source location in verifier error messages
+- Simulator constant injection: `simulate(Spec, constants: %{max: 3})`
+
 ## [0.2.0] - 2026-03-30
 
 ### Added
