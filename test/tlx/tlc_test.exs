@@ -1,7 +1,7 @@
-defmodule Tlx.TLCTest do
+defmodule TLX.TLCTest do
   use ExUnit.Case
 
-  alias Tlx.TLC
+  alias TLX.TLC
 
   describe "parse_messages/1" do
     test "parses tool-mode delimited messages" do

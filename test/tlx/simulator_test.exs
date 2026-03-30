@@ -1,10 +1,10 @@
-defmodule Tlx.SimulatorTest do
+defmodule TLX.SimulatorTest do
   use ExUnit.Case
 
-  alias Tlx.Simulator
+  alias TLX.Simulator
 
   defmodule CorrectCounter do
-    use Tlx.Spec
+    use TLX.Spec
 
     variable(:x, 0)
 
@@ -22,7 +22,7 @@ defmodule Tlx.SimulatorTest do
   end
 
   defmodule BuggyCounter do
-    use Tlx.Spec
+    use TLX.Spec
 
     variable(:x, 0)
 
@@ -54,7 +54,7 @@ defmodule Tlx.SimulatorTest do
 
   describe "simulator with deadlock" do
     defmodule DeadlockSpec do
-      use Tlx.Spec
+      use TLX.Spec
 
       variable(:x, 0)
 

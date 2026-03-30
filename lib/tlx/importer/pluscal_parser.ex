@@ -1,7 +1,7 @@
-defmodule Tlx.Importer.PlusCalParser do
+defmodule TLX.Importer.PlusCalParser do
   @moduledoc """
   Parses PlusCal algorithms (C-syntax and P-syntax) embedded in `.tla` files
-  into a structured map compatible with `Tlx.Importer.Codegen`.
+  into a structured map compatible with `TLX.Importer.Codegen`.
   """
 
   @doc """
@@ -37,12 +37,12 @@ defmodule Tlx.Importer.PlusCalParser do
     }
   end
 
-  alias Tlx.Importer.Codegen
+  alias TLX.Importer.Codegen
 
   @doc """
-  Convert parsed PlusCal into Tlx DSL source code.
+  Convert parsed PlusCal into TLX DSL source code.
 
-  Delegates to `Tlx.Importer.Codegen.to_tlx/1`.
+  Delegates to `TLX.Importer.Codegen.to_tlx/1`.
   """
   def to_tlx(parsed) do
     Codegen.to_tlx(parsed)

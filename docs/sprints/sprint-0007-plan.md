@@ -21,7 +21,7 @@ Prepare for public release: add a producer-consumer example, write a getting-sta
 ### 2. Getting Started Tutorial
 
 - `docs/tutorials/getting-started.md` — from zero to emitted TLA+
-- Covers: `use Tlx.Spec`, variables, actions, invariants, `mix tlx.emit`, `mix tlx.simulate`
+- Covers: `use TLX.Spec`, variables, actions, invariants, `mix tlx.emit`, `mix tlx.simulate`
 - Self-contained, copy-pasteable examples
 
 ### 3. Hex.pm Package Prep

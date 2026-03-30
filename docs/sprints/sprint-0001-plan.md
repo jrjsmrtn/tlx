@@ -14,22 +14,22 @@ Define the Spark DSL core entities (variables, constants, actions, invariants) a
 
 ### 1. Internal IR Structs
 
-- `Tlx.Spec` — top-level spec struct (module name, variables, constants, actions, invariants)
-- `Tlx.Variable` — name, type, default value
-- `Tlx.Constant` — name
-- `Tlx.Action` — name, guard (quoted expr), transitions (list of `{var, quoted_expr}`)
-- `Tlx.Invariant` — name, expression (quoted expr)
+- `TLX.Spec` — top-level spec struct (module name, variables, constants, actions, invariants)
+- `TLX.Variable` — name, type, default value
+- `TLX.Constant` — name
+- `TLX.Action` — name, guard (quoted expr), transitions (list of `{var, quoted_expr}`)
+- `TLX.Invariant` — name, expression (quoted expr)
 
 ### 2. Spark DSL Extension
 
-- `Tlx.Dsl` — Spark extension defining entities: variables, constants, actions, invariants
-- `use Tlx.Spec` macro that wires up Spark
+- `TLX.Dsl` — Spark extension defining entities: variables, constants, actions, invariants
+- `use TLX.Spec` macro that wires up Spark
 - Spark transformers: validate variable references in actions, validate invariant references
 - Spark verifiers: all `next` targets must be declared variables
 
 ### 3. TLA+ Emitter
 
-- `Tlx.Emitter.TLA` — takes a compiled spec (via Spark introspection) and emits a `.tla` string
+- `TLX.Emitter.TLA` — takes a compiled spec (via Spark introspection) and emits a `.tla` string
 - Handles: MODULE header, EXTENDS, CONSTANTS, VARIABLES, Init, actions as operators, Next (disjunction of actions), invariant definitions, footer
 - Does not handle: PlusCal, processes, temporal properties (Phase 2)
 
@@ -55,14 +55,14 @@ Define the Spark DSL core entities (variables, constants, actions, invariants) a
 | Create | `lib/tlx/invariant.ex`                  |
 | Create | `lib/tlx/dsl.ex` (Spark extension)      |
 | Create | `lib/tlx/emitter/tla.ex` (TLA+ emitter) |
-| Modify | `lib/tlx.ex` (add `use Tlx.Spec` macro) |
+| Modify | `lib/tlx.ex` (add `use TLX.Spec` macro) |
 | Create | `test/tlx/dsl_test.exs`                 |
 | Create | `test/tlx/emitter/tla_test.exs`         |
 
 ## Acceptance Criteria
 
 - [x] A spec defined with the Spark DSL compiles without errors
-- [x] `Tlx.Emitter.TLA.emit(MySpec)` returns a valid TLA+ string
+- [x] `TLX.Emitter.TLA.emit(MySpec)` returns a valid TLA+ string
 - [x] The emitted TLA+ contains correct MODULE, VARIABLES, Init, Next, and invariant sections
 - [x] Spark introspection (`Spark.Dsl.Extension.get_entities/2`) returns declared entities
 - [x] Referencing an undeclared variable in `next` produces a compile-time error

@@ -1,12 +1,12 @@
-defmodule Tlx.Emitter.Elixir do
+defmodule TLX.Emitter.Elixir do
   @moduledoc """
-  Emits Tlx DSL source code from a compiled spec module.
+  Emits TLX DSL source code from a compiled spec module.
 
   Useful for documentation, code generation, and round-trip verification.
   """
 
   alias Spark.Dsl.Extension
-  alias Tlx.Emitter.Format
+  alias TLX.Emitter.Format
 
   @symbols Format.elixir_symbols()
 
@@ -22,7 +22,7 @@ defmodule Tlx.Emitter.Elixir do
 
     [
       "defmodule #{module_name} do",
-      "  use Tlx.Spec",
+      "  use TLX.Spec",
       "",
       emit_variables(variables),
       emit_constants(constants),

@@ -8,7 +8,7 @@
 - [ ] Identify forbidden state pairs
 - [ ] Write safety invariants (properties that must always hold)
 - [ ] Write liveness properties if applicable (properties about eventual behavior)
-- [ ] Create the abstract TLx spec with `# ADR: NNNN` header
+- [ ] Create the abstract TLX spec with `# ADR: NNNN` header
 - [ ] Run TLC on the abstract spec — all invariants pass
 - [ ] Record the spec file path in the ADR
 
@@ -17,7 +17,7 @@
 - [ ] Implement the state machine in Elixir (GenServer/:gen_statem)
 - [ ] Generate concrete spec skeleton OR write by hand
 - [ ] Add `# ADR: NNNN` and `# Source: lib/...` header to concrete spec
-- [ ] For each callback clause, create a corresponding TLx action
+- [ ] For each callback clause, create a corresponding TLX action
 - [ ] Model non-deterministic outcomes as branches (success/failure)
 - [ ] Model sub-states as separate variables
 - [ ] Add the same invariants from the abstract spec

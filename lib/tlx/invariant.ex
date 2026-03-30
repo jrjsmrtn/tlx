@@ -1,4 +1,4 @@
-defmodule Tlx.Invariant do
+defmodule TLX.Invariant do
   @moduledoc false
   defstruct [:name, :expr, :__identifier__, :__spark_metadata__]
 end

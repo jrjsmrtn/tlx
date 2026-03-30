@@ -1,14 +1,14 @@
-defmodule Tlx.RefinementTest do
+defmodule TLX.RefinementTest do
   use ExUnit.Case
 
-  alias Tlx.Emitter.Config
-  alias Tlx.Emitter.TLA
-  alias Tlx.TLC
+  alias TLX.Emitter.Config
+  alias TLX.Emitter.TLA
+  alias TLX.TLC
 
   # --- Abstract spec: a simple counter ---
 
   defmodule AbstractCounter do
-    use Tlx.Spec
+    use TLX.Spec
 
     variable :count, 0
 
@@ -23,7 +23,7 @@ defmodule Tlx.RefinementTest do
   # --- Concrete spec: two sub-counters that refine the abstract counter ---
 
   defmodule ConcreteCounter do
-    use Tlx.Spec
+    use TLX.Spec
 
     variable :a, 0
     variable :b, 0

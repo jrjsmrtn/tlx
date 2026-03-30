@@ -21,7 +21,7 @@ Build confidence through real-world examples and complete the Diátaxis document
 - Safety: at most one leader per term
 - Liveness: a leader is eventually elected
 
-Validates Tlx on a non-trivial distributed protocol.
+Validates TLX on a non-trivial distributed protocol.
 
 ### 2. Two-Phase Commit Spec
 
@@ -34,12 +34,12 @@ Validates Tlx on a non-trivial distributed protocol.
 
 ### 3. How-To Guides (Diátaxis)
 
-- `docs/howto/model-state-machine.md` — from GenStateMachine to Tlx spec
+- `docs/howto/model-state-machine.md` — from GenStateMachine to TLX spec
 - `docs/howto/find-race-conditions.md` — using the simulator to find concurrency bugs
 - `docs/howto/run-tlc.md` — full TLC verification workflow
 
 ### 4. Explanation Pages (Diátaxis)
 
-- `docs/explanation/why-formal-verification.md` — when and why to use Tlx
+- `docs/explanation/why-formal-verification.md` — when and why to use TLX
 - `docs/explanation/tlx-vs-pluscal.md` — comparison with PlusCal syntax and capabilities
 - `docs/explanation/tla-vs-property-testing.md` — TLA+ vs StreamData/PropEr

@@ -1,4 +1,4 @@
-defmodule Tlx.Process do
+defmodule TLX.Process do
   @moduledoc false
   defstruct [
     :name,

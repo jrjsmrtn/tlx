@@ -1,10 +1,10 @@
-defmodule Tlx.Emitter.PlusCalPTest do
+defmodule TLX.Emitter.PlusCalPTest do
   use ExUnit.Case
 
-  alias Tlx.Emitter.PlusCalP
+  alias TLX.Emitter.PlusCalP
 
   defmodule Counter do
-    use Tlx.Spec
+    use TLX.Spec
 
     variable(:x, type: :integer, default: 0)
 
@@ -23,7 +23,7 @@ defmodule Tlx.Emitter.PlusCalPTest do
   end
 
   defmodule Provisioner do
-    use Tlx.Spec
+    use TLX.Spec
 
     variable(:state, :reachable)
 
@@ -41,7 +41,7 @@ defmodule Tlx.Emitter.PlusCalPTest do
   end
 
   defmodule MutexSpec do
-    use Tlx.Spec
+    use TLX.Spec
 
     variable(:flag, [])
 

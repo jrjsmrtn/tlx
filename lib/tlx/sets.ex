@@ -1,4 +1,4 @@
-defmodule Tlx.Sets do
+defmodule TLX.Sets do
   @moduledoc """
   Set operation constructors for use in TLA+ expressions.
 

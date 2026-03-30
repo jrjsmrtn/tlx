@@ -1,11 +1,11 @@
-defmodule Tlx.Integration.TLCTest do
+defmodule TLX.Integration.TLCTest do
   use ExUnit.Case
 
-  alias Tlx.Emitter.Config
-  alias Tlx.Emitter.PlusCal
-  alias Tlx.Emitter.PlusCalP
-  alias Tlx.Emitter.TLA
-  alias Tlx.TLC
+  alias TLX.Emitter.Config
+  alias TLX.Emitter.PlusCal
+  alias TLX.Emitter.PlusCalP
+  alias TLX.Emitter.TLA
+  alias TLX.TLC
 
   @moduletag :integration
 
@@ -14,7 +14,7 @@ defmodule Tlx.Integration.TLCTest do
   # --- Test specs defined inline ---
 
   defmodule CorrectCounter do
-    use Tlx.Spec
+    use TLX.Spec
 
     variable :x, 0
 
@@ -32,7 +32,7 @@ defmodule Tlx.Integration.TLCTest do
   end
 
   defmodule BuggyCounter do
-    use Tlx.Spec
+    use TLX.Spec
 
     variable :x, 0
 

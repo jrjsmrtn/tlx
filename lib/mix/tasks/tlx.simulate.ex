@@ -1,6 +1,6 @@
-defmodule Mix.Tasks.Tlx.Simulate do
+defmodule Mix.Tasks.TLX.Simulate do
   @moduledoc """
-  Run random walk simulations on a Tlx.Spec module.
+  Run random walk simulations on a TLX.Spec module.
 
   ## Usage
 
@@ -16,7 +16,7 @@ defmodule Mix.Tasks.Tlx.Simulate do
 
   use Mix.Task
 
-  @shortdoc "Run random walk simulations on a Tlx.Spec module"
+  @shortdoc "Run random walk simulations on a TLX.Spec module"
 
   @switches [steps: :integer, runs: :integer, seed: :integer]
   @aliases [s: :steps, r: :runs]
@@ -47,14 +47,14 @@ defmodule Mix.Tasks.Tlx.Simulate do
       "Simulating #{module} (#{sim_opts[:runs] || 1000} runs, #{sim_opts[:steps] || 100} max steps)..."
     )
 
-    case Tlx.Simulator.simulate(module, sim_opts) do
+    case TLX.Simulator.simulate(module, sim_opts) do
       {:ok, stats} ->
         Mix.shell().info(
           "OK: #{stats.runs} runs, max depth #{stats.max_depth}, #{stats.deadlocks} deadlocks"
         )
 
       {:error, violation, trace} ->
-        Mix.shell().error(Tlx.Trace.format_violation(violation, trace))
+        Mix.shell().error(TLX.Trace.format_violation(violation, trace))
         Mix.raise("Simulation failed")
     end
   end

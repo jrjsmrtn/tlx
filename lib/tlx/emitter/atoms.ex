@@ -1,4 +1,4 @@
-defmodule Tlx.Emitter.Atoms do
+defmodule TLX.Emitter.Atoms do
   @moduledoc """
   Collects all atom literal values used in a spec's variables, transitions,
   and branches. These need to be declared as TLA+ model value constants.

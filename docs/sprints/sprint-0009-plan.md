@@ -59,7 +59,7 @@ Spark verifier that warns when an action touches zero variables out of the total
 Allow the simulator to resolve constants by accepting model values:
 
 ```elixir
-Tlx.Simulator.simulate(MySpec,
+TLX.Simulator.simulate(MySpec,
   runs: 1000,
   constants: %{max_buf: 3}
 )

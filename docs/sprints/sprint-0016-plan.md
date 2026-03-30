@@ -16,7 +16,7 @@ Sprint 12 built a regex-based TLA+ importer (best-effort). Sprint 15 fixes the P
 
 ### 1. NimbleParsec TLA+ Parser
 
-Replace `Tlx.Importer.TlaParser` regex extraction with a proper parser:
+Replace `TLX.Importer.TlaParser` regex extraction with a proper parser:
 
 - Parse MODULE header, EXTENDS, VARIABLES, CONSTANTS
 - Parse operator definitions (Name == expr)
@@ -43,13 +43,13 @@ Replace string concatenation in `mix tlx.import` and `mix tlx.gen.from_state_mac
 
 ### 4. Round-Trip Fidelity Tests
 
-- Tlx → TLA+ → import → Tlx: structure preserved
-- Tlx → PlusCal → import → Tlx: structure preserved
+- TLX → TLA+ → import → TLX: structure preserved
+- TLX → PlusCal → import → TLX: structure preserved
 - External TLA+ → import → emit → compare: invariants match
 
 ## Acceptance Criteria
 
-- [x] NimbleParsec parser handles all TLA+ output from Tlx emitter
+- [x] NimbleParsec parser handles all TLA+ output from TLX emitter
 - [x] PlusCal parser handles both C-syntax and P-syntax
 - [x] Code.format_string!/1 generates correctly formatted Elixir code (Igniter not needed)
 - [x] Round-trip tests pass

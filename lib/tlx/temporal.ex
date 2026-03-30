@@ -1,4 +1,4 @@
-defmodule Tlx.Temporal do
+defmodule TLX.Temporal do
   @moduledoc """
   Temporal operators, quantifiers, and expression helpers for use in
   property, invariant, and action expressions.

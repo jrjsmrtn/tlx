@@ -1,4 +1,4 @@
-defmodule Tlx.Emitter.Format do
+defmodule TLX.Emitter.Format do
   @moduledoc """
   Shared AST formatting parameterized by symbol tables.
 

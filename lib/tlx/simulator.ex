@@ -1,6 +1,6 @@
-defmodule Tlx.Simulator do
+defmodule TLX.Simulator do
   @moduledoc """
-  Random walk state exploration for Tlx specs.
+  Random walk state exploration for TLX specs.
 
   Evaluates guards and transitions in Elixir without TLC,
   checking invariants at each state. Useful for fast development feedback.

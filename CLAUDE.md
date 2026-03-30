@@ -1,4 +1,4 @@
-# TLx
+# TLX
 
 A Spark DSL for writing TLA+/PlusCal specifications, with TLA+ emission for TLC model checking and an optional Elixir simulation mode.
 
@@ -28,7 +28,7 @@ Read these at the start of each AI session for complete context:
 
 ## Architecture
 
-TLx has three layers:
+TLX has three layers:
 
 ```
 ┌─────────────────────────────┐
@@ -38,7 +38,7 @@ TLx has three layers:
              │ Spark Transformers
              ▼
 ┌─────────────────────────────┐
-│  Internal IR                │  ← %Tlx.Spec{variables, actions, ...}
+│  Internal IR                │  ← %TLX.Spec{variables, actions, ...}
 │  (plain Elixir structs)     │
 └────────┬───────────┬────────┘
          │           │

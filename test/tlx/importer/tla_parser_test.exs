@@ -1,7 +1,7 @@
-defmodule Tlx.Importer.TlaParserTest do
+defmodule TLX.Importer.TlaParserTest do
   use ExUnit.Case
 
-  alias Tlx.Importer.TlaParser
+  alias TLX.Importer.TlaParser
 
   @simple_tla """
   ---- MODULE Counter ----
@@ -85,7 +85,7 @@ defmodule Tlx.Importer.TlaParserTest do
       assert length(parsed.actions) >= 6
     end
 
-    test "generates valid Tlx source" do
+    test "generates valid TLX source" do
       parsed = TlaParser.parse(@simple_tla)
       tlx_source = TlaParser.to_tlx(parsed)
 

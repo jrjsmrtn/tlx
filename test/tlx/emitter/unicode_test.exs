@@ -1,7 +1,7 @@
-defmodule Tlx.Emitter.UnicodeTest do
+defmodule TLX.Emitter.UnicodeTest do
   use ExUnit.Case
 
-  alias Tlx.Emitter.Unicode
+  alias TLX.Emitter.Unicode
 
   Code.require_file("examples/mutex.ex", File.cwd!())
   Code.require_file("examples/producer_consumer.ex", File.cwd!())

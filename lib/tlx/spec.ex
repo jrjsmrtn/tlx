@@ -1,9 +1,9 @@
-defmodule Tlx.Spec do
+defmodule TLX.Spec do
   @moduledoc """
   Use this module to define a TLA+ specification.
 
       defmodule MySpec do
-        use Tlx.Spec
+        use TLX.Spec
 
         variables do
           variable :x, default: 0
@@ -23,7 +23,7 @@ defmodule Tlx.Spec do
 
   Or use the shorthand `defspec`:
 
-      import Tlx
+      import TLX
 
       defspec MySpec do
         variables do
@@ -45,6 +45,6 @@ defmodule Tlx.Spec do
 
   use Spark.Dsl,
     default_extensions: [
-      extensions: [Tlx.Dsl]
+      extensions: [TLX.Dsl]
     ]
 end

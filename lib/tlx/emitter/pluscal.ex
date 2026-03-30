@@ -1,11 +1,11 @@
-defmodule Tlx.Emitter.PlusCal do
+defmodule TLX.Emitter.PlusCal do
   @moduledoc """
-  Emits a PlusCal algorithm (C-syntax) from a compiled `Tlx.Spec` module,
+  Emits a PlusCal algorithm (C-syntax) from a compiled `TLX.Spec` module,
   wrapped in a valid `.tla` file.
   """
 
   alias Spark.Dsl.Extension
-  alias Tlx.Emitter.Format
+  alias TLX.Emitter.Format
 
   @symbols Format.pluscal_symbols()
 

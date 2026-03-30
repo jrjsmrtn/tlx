@@ -1,4 +1,4 @@
-defmodule Tlx.Verifiers.EmptyAction do
+defmodule TLX.Verifiers.EmptyAction do
   @moduledoc false
   use Spark.Dsl.Verifier
 

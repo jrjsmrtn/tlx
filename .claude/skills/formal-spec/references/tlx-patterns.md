@@ -1,4 +1,4 @@
-# Common TLx Patterns for State Machine Modeling
+# Common TLX Patterns for State Machine Modeling
 
 ## Pattern: Enumerated States
 
@@ -13,7 +13,7 @@ action :activate do
 end
 ```
 
-TLx auto-generates a `type_ok` invariant when it detects multiple atom
+TLX auto-generates a `type_ok` invariant when it detects multiple atom
 values assigned to a variable.
 
 ## Pattern: Non-Deterministic Outcome

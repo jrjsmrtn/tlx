@@ -1,7 +1,7 @@
-defmodule Tlx.TraceTest do
+defmodule TLX.TraceTest do
   use ExUnit.Case
 
-  alias Tlx.Trace
+  alias TLX.Trace
 
   @trace [
     %{x: 0, y: 0},

@@ -1,4 +1,4 @@
-# TLx Roadmap
+# TLX Roadmap
 
 ## Vision
 
@@ -12,7 +12,7 @@ Enable Elixir developers to write formally verifiable TLA+/PlusCal specification
 **Focus**: Core DSL, internal IR, TLA+ emitter
 
 - [x] Spark DSL for variables, constants, init, actions (guard + next)
-- [x] Internal IR structs (`%Tlx.Spec{}`, `%Tlx.Action{}`, etc.)
+- [x] Internal IR structs (`%TLX.Spec{}`, `%TLX.Action{}`, etc.)
 - [x] TLA+ emitter (generate valid `.tla` files from IR)
 - [x] Invariant declarations
 - [x] First example spec: simple state machine
@@ -80,7 +80,7 @@ Enable Elixir developers to write formally verifiable TLA+/PlusCal specification
 
 - [ ] `mix tlx.watch` — auto-simulate on save
 - [ ] `mix tlx.list` — discover spec modules
-- [x] Extract shared AST formatting into `Tlx.Emitter.Format` (symbol-table-parameterized)
+- [x] Extract shared AST formatting into `TLX.Emitter.Format` (symbol-table-parameterized)
 - [ ] CI integration template
 
 ### Phase 8: Forge Integration (complete)
@@ -88,8 +88,8 @@ Enable Elixir developers to write formally verifiable TLA+/PlusCal specification
 **Target**: v0.3.x
 **Focus**: Bridge to the original motivation
 
-- [x] GenStateMachine → Tlx skeleton generator
-- [x] TLA+ → Tlx importer
+- [x] GenStateMachine → TLX skeleton generator
+- [x] TLA+ → TLX importer
 - [x] Forge example specs — 6 abstract (from ADRs) + 6 concrete (from code), all TLC-verified
 - [x] Refinement checking — concrete specs refine abstract specs via INSTANCE/WITH
 
@@ -133,7 +133,7 @@ Sprint 16 — Proper parsers and AST-based code gen:
 - [x] Raft leader election spec
 - [x] Two-phase commit spec
 - [ ] How-to guides (model state machines, find race conditions, run TLC)
-- [ ] Explanation pages (why formal verification, Tlx vs PlusCal, TLA+ vs property testing)
+- [ ] Explanation pages (why formal verification, TLX vs PlusCal, TLA+ vs property testing)
 
 ## Sprint History
 

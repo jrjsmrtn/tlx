@@ -1,10 +1,10 @@
-defmodule Tlx.Emitter.ConfigTest do
+defmodule TLX.Emitter.ConfigTest do
   use ExUnit.Case
 
-  alias Tlx.Emitter.Config
+  alias TLX.Emitter.Config
 
   defmodule CounterSpec do
-    use Tlx.Spec
+    use TLX.Spec
 
     variable(:x, 0)
 

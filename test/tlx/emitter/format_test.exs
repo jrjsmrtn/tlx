@@ -1,7 +1,7 @@
-defmodule Tlx.Emitter.FormatTest do
+defmodule TLX.Emitter.FormatTest do
   use ExUnit.Case
 
-  alias Tlx.Emitter.Format
+  alias TLX.Emitter.Format
 
   # Build a simple AST node for testing: variable reference
   defp var_ast(name), do: {name, [], nil}

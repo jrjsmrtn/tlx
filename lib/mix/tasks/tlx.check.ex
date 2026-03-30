@@ -1,4 +1,4 @@
-defmodule Mix.Tasks.Tlx.Check do
+defmodule Mix.Tasks.TLX.Check do
   @moduledoc """
   Emit a PlusCal spec, translate to TLA+, and run TLC model checker.
 
@@ -17,10 +17,10 @@ defmodule Mix.Tasks.Tlx.Check do
 
   use Mix.Task
 
-  alias Tlx.Emitter
-  alias Tlx.TLC
+  alias TLX.Emitter
+  alias TLX.TLC
 
-  @shortdoc "Run TLC model checker on a Tlx.Spec module"
+  @shortdoc "Run TLC model checker on a TLX.Spec module"
 
   @switches [tla2tools: :string, model_values: [:string, :keep], workers: :string]
   @aliases [t: :tla2tools, m: :model_values, w: :workers]

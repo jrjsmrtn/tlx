@@ -1,4 +1,4 @@
-defmodule Tlx.Expr do
+defmodule TLX.Expr do
   @moduledoc """
   Provides the `e/1` macro for capturing Elixir expressions as TLA+ AST.
 
@@ -50,6 +50,6 @@ defmodule Tlx.Expr do
   end
 
   defmacro transitions(keyword) do
-    quote do: Tlx.Expr.next(unquote(keyword))
+    quote do: TLX.Expr.next(unquote(keyword))
   end
 end

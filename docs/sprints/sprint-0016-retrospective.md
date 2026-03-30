@@ -7,9 +7,9 @@
 
 1. **NimbleParsec TLA+ parser** — replaced regex-based `TlaParser.parse/1` with NimbleParsec combinators. Handles MODULE header, EXTENDS, VARIABLES/CONSTANTS, operator definitions spanning multiple lines, footer. Added `nimble_parsec` as a direct dependency.
 
-2. **PlusCal parser** — new `Tlx.Importer.PlusCalParser` module. Parses both C-syntax (braces) and P-syntax (begin/end). Extracts variables, actions, branches (either/or), and process blocks from PlusCal algorithms embedded in `.tla` files.
+2. **PlusCal parser** — new `TLX.Importer.PlusCalParser` module. Parses both C-syntax (braces) and P-syntax (begin/end). Extracts variables, actions, branches (either/or), and process blocks from PlusCal algorithms embedded in `.tla` files.
 
-3. **AST-based codegen** — new `Tlx.Importer.Codegen` module. Builds Elixir source via `Code.format_string!/1` for guaranteed syntactically correct output. Both parsers and `gen.from_state_machine` delegate to it. Removed ~80 lines of duplicated string-concatenation emission code.
+3. **AST-based codegen** — new `TLX.Importer.Codegen` module. Builds Elixir source via `Code.format_string!/1` for guaranteed syntactically correct output. Both parsers and `gen.from_state_machine` delegate to it. Removed ~80 lines of duplicated string-concatenation emission code.
 
 4. **Mix task updates** — `mix tlx.import --format pluscal` support.
 

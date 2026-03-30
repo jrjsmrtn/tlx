@@ -7,7 +7,7 @@
 **Technical learnings**:
 
 - TLA+ parsing with regex is fragile but sufficient for our own emitter's output format
-- The round-trip test (Tlx → TLA+ → import → verify) is the best validation of the parser
+- The round-trip test (TLX → TLA+ → import → verify) is the best validation of the parser
 - GenStateMachine introspection from beam files is limited — pattern-match clauses aren't accessible, so source parsing is the fallback
 - Never use perl regex to edit Elixir code — use Igniter or manual editing
 

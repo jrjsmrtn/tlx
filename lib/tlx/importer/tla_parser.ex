@@ -1,9 +1,9 @@
-defmodule Tlx.Importer.TlaParser do
+defmodule TLX.Importer.TlaParser do
   @moduledoc """
   Parses a subset of TLA+ syntax into a structured map using NimbleParsec,
-  then delegates to `Tlx.Importer.Codegen` for Tlx DSL emission.
+  then delegates to `TLX.Importer.Codegen` for TLX DSL emission.
 
-  Handles TLA+ output from Tlx's own emitter and simple hand-written specs.
+  Handles TLA+ output from TLX's own emitter and simple hand-written specs.
   """
 
   import NimbleParsec
@@ -150,12 +150,12 @@ defmodule Tlx.Importer.TlaParser do
     end
   end
 
-  alias Tlx.Importer.Codegen
+  alias TLX.Importer.Codegen
 
   @doc """
-  Convert parsed TLA+ into Tlx DSL source code.
+  Convert parsed TLA+ into TLX DSL source code.
 
-  Delegates to `Tlx.Importer.Codegen.to_tlx/1`.
+  Delegates to `TLX.Importer.Codegen.to_tlx/1`.
   """
   def to_tlx(parsed) do
     Codegen.to_tlx(parsed)

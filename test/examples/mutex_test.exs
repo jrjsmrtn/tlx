@@ -1,9 +1,9 @@
 defmodule Examples.MutexTest do
   use ExUnit.Case
 
-  alias Tlx.Emitter.PlusCal
-  alias Tlx.Emitter.TLA
-  alias Tlx.Simulator
+  alias TLX.Emitter.PlusCal
+  alias TLX.Emitter.TLA
+  alias TLX.Simulator
 
   # Load both correct and buggy examples
   Code.require_file("examples/mutex.ex", File.cwd!())

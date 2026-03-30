@@ -3,7 +3,7 @@
 # The implementation splits the count into two independent sub-counters.
 # The refinement mapping proves that a + b behaves like the abstract count.
 
-import Tlx
+import TLX
 
 defspec ConcreteCounter do
   variable :a, 0

@@ -1,4 +1,4 @@
-# TLx Sprints
+# TLX Sprints
 
 ## Current Status
 

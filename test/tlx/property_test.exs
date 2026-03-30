@@ -1,12 +1,12 @@
-defmodule Tlx.PropertyTest do
+defmodule TLX.PropertyTest do
   use ExUnit.Case
 
   alias Spark.Dsl.Extension
-  alias Tlx.Emitter.Config
-  alias Tlx.Emitter.TLA
+  alias TLX.Emitter.Config
+  alias TLX.Emitter.TLA
 
   defmodule LivenessSpec do
-    use Tlx.Spec
+    use TLX.Spec
 
     variable(:x, 0)
 
@@ -81,7 +81,7 @@ defmodule Tlx.PropertyTest do
 
   describe "quantifiers in invariants" do
     defmodule QuantifierSpec do
-      use Tlx.Spec
+      use TLX.Spec
 
       variable(:flags, [])
 

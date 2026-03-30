@@ -1,13 +1,13 @@
 defmodule Examples.ProducerConsumer do
   @moduledoc """
-  Bounded buffer producer-consumer in the Tlx DSL.
+  Bounded buffer producer-consumer in the TLX DSL.
 
   A producer adds items to a buffer (up to a max size),
   a consumer removes items. The invariant guarantees the
   buffer never exceeds its bound or goes negative.
   """
 
-  use Tlx.Spec
+  use TLX.Spec
 
   variable :buf_size, 0
   variable :produced, 0

@@ -1,6 +1,6 @@
-defmodule Mix.Tasks.Tlx.Import do
+defmodule Mix.Tasks.TLX.Import do
   @moduledoc """
-  Import a TLA+ or PlusCal specification file into Tlx DSL syntax.
+  Import a TLA+ or PlusCal specification file into TLX DSL syntax.
 
   ## Usage
 
@@ -16,10 +16,10 @@ defmodule Mix.Tasks.Tlx.Import do
 
   use Mix.Task
 
-  alias Tlx.Importer.PlusCalParser
-  alias Tlx.Importer.TlaParser
+  alias TLX.Importer.PlusCalParser
+  alias TLX.Importer.TlaParser
 
-  @shortdoc "Import a TLA+ or PlusCal file into Tlx DSL syntax"
+  @shortdoc "Import a TLA+ or PlusCal file into TLX DSL syntax"
 
   @switches [output: :string, format: :string]
   @aliases [o: :output, f: :format]

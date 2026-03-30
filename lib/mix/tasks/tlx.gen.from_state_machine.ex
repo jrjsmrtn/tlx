@@ -1,6 +1,6 @@
-defmodule Mix.Tasks.Tlx.Gen.FromStateMachine do
+defmodule Mix.Tasks.TLX.Gen.FromStateMachine do
   @moduledoc """
-  Generate a Tlx spec skeleton from a GenStateMachine module.
+  Generate a TLX spec skeleton from a GenStateMachine module.
 
   ## Usage
 
@@ -13,9 +13,9 @@ defmodule Mix.Tasks.Tlx.Gen.FromStateMachine do
 
   use Mix.Task
 
-  alias Tlx.Importer.Codegen
+  alias TLX.Importer.Codegen
 
-  @shortdoc "Generate a Tlx spec skeleton from a GenStateMachine module"
+  @shortdoc "Generate a TLX spec skeleton from a GenStateMachine module"
 
   @switches [output: :string]
   @aliases [o: :output]

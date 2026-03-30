@@ -1,10 +1,10 @@
-defmodule Tlx.DslTest do
+defmodule TLX.DslTest do
   use ExUnit.Case
 
   alias Spark.Dsl.Extension
 
   defmodule Counter do
-    use Tlx.Spec
+    use TLX.Spec
 
     variable(:x, type: :integer, default: 0)
 

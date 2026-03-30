@@ -1,4 +1,4 @@
-defmodule Tlx.TLC do
+defmodule TLX.TLC do
   @moduledoc """
   Invokes TLC model checker as a Java subprocess using `-tool` mode
   for structured, machine-parseable output.

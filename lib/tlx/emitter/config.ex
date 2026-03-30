@@ -1,10 +1,10 @@
-defmodule Tlx.Emitter.Config do
+defmodule TLX.Emitter.Config do
   @moduledoc """
-  Generates TLC model configuration (`.cfg`) files from a compiled `Tlx.Spec` module.
+  Generates TLC model configuration (`.cfg`) files from a compiled `TLX.Spec` module.
   """
 
   alias Spark.Dsl.Extension
-  alias Tlx.Emitter.Atoms
+  alias TLX.Emitter.Atoms
 
   @doc """
   Generate a `.cfg` string for TLC from a compiled spec module.

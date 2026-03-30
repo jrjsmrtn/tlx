@@ -1,6 +1,6 @@
-defmodule Tlx.Emitter.Unicode do
+defmodule TLX.Emitter.Unicode do
   @moduledoc """
-  Pretty-prints a Tlx spec using Unicode mathematical symbols.
+  Pretty-prints a TLX spec using Unicode mathematical symbols.
 
   Output uses:
   - ≜  for definitions (==)
@@ -19,7 +19,7 @@ defmodule Tlx.Emitter.Unicode do
   """
 
   alias Spark.Dsl.Extension
-  alias Tlx.Emitter.Format
+  alias TLX.Emitter.Format
 
   @symbols Format.unicode_symbols()
 

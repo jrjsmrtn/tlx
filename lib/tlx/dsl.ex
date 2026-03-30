@@ -1,9 +1,9 @@
-defmodule Tlx.Dsl do
+defmodule TLX.Dsl do
   @moduledoc false
 
   @transition %Spark.Dsl.Entity{
     name: :next,
-    target: Tlx.Transition,
+    target: TLX.Transition,
     args: [:variable, :expr],
     schema: [
       variable: [
@@ -22,7 +22,7 @@ defmodule Tlx.Dsl do
 
   @variable %Spark.Dsl.Entity{
     name: :variable,
-    target: Tlx.Variable,
+    target: TLX.Variable,
     args: [:name, {:optional, :default}],
     identifier: :name,
     schema: [
@@ -45,7 +45,7 @@ defmodule Tlx.Dsl do
 
   @constant %Spark.Dsl.Entity{
     name: :constant,
-    target: Tlx.Constant,
+    target: TLX.Constant,
     args: [:name],
     identifier: :name,
     schema: [
@@ -60,7 +60,7 @@ defmodule Tlx.Dsl do
 
   @with_choice %Spark.Dsl.Entity{
     name: :pick,
-    target: Tlx.WithChoice,
+    target: TLX.WithChoice,
     args: [:variable, :set],
     schema: [
       variable: [
@@ -82,7 +82,7 @@ defmodule Tlx.Dsl do
 
   @branch %Spark.Dsl.Entity{
     name: :branch,
-    target: Tlx.Branch,
+    target: TLX.Branch,
     args: [:name],
     identifier: :name,
     schema: [
@@ -104,7 +104,7 @@ defmodule Tlx.Dsl do
 
   @action %Spark.Dsl.Entity{
     name: :action,
-    target: Tlx.Action,
+    target: TLX.Action,
     args: [:name],
     identifier: :name,
     schema: [
@@ -138,7 +138,7 @@ defmodule Tlx.Dsl do
 
   @invariant %Spark.Dsl.Entity{
     name: :invariant,
-    target: Tlx.Invariant,
+    target: TLX.Invariant,
     args: [:name, :expr],
     identifier: :name,
     schema: [
@@ -158,7 +158,7 @@ defmodule Tlx.Dsl do
 
   @init_constraint %Spark.Dsl.Entity{
     name: :constraint,
-    target: Tlx.InitConstraint,
+    target: TLX.InitConstraint,
     args: [:expr],
     schema: [
       expr: [
@@ -174,7 +174,7 @@ defmodule Tlx.Dsl do
     name: :initial,
     describe: "Custom initial state constraints (added to auto-generated Init).",
     entities: [@init_constraint],
-    imports: [Tlx.Expr, Tlx.Temporal, Tlx.Sets]
+    imports: [TLX.Expr, TLX.Temporal, TLX.Sets]
   }
 
   @variables %Spark.Dsl.Section{
@@ -196,7 +196,7 @@ defmodule Tlx.Dsl do
     describe: "Guarded state transitions.",
     top_level?: true,
     entities: [@action],
-    imports: [Tlx.Expr, Tlx.Temporal, Tlx.Sets]
+    imports: [TLX.Expr, TLX.Temporal, TLX.Sets]
   }
 
   @invariants %Spark.Dsl.Section{
@@ -204,12 +204,12 @@ defmodule Tlx.Dsl do
     describe: "Safety invariants checked at every reachable state.",
     top_level?: true,
     entities: [@invariant],
-    imports: [Tlx.Expr, Tlx.Temporal, Tlx.Sets]
+    imports: [TLX.Expr, TLX.Temporal, TLX.Sets]
   }
 
   @process %Spark.Dsl.Entity{
     name: :process,
-    target: Tlx.Process,
+    target: TLX.Process,
     args: [:name],
     identifier: :name,
     schema: [
@@ -240,12 +240,12 @@ defmodule Tlx.Dsl do
     describe: "Concurrent process declarations.",
     top_level?: true,
     entities: [@process],
-    imports: [Tlx.Expr, Tlx.Temporal, Tlx.Sets]
+    imports: [TLX.Expr, TLX.Temporal, TLX.Sets]
   }
 
   @property %Spark.Dsl.Entity{
     name: :property,
-    target: Tlx.Property,
+    target: TLX.Property,
     args: [:name, :expr],
     identifier: :name,
     schema: [
@@ -268,12 +268,12 @@ defmodule Tlx.Dsl do
     describe: "Temporal properties checked over infinite traces.",
     top_level?: true,
     entities: [@property],
-    imports: [Tlx.Expr, Tlx.Temporal, Tlx.Sets]
+    imports: [TLX.Expr, TLX.Temporal, TLX.Sets]
   }
 
   @refinement_mapping %Spark.Dsl.Entity{
     name: :mapping,
-    target: Tlx.RefinementMapping,
+    target: TLX.RefinementMapping,
     args: [:variable, :expr],
     schema: [
       variable: [
@@ -292,7 +292,7 @@ defmodule Tlx.Dsl do
 
   @refines %Spark.Dsl.Entity{
     name: :refines,
-    target: Tlx.Refinement,
+    target: TLX.Refinement,
     args: [:module],
     identifier: :module,
     schema: [
@@ -313,7 +313,7 @@ defmodule Tlx.Dsl do
     describe: "Refinement mappings to abstract specs.",
     top_level?: true,
     entities: [@refines],
-    imports: [Tlx.Expr, Tlx.Temporal, Tlx.Sets]
+    imports: [TLX.Expr, TLX.Temporal, TLX.Sets]
   }
 
   use Spark.Dsl.Extension,
@@ -327,8 +327,8 @@ defmodule Tlx.Dsl do
       @properties,
       @refinements
     ],
-    transformers: [Tlx.Transformers.TypeOK],
-    verifiers: [Tlx.Verifiers.TransitionTargets, Tlx.Verifiers.EmptyAction]
+    transformers: [TLX.Transformers.TypeOK],
+    verifiers: [TLX.Verifiers.TransitionTargets, TLX.Verifiers.EmptyAction]
 
   @doc false
   def merge_await(%{await: nil} = action), do: {:ok, action}

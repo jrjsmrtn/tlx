@@ -1,16 +1,16 @@
-defmodule Tlx.Importer.RoundTripTest do
+defmodule TLX.Importer.RoundTripTest do
   use ExUnit.Case
 
-  alias Tlx.Emitter.PlusCal
-  alias Tlx.Emitter.PlusCalP
-  alias Tlx.Emitter.TLA
-  alias Tlx.Importer.PlusCalParser
-  alias Tlx.Importer.TlaParser
+  alias TLX.Emitter.PlusCal
+  alias TLX.Emitter.PlusCalP
+  alias TLX.Emitter.TLA
+  alias TLX.Importer.PlusCalParser
+  alias TLX.Importer.TlaParser
 
   # --- Test specs ---
 
   defmodule Counter do
-    use Tlx.Spec
+    use TLX.Spec
 
     variable(:x, type: :integer, default: 0)
 
@@ -29,7 +29,7 @@ defmodule Tlx.Importer.RoundTripTest do
   end
 
   defmodule Provisioner do
-    use Tlx.Spec
+    use TLX.Spec
 
     variable(:state, :reachable)
 

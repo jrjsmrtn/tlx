@@ -1,8 +1,8 @@
 defmodule Examples.RaftLeaderTest do
   use ExUnit.Case
 
-  alias Tlx.Emitter.TLA
-  alias Tlx.Simulator
+  alias TLX.Emitter.TLA
+  alias TLX.Simulator
 
   Code.require_file("examples/raft_leader.ex", File.cwd!())
 

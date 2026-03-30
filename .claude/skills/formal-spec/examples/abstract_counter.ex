@@ -3,7 +3,7 @@
 # Invariant: count never exceeds 3
 # This represents the design intent, not the implementation.
 
-import Tlx
+import TLX
 
 defspec AbstractCounter do
   variable :count, 0

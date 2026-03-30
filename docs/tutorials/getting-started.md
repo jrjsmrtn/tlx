@@ -1,6 +1,6 @@
-# Getting Started with Tlx
+# Getting Started with TLX
 
-Tlx lets you write TLA+/PlusCal specifications in Elixir using a Spark DSL, then emit them for model checking with TLC or simulate them directly in Elixir.
+TLX lets you write TLA+/PlusCal specifications in Elixir using a Spark DSL, then emit them for model checking with TLC or simulate them directly in Elixir.
 
 ## Installation
 
@@ -21,7 +21,7 @@ Then run `mix deps.get`.
 Create a file `lib/my_counter.ex`:
 
 ```elixir
-import Tlx
+import TLX
 
 defspec MyCounter do
   variable :x, 0
@@ -130,7 +130,7 @@ This emits `WF_vars(increment)` in the TLA+ `Spec` formula.
 
 ## Temporal Properties
 
-Use `Tlx.Temporal` for liveness properties:
+Use `TLX.Temporal` for liveness properties:
 
 ```elixir
 property :eventually_resets, always(eventually(e(x == 0)))

@@ -1,14 +1,14 @@
-defmodule Tlx.ExpressivenessTest do
+defmodule TLX.ExpressivenessTest do
   use ExUnit.Case
 
-  alias Tlx.Emitter.PlusCal
-  alias Tlx.Emitter.PlusCalP
-  alias Tlx.Emitter.TLA
+  alias TLX.Emitter.PlusCal
+  alias TLX.Emitter.PlusCalP
+  alias TLX.Emitter.TLA
 
   # --- Test specs ---
 
   defmodule IteSpec do
-    use Tlx.Spec
+    use TLX.Spec
 
     variable(:x, type: :integer, default: 5)
 
@@ -20,7 +20,7 @@ defmodule Tlx.ExpressivenessTest do
   end
 
   defmodule SetSpec do
-    use Tlx.Spec
+    use TLX.Spec
 
     variable(:items, [])
 
@@ -30,7 +30,7 @@ defmodule Tlx.ExpressivenessTest do
   end
 
   defmodule LetInSpec do
-    use Tlx.Spec
+    use TLX.Spec
 
     variable(:x, type: :integer, default: 0)
     variable(:y, type: :integer, default: 0)
@@ -41,7 +41,7 @@ defmodule Tlx.ExpressivenessTest do
   end
 
   defmodule InitSpec do
-    use Tlx.Spec
+    use TLX.Spec
 
     variable(:x, type: :integer, default: 0)
 
@@ -55,7 +55,7 @@ defmodule Tlx.ExpressivenessTest do
   end
 
   defmodule PickSpec do
-    use Tlx.Spec
+    use TLX.Spec
 
     variable(:current, :none)
 

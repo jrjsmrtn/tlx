@@ -8,7 +8,7 @@
 
 ## Goal
 
-Verify the full pipeline end-to-end against a real TLC subprocess: emit TLA+/PlusCal from Tlx specs, run TLC, and confirm pass/fail matches expectations. Currently all TLC-related tests are unit-level (mocked output parsing).
+Verify the full pipeline end-to-end against a real TLC subprocess: emit TLA+/PlusCal from TLX specs, run TLC, and confirm pass/fail matches expectations. Currently all TLC-related tests are unit-level (mocked output parsing).
 
 ## Prerequisites
 

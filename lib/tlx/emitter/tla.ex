@@ -1,11 +1,11 @@
-defmodule Tlx.Emitter.TLA do
+defmodule TLX.Emitter.TLA do
   @moduledoc """
-  Emits a TLA+ module from a compiled `Tlx.Spec` module.
+  Emits a TLA+ module from a compiled `TLX.Spec` module.
   """
 
   alias Spark.Dsl.Extension
-  alias Tlx.Emitter.Atoms
-  alias Tlx.Emitter.Format
+  alias TLX.Emitter.Atoms
+  alias TLX.Emitter.Format
 
   @symbols Format.tla_symbols()
 

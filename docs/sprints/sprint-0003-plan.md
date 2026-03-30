@@ -28,14 +28,14 @@ Enable concurrent actor specifications with `process` declarations and close the
 
 ### 3. TLC Integration
 
-- `Tlx.TLC` module — invokes TLC as a Java subprocess
+- `TLX.TLC` module — invokes TLC as a Java subprocess
 - Parses TLC stdout for: success, invariant violation, deadlock, liveness violation
 - Extracts counterexample traces on failure
 - Requires `tla2tools.jar` (user-provided path or auto-detected)
 
 ### 4. `.cfg` File Generation
 
-- `Tlx.Emitter.Config` — generates TLC model configuration
+- `TLX.Emitter.Config` — generates TLC model configuration
 - Emits SPECIFICATION, CONSTANTS (with model values), INVARIANTS
 - Constants with finite sets for model checking (e.g., `Nodes = {n1, n2}`)
 

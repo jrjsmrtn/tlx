@@ -1,7 +1,7 @@
-defmodule Tlx.Importer.PlusCalParserTest do
+defmodule TLX.Importer.PlusCalParserTest do
   use ExUnit.Case
 
-  alias Tlx.Importer.PlusCalParser
+  alias TLX.Importer.PlusCalParser
 
   @c_syntax_counter """
   ---- MODULE Counter ----
@@ -198,7 +198,7 @@ defmodule Tlx.Importer.PlusCalParserTest do
   end
 
   describe "code generation" do
-    test "generates valid Tlx source from C-syntax" do
+    test "generates valid TLX source from C-syntax" do
       parsed = PlusCalParser.parse(@c_syntax_counter)
       source = PlusCalParser.to_tlx(parsed)
 

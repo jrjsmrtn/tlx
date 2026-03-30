@@ -1,6 +1,6 @@
-defmodule Tlx.Importer.Codegen do
+defmodule TLX.Importer.Codegen do
   @moduledoc """
-  Generates Tlx DSL source code from a parsed spec map.
+  Generates TLX DSL source code from a parsed spec map.
 
   Builds Elixir source strings using `Code.format_string!/1` for
   guaranteed syntactically correct output. Accepts the standard parsed
@@ -8,7 +8,7 @@ defmodule Tlx.Importer.Codegen do
   """
 
   @doc """
-  Convert a parsed spec map into formatted Tlx DSL source code.
+  Convert a parsed spec map into formatted TLX DSL source code.
 
   The map should contain:
     * `:module_name` — string
@@ -25,7 +25,7 @@ defmodule Tlx.Importer.Codegen do
 
     parts =
       [
-        "import Tlx\n",
+        "import TLX\n",
         "defspec #{module_name} do",
         emit_variables(parsed[:variables] || [], defaults),
         emit_constants(parsed[:constants] || []),
@@ -42,7 +42,7 @@ defmodule Tlx.Importer.Codegen do
   end
 
   @doc """
-  Generate a Tlx spec skeleton from GenStateMachine callback info.
+  Generate a TLX spec skeleton from GenStateMachine callback info.
 
   Accepts:
     * `spec_name` — string module name
@@ -75,7 +75,7 @@ defmodule Tlx.Importer.Codegen do
       end
 
     source = """
-    import Tlx
+    import TLX
 
     # Generated from #{inspect(source_module)}
     # Review and complete invariants and properties.

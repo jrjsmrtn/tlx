@@ -1,4 +1,4 @@
-defmodule Tlx.Verifiers.EmptyActionTest do
+defmodule TLX.Verifiers.EmptyActionTest do
   use ExUnit.Case
 
   import ExUnit.CaptureIO
@@ -7,7 +7,7 @@ defmodule Tlx.Verifiers.EmptyActionTest do
     warnings =
       capture_io(:stderr, fn ->
         defmodule EmptyActionSpec do
-          use Tlx.Spec
+          use TLX.Spec
 
           variable :x, 0
 

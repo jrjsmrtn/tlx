@@ -2,15 +2,15 @@
 name: formal-spec
 description: >
   This skill should be used when the user asks to "write a spec",
-  "formally specify", "create a TLx spec from an ADR",
+  "formally specify", "create a TLX spec from an ADR",
   "verify a state machine", "check refinement", "generate a concrete spec",
   "compare abstract and concrete specs", or discusses formal verification
   of state machines, GenServers, or gen_statem modules.
 ---
 
-# Formal Specification Workflow with TLx
+# Formal Specification Workflow with TLX
 
-TLx enables formal verification of state machines by writing declarative
+TLX enables formal verification of state machines by writing declarative
 specs in Elixir and model-checking them with TLC. This skill covers the
 full lifecycle: design-time abstract specs, implementation-time concrete
 specs, and CI-time refinement checking.
@@ -38,7 +38,7 @@ any module where an ADR describes valid/invalid state transitions.
 4. **Invariants** — properties that must hold in every reachable state
 5. **Liveness** — properties about eventual behavior (optional)
 
-### Write the abstract TLx spec
+### Write the abstract TLX spec
 
 Every spec file starts with a cross-reference header:
 
@@ -51,7 +51,7 @@ Every spec file starts with a cross-reference header:
 - `Source:` — relative path to the implementation (omit for abstract-only specs)
 
 ```elixir
-import Tlx
+import TLX
 
 defspec AbstractFirmware do
   variable :state, :idle
@@ -103,13 +103,13 @@ This produces a skeleton with TODO comments. Complete it by:
 
 ### Option B: Write by hand from source
 
-Read the implementation and translate each callback clause into a TLx
+Read the implementation and translate each callback clause into a TLX
 action. For each action, identify:
 
 - **Guard**: the pattern match conditions (state, sub-state)
 - **Transitions**: the `{:next_state, new_state, data}` returns
 - **Branches**: when a provider call may succeed or fail
-- **UNCHANGED**: variables not modified (TLx handles this automatically)
+- **UNCHANGED**: variables not modified (TLX handles this automatically)
 
 ### Key patterns for concrete specs
 
@@ -244,7 +244,7 @@ end
 ### Reference Files
 
 - **`references/workflow-checklist.md`** — Step-by-step checklist for the full workflow
-- **`references/tlx-patterns.md`** — Common TLx patterns for modeling state machines
+- **`references/tlx-patterns.md`** — Common TLX patterns for modeling state machines
 
 ### Examples
 

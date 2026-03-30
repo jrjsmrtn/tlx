@@ -9,7 +9,7 @@
 
 2. **PlusCal C-syntax pcal.trans compatibility** — fixed algorithm opening (`(* --algorithm Name {`), closing (`} *)`), added `\* BEGIN/END TRANSLATION` markers. pcal.trans now accepts emitter output for both simple and process-based specs.
 
-3. **PlusCal P-syntax emitter** — new `Tlx.Emitter.PlusCalP` module with `begin`/`end algorithm;`, `end process;`, `end either;` syntax. Available as `--format pluscal-p` in `mix tlx.emit`.
+3. **PlusCal P-syntax emitter** — new `TLX.Emitter.PlusCalP` module with `begin`/`end algorithm;`, `end process;`, `end either;` syntax. Available as `--format pluscal-p` in `mix tlx.emit`.
 
 4. **Integration tests** — 2 new tests: C-syntax and P-syntax full pipeline (emit → pcal.trans → TLC → verify).
 

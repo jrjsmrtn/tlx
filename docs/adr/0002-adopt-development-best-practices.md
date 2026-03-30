@@ -8,7 +8,7 @@ Accepted
 
 ## Context
 
-TLx is a library project using Elixir and Spark. We need consistent development practices that enable high-quality, maintainable code while supporting AI-assisted development workflows.
+TLX is a library project using Elixir and Spark. We need consistent development practices that enable high-quality, maintainable code while supporting AI-assisted development workflows.
 
 This project follows [AI-Assisted Project Orchestration patterns](https://github.com/jrjsmrtn/ai-assisted-project-orchestration).
 

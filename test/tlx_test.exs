@@ -1,4 +1,4 @@
 defmodule TlxTest do
   use ExUnit.Case
-  doctest Tlx
+  doctest TLX
 end

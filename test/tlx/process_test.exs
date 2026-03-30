@@ -1,10 +1,10 @@
-defmodule Tlx.ProcessTest do
+defmodule TLX.ProcessTest do
   use ExUnit.Case
 
   alias Spark.Dsl.Extension
 
   defmodule MutualExclusion do
-    use Tlx.Spec
+    use TLX.Spec
 
     variable(:flag, [])
 

@@ -1,6 +1,6 @@
-defmodule Mix.Tasks.Tlx.Emit do
+defmodule Mix.Tasks.TLX.Emit do
   @moduledoc """
-  Emit a TLA+ or PlusCal specification from a compiled Tlx.Spec module.
+  Emit a TLA+ or PlusCal specification from a compiled TLX.Spec module.
 
   ## Usage
 
@@ -16,9 +16,9 @@ defmodule Mix.Tasks.Tlx.Emit do
 
   use Mix.Task
 
-  alias Tlx.Emitter
+  alias TLX.Emitter
 
-  @shortdoc "Emit TLA+ or PlusCal from a Tlx.Spec module"
+  @shortdoc "Emit TLA+ or PlusCal from a TLX.Spec module"
 
   @switches [format: :string, output: :string]
   @aliases [f: :format, o: :output]

@@ -23,7 +23,7 @@ Sprint 1 delivered the core DSL and a TLA+ emitter. The emitter works for simple
 
 ### 2. PlusCal Emitter
 
-- `Tlx.Emitter.PlusCal` — generates PlusCal C-syntax from compiled specs
+- `TLX.Emitter.PlusCal` — generates PlusCal C-syntax from compiled specs
 - Single-process algorithm (no `process` declarations yet — Phase 2)
 - Labels derived from action names
 - `await` from guard expressions
@@ -42,7 +42,7 @@ Sprint 1 delivered the core DSL and a TLA+ emitter. The emitter works for simple
 - `mix tlx.emit MySpec` — emits TLA+ to stdout (default)
 - `mix tlx.emit MySpec --format pluscal` — emits PlusCal
 - `mix tlx.emit MySpec --output path/to/file.tla` — writes to file
-- Discovers spec modules via `use Tlx.Spec`
+- Discovers spec modules via `use TLX.Spec`
 
 ### 5. Tests
 
@@ -67,7 +67,7 @@ Sprint 1 delivered the core DSL and a TLA+ emitter. The emitter works for simple
 ## Acceptance Criteria
 
 - [x] A spec with 2+ variables emits correct UNCHANGED clauses
-- [x] `Tlx.Emitter.PlusCal.emit(MySpec)` returns valid PlusCal C-syntax
+- [x] `TLX.Emitter.PlusCal.emit(MySpec)` returns valid PlusCal C-syntax
 - [x] PlusCal output includes algorithm header, labels, await, assignments
 - [x] `either/or` branches emit correctly in both TLA+ and PlusCal
 - [x] `mix tlx.emit MySpec` works from the CLI

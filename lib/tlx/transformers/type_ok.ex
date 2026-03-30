@@ -1,4 +1,4 @@
-defmodule Tlx.Transformers.TypeOK do
+defmodule TLX.Transformers.TypeOK do
   @moduledoc false
   use Spark.Dsl.Transformer
 
@@ -34,7 +34,7 @@ defmodule Tlx.Transformers.TypeOK do
     end
   end
 
-  def after?(Tlx.Verifiers.TransitionTargets), do: false
+  def after?(TLX.Verifiers.TransitionTargets), do: false
   def after?(_), do: false
 
   defp collect_values(variables, actions) do
@@ -86,7 +86,7 @@ defmodule Tlx.Transformers.TypeOK do
       _ ->
         expr = build_conjunction(clauses)
 
-        %Tlx.Invariant{
+        %TLX.Invariant{
           name: :type_ok,
           expr: expr,
           __identifier__: :type_ok

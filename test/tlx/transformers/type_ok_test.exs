@@ -1,11 +1,11 @@
-defmodule Tlx.Transformers.TypeOKTest do
+defmodule TLX.Transformers.TypeOKTest do
   use ExUnit.Case
 
   alias Spark.Dsl.Extension
-  alias Tlx.Emitter.TLA
+  alias TLX.Emitter.TLA
 
   defmodule EnumSpec do
-    use Tlx.Spec
+    use TLX.Spec
 
     variable :state, :idle
 
@@ -26,7 +26,7 @@ defmodule Tlx.Transformers.TypeOKTest do
   end
 
   defmodule IntegerSpec do
-    use Tlx.Spec
+    use TLX.Spec
 
     variable :x, 0
 
@@ -36,7 +36,7 @@ defmodule Tlx.Transformers.TypeOKTest do
   end
 
   defmodule MixedSpec do
-    use Tlx.Spec
+    use TLX.Spec
 
     variable :pc, :idle
     variable :counter, 0
@@ -52,7 +52,7 @@ defmodule Tlx.Transformers.TypeOKTest do
   end
 
   defmodule ManualTypeOK do
-    use Tlx.Spec
+    use TLX.Spec
 
     variable :x, :a
 

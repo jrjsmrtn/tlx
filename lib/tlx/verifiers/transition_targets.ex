@@ -1,4 +1,4 @@
-defmodule Tlx.Verifiers.TransitionTargets do
+defmodule TLX.Verifiers.TransitionTargets do
   @moduledoc false
   use Spark.Dsl.Verifier
 
