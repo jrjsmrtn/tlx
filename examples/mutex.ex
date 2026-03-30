@@ -41,69 +41,57 @@ defmodule Examples.Mutex do
 
   use Tlx.Spec
 
-  alias Tlx.Temporal
+  variable :pc1, :idle
+  variable :pc2, :idle
+  variable :turn, 1
+  variable :flag1, false
+  variable :flag2, false
 
-  variables do
-    variable(:pc1, default: :idle)
-    variable(:pc2, default: :idle)
-    variable(:turn, default: 1)
-    variable(:flag1, default: false)
-    variable(:flag2, default: false)
+  # Process 1: set flag, yield turn to process 2, then wait
+  action :p1_try do
+    guard e(pc1 == :idle)
+    next :flag1, true
+    next :turn, 2
+    next :pc1, :waiting
   end
 
-  actions do
-    # Process 1: set flag, yield turn to process 2, then wait
-    action :p1_try do
-      guard({:expr, quote(do: pc1 == :idle)})
-      next(:flag1, {:expr, true})
-      next(:turn, {:expr, 2})
-      next(:pc1, {:expr, :waiting})
-    end
-
-    action :p1_enter do
-      fairness(:weak)
-      guard({:expr, quote(do: pc1 == :waiting and (flag2 == false or turn == 1))})
-      next(:pc1, {:expr, :cs})
-    end
-
-    action :p1_exit do
-      guard({:expr, quote(do: pc1 == :cs)})
-      next(:flag1, {:expr, false})
-      next(:pc1, {:expr, :idle})
-    end
-
-    # Process 2: set flag, yield turn to process 1, then wait
-    action :p2_try do
-      guard({:expr, quote(do: pc2 == :idle)})
-      next(:flag2, {:expr, true})
-      next(:turn, {:expr, 1})
-      next(:pc2, {:expr, :waiting})
-    end
-
-    action :p2_enter do
-      fairness(:weak)
-      guard({:expr, quote(do: pc2 == :waiting and (flag1 == false or turn == 2))})
-      next(:pc2, {:expr, :cs})
-    end
-
-    action :p2_exit do
-      guard({:expr, quote(do: pc2 == :cs)})
-      next(:flag2, {:expr, false})
-      next(:pc2, {:expr, :idle})
-    end
+  action :p1_enter do
+    fairness :weak
+    guard e(pc1 == :waiting and (flag2 == false or turn == 1))
+    next :pc1, :cs
   end
 
-  invariants do
-    invariant(:mutual_exclusion,
-      expr: {:expr, quote(do: not (pc1 == :cs and pc2 == :cs))}
-    )
+  action :p1_exit do
+    guard e(pc1 == :cs)
+    next :flag1, false
+    next :pc1, :idle
   end
 
-  properties do
-    property(:p1_eventually_enters,
-      expr: Temporal.always(Temporal.eventually({:expr, quote(do: pc1 == :cs)}))
-    )
+  # Process 2: set flag, yield turn to process 1, then wait
+  action :p2_try do
+    guard e(pc2 == :idle)
+    next :flag2, true
+    next :turn, 1
+    next :pc2, :waiting
   end
+
+  action :p2_enter do
+    fairness :weak
+    guard e(pc2 == :waiting and (flag1 == false or turn == 2))
+    next :pc2, :cs
+  end
+
+  action :p2_exit do
+    guard e(pc2 == :cs)
+    next :flag2, false
+    next :pc2, :idle
+  end
+
+  invariant :mutual_exclusion,
+            e(not (pc1 == :cs and pc2 == :cs))
+
+  property :p1_eventually_enters,
+           always(eventually(e(pc1 == :cs)))
 end
 
 defmodule Examples.MutexBuggy do
@@ -125,62 +113,52 @@ defmodule Examples.MutexBuggy do
 
   use Tlx.Spec
 
-  variables do
-    variable(:pc1, default: :idle)
-    variable(:pc2, default: :idle)
-    variable(:turn, default: 1)
-    variable(:flag1, default: false)
-    variable(:flag2, default: false)
+  variable :pc1, :idle
+  variable :pc2, :idle
+  variable :turn, 1
+  variable :flag1, false
+  variable :flag2, false
+
+  # BUG: turn is NOT set here — it should be
+  action :p1_try do
+    guard e(pc1 == :idle)
+    next :flag1, true
+    next :pc1, :waiting
   end
 
-  actions do
-    # BUG: turn is NOT set here — it should be
-    action :p1_try do
-      guard({:expr, quote(do: pc1 == :idle)})
-      next(:flag1, {:expr, true})
-      next(:pc1, {:expr, :waiting})
-    end
-
-    action :p1_enter do
-      guard({:expr, quote(do: pc1 == :waiting and (flag2 == false or turn == 1))})
-      next(:pc1, {:expr, :cs})
-    end
-
-    # BUG: turn is set here instead of in p1_try
-    action :p1_exit do
-      guard({:expr, quote(do: pc1 == :cs)})
-      next(:flag1, {:expr, false})
-      next(:turn, {:expr, 2})
-      next(:pc1, {:expr, :idle})
-    end
-
-    # BUG: turn is NOT set here — it should be
-    action :p2_try do
-      guard({:expr, quote(do: pc2 == :idle)})
-      next(:flag2, {:expr, true})
-      next(:pc2, {:expr, :waiting})
-    end
-
-    action :p2_enter do
-      guard({:expr, quote(do: pc2 == :waiting and (flag1 == false or turn == 2))})
-      next(:pc2, {:expr, :cs})
-    end
-
-    # BUG: turn is set here instead of in p2_try
-    action :p2_exit do
-      guard({:expr, quote(do: pc2 == :cs)})
-      next(:flag2, {:expr, false})
-      next(:turn, {:expr, 1})
-      next(:pc2, {:expr, :idle})
-    end
+  action :p1_enter do
+    guard e(pc1 == :waiting and (flag2 == false or turn == 1))
+    next :pc1, :cs
   end
 
-  invariants do
-    invariant(:mutual_exclusion,
-      expr: {:expr, quote(do: not (pc1 == :cs and pc2 == :cs))}
-    )
+  # BUG: turn is set here instead of in p1_try
+  action :p1_exit do
+    guard e(pc1 == :cs)
+    next :flag1, false
+    next :turn, 2
+    next :pc1, :idle
   end
 
-  properties do
+  # BUG: turn is NOT set here — it should be
+  action :p2_try do
+    guard e(pc2 == :idle)
+    next :flag2, true
+    next :pc2, :waiting
   end
+
+  action :p2_enter do
+    guard e(pc2 == :waiting and (flag1 == false or turn == 2))
+    next :pc2, :cs
+  end
+
+  # BUG: turn is set here instead of in p2_try
+  action :p2_exit do
+    guard e(pc2 == :cs)
+    next :flag2, false
+    next :turn, 1
+    next :pc2, :idle
+  end
+
+  invariant :mutual_exclusion,
+            e(not (pc1 == :cs and pc2 == :cs))
 end

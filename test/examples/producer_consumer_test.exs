@@ -52,34 +52,25 @@ defmodule Examples.ProducerConsumerLiteral do
   # Version with literal bound for simulator (no constants)
   use Tlx.Spec
 
-  variables do
-    variable :buf_size, default: 0
-    variable :produced, default: 0
-    variable :consumed, default: 0
+  variable :buf_size, 0
+  variable :produced, 0
+  variable :consumed, 0
+
+  action :produce do
+    guard e(buf_size < 3)
+    next :buf_size, e(buf_size + 1)
+    next :produced, e(produced + 1)
   end
 
-  actions do
-    action :produce do
-      guard {:expr, quote(do: buf_size < 3)}
-      next :buf_size, {:expr, quote(do: buf_size + 1)}
-      next :produced, {:expr, quote(do: produced + 1)}
-    end
-
-    action :consume do
-      guard {:expr, quote(do: buf_size > 0)}
-      next :buf_size, {:expr, quote(do: buf_size - 1)}
-      next :consumed, {:expr, quote(do: consumed + 1)}
-    end
+  action :consume do
+    guard e(buf_size > 0)
+    next :buf_size, e(buf_size - 1)
+    next :consumed, e(consumed + 1)
   end
 
-  invariants do
-    invariant :buffer_bounded,
-      expr: {:expr, quote(do: buf_size >= 0 and buf_size <= 3)}
+  invariant :buffer_bounded,
+            e(buf_size >= 0 and buf_size <= 3)
 
-    invariant :consumption_valid,
-      expr: {:expr, quote(do: consumed <= produced)}
-  end
-
-  properties do
-  end
+  invariant :consumption_valid,
+            e(consumed <= produced)
 end

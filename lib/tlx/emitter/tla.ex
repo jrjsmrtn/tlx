@@ -230,6 +230,12 @@ defmodule Tlx.Emitter.TLA do
   defp format_guard(other), do: "    /\\ #{inspect(other)}"
 
   defp format_expr({:expr, ast}), do: format_ast(ast)
+  defp format_expr({:forall, _, _, _} = q), do: format_ast(q)
+  defp format_expr({:exists, _, _, _} = q), do: format_ast(q)
+  defp format_expr(val) when is_integer(val), do: Integer.to_string(val)
+  defp format_expr(true), do: "TRUE"
+  defp format_expr(false), do: "FALSE"
+  defp format_expr(val) when is_atom(val), do: Atom.to_string(val)
   defp format_expr(other), do: inspect(other)
 
   # Elixir AST → TLA+ expression
@@ -272,11 +278,11 @@ defmodule Tlx.Emitter.TLA do
     do: "#{format_ast(left)} * #{format_ast(right)}"
 
   # Quantifiers
-  defp format_ast({:forall, var, set, expr}),
-    do: "\\A #{Atom.to_string(var)} \\in #{format_ast(set)} : #{format_ast(expr)}"
+  defp format_ast({:forall, var, set, inner_expr}),
+    do: "\\A #{Atom.to_string(var)} \\in #{format_ast(set)} : #{format_expr(inner_expr)}"
 
-  defp format_ast({:exists, var, set, expr}),
-    do: "\\E #{Atom.to_string(var)} \\in #{format_ast(set)} : #{format_ast(expr)}"
+  defp format_ast({:exists, var, set, inner_expr}),
+    do: "\\E #{Atom.to_string(var)} \\in #{format_ast(set)} : #{format_expr(inner_expr)}"
 
   # Variable reference: {name, _meta, _context} — standard Elixir AST for a variable
   defp format_ast({name, _meta, context}) when is_atom(name) and is_atom(context),

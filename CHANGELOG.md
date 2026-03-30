@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-03-30
+
+### Added
+
+- `e()` macro — replaces verbose `{:expr, quote(do: ...)}` syntax
+- `await` as alias for `guard` — reads naturally for PlusCal users
+- `defspec` macro — shorthand for `defmodule + use Tlx.Spec`
+- Flat top-level sections — no `variables do ... end` wrappers needed
+- Bare literals — `next :x, 0` without `e()` wrapping
+- Batch `next` — `next flag1: true, turn: 2` keyword list form
+- `transitions` macro as alias for batch `next`
+- Auto-imported `Tlx.Temporal` operators in invariants and properties sections
+- Positional default on `variable` — `variable :x, 0`
+- Positional expr on `invariant` and `property` — `invariant :bounded, e(x >= 0)`
+- Unicode math pretty-printer (`mix tlx.emit MySpec -f unicode`) — ≜ ∧ ∨ ¬ □ ◇ ∀ ∃
+- Elixir DSL round-trip emitter (`mix tlx.emit MySpec -f elixir`)
+- Generated `.tla` files for examples
+
+### Changed
+
+- **Breaking**: DSL sections are now top-level (no wrapping `do` blocks)
+- **Breaking**: `{:expr, quote(do: ...)}` replaced by `e()` macro
+- **Breaking**: `invariant` and `property` take expr as positional arg, not `expr:` keyword
+
 ## [0.1.7] - 2026-03-30
 
 ### Added

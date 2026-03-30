@@ -6,49 +6,31 @@ defmodule Tlx.SimulatorTest do
   defmodule CorrectCounter do
     use Tlx.Spec
 
-    variables do
-      variable(:x, default: 0)
+    variable(:x, 0)
+
+    action :increment do
+      guard(e(x < 5))
+      next(:x, e(x + 1))
     end
 
-    actions do
-      action :increment do
-        guard({:expr, quote(do: x < 5)})
-        next(:x, {:expr, quote(do: x + 1)})
-      end
-
-      action :reset do
-        guard({:expr, quote(do: x >= 5)})
-        next(:x, {:expr, 0})
-      end
+    action :reset do
+      guard(e(x >= 5))
+      next(:x, 0)
     end
 
-    invariants do
-      invariant(:bounded, expr: {:expr, quote(do: x >= 0 and x <= 5)})
-    end
-
-    properties do
-    end
+    invariant(:bounded, e(x >= 0 and x <= 5))
   end
 
   defmodule BuggyCounter do
     use Tlx.Spec
 
-    variables do
-      variable(:x, default: 0)
+    variable(:x, 0)
+
+    action :increment do
+      next(:x, e(x + 1))
     end
 
-    actions do
-      action :increment do
-        next(:x, {:expr, quote(do: x + 1)})
-      end
-    end
-
-    invariants do
-      invariant(:bounded, expr: {:expr, quote(do: x <= 3)})
-    end
-
-    properties do
-    end
+    invariant(:bounded, e(x <= 3))
   end
 
   describe "simulator on correct spec" do
@@ -74,23 +56,14 @@ defmodule Tlx.SimulatorTest do
     defmodule DeadlockSpec do
       use Tlx.Spec
 
-      variables do
-        variable(:x, default: 0)
+      variable(:x, 0)
+
+      action :once do
+        guard(e(x == 0))
+        next(:x, 1)
       end
 
-      actions do
-        action :once do
-          guard({:expr, quote(do: x == 0)})
-          next(:x, {:expr, 1})
-        end
-      end
-
-      invariants do
-        invariant(:non_negative, expr: {:expr, quote(do: x >= 0)})
-      end
-
-      properties do
-      end
+      invariant(:non_negative, e(x >= 0))
     end
 
     test "reports deadlocks" do

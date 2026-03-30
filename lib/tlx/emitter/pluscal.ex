@@ -161,6 +161,10 @@ defmodule Tlx.Emitter.PlusCal do
   defp unwrap_expr(other), do: other
 
   defp format_expr({:expr, ast}), do: format_ast(ast)
+  defp format_expr(val) when is_integer(val), do: Integer.to_string(val)
+  defp format_expr(true), do: "TRUE"
+  defp format_expr(false), do: "FALSE"
+  defp format_expr(val) when is_atom(val), do: "\"#{Atom.to_string(val)}\""
   defp format_expr(other), do: inspect(other)
 
   # Elixir AST → PlusCal expression (mostly same as TLA+ but uses := for assignment)

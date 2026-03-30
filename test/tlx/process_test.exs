@@ -6,39 +6,31 @@ defmodule Tlx.ProcessTest do
   defmodule MutualExclusion do
     use Tlx.Spec
 
-    variables do
-      variable(:flag, default: [])
-    end
+    variable(:flag, [])
 
-    constants do
-      constant(:procs)
-    end
+    constant(:procs)
 
-    processes do
-      process :worker do
-        set(:procs)
-        variable(:local_state, default: :idle)
+    process :worker do
+      set(:procs)
+      variable(:local_state, :idle)
 
-        action :try_enter do
-          guard({:expr, quote(do: local_state == :idle)})
-          next(:local_state, {:expr, :waiting})
-        end
+      action :try_enter do
+        guard(e(local_state == :idle))
+        next(:local_state, :waiting)
+      end
 
-        action :enter_cs do
-          guard({:expr, quote(do: local_state == :waiting)})
-          next(:local_state, {:expr, :in_cs})
-        end
+      action :enter_cs do
+        guard(e(local_state == :waiting))
+        next(:local_state, :in_cs)
+      end
 
-        action :exit_cs do
-          guard({:expr, quote(do: local_state == :in_cs)})
-          next(:local_state, {:expr, :idle})
-        end
+      action :exit_cs do
+        guard(e(local_state == :in_cs))
+        next(:local_state, :idle)
       end
     end
 
-    invariants do
-      invariant(:type_ok, expr: {:expr, quote(do: flag >= 0)})
-    end
+    invariant(:type_ok, e(flag >= 0))
   end
 
   describe "process DSL" do

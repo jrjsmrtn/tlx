@@ -17,7 +17,7 @@ State variables for this specification.
 
 ### variables.variable
 ```elixir
-variable name
+variable name, default \\ nil
 ```
 
 
@@ -32,12 +32,12 @@ Declare a state variable.
 | Name | Type | Default | Docs |
 |------|------|---------|------|
 | [`name`](#variables-variable-name){: #variables-variable-name .spark-required} | `atom` |  | Variable name. |
+| [`default`](#variables-variable-default){: #variables-variable-default } | `any` |  | Initial value of the variable. |
 ### Options
 
 | Name | Type | Default | Docs |
 |------|------|---------|------|
 | [`type`](#variables-variable-type){: #variables-variable-type } | `atom` |  | Variable type (for documentation; not enforced by TLA+). |
-| [`default`](#variables-variable-default){: #variables-variable-default } | `any` |  | Initial value of the variable. |
 
 
 
@@ -123,6 +123,7 @@ Define a guarded state transition.
 | Name | Type | Default | Docs |
 |------|------|---------|------|
 | [`guard`](#actions-action-guard){: #actions-action-guard } | `any` |  | A quoted boolean expression that must be true for this action to fire. |
+| [`await`](#actions-action-await){: #actions-action-await } | `any` |  | Alias for guard. A quoted boolean expression that must be true for this action to fire. |
 | [`fairness`](#actions-action-fairness){: #actions-action-fairness } | `:weak \| :strong` |  | Fairness constraint: :weak (WF) or :strong (SF). |
 
 
@@ -225,7 +226,7 @@ Safety invariants checked at every reachable state.
 
 ### invariants.invariant
 ```elixir
-invariant name
+invariant name, expr
 ```
 
 
@@ -240,11 +241,8 @@ Declare a safety invariant.
 | Name | Type | Default | Docs |
 |------|------|---------|------|
 | [`name`](#invariants-invariant-name){: #invariants-invariant-name .spark-required} | `atom` |  | Invariant name. |
-### Options
-
-| Name | Type | Default | Docs |
-|------|------|---------|------|
 | [`expr`](#invariants-invariant-expr){: #invariants-invariant-expr .spark-required} | `any` |  | A quoted boolean expression that must hold in every reachable state. |
+
 
 
 
@@ -326,6 +324,7 @@ Define a guarded state transition.
 | Name | Type | Default | Docs |
 |------|------|---------|------|
 | [`guard`](#processes-process-action-guard){: #processes-process-action-guard } | `any` |  | A quoted boolean expression that must be true for this action to fire. |
+| [`await`](#processes-process-action-await){: #processes-process-action-await } | `any` |  | Alias for guard. A quoted boolean expression that must be true for this action to fire. |
 | [`fairness`](#processes-process-action-fairness){: #processes-process-action-fairness } | `:weak \| :strong` |  | Fairness constraint: :weak (WF) or :strong (SF). |
 
 
@@ -415,7 +414,7 @@ Set the next-state value of a variable.
 
 ### processes.process.variable
 ```elixir
-variable name
+variable name, default \\ nil
 ```
 
 
@@ -430,12 +429,12 @@ Declare a state variable.
 | Name | Type | Default | Docs |
 |------|------|---------|------|
 | [`name`](#processes-process-variable-name){: #processes-process-variable-name .spark-required} | `atom` |  | Variable name. |
+| [`default`](#processes-process-variable-default){: #processes-process-variable-default } | `any` |  | Initial value of the variable. |
 ### Options
 
 | Name | Type | Default | Docs |
 |------|------|---------|------|
 | [`type`](#processes-process-variable-type){: #processes-process-variable-type } | `atom` |  | Variable type (for documentation; not enforced by TLA+). |
-| [`default`](#processes-process-variable-default){: #processes-process-variable-default } | `any` |  | Initial value of the variable. |
 
 
 
@@ -461,7 +460,7 @@ Temporal properties checked over infinite traces.
 
 ### properties.property
 ```elixir
-property name
+property name, expr
 ```
 
 
@@ -476,11 +475,8 @@ Declare a temporal property (liveness or safety over traces).
 | Name | Type | Default | Docs |
 |------|------|---------|------|
 | [`name`](#properties-property-name){: #properties-property-name .spark-required} | `atom` |  | Property name. |
-### Options
-
-| Name | Type | Default | Docs |
-|------|------|---------|------|
 | [`expr`](#properties-property-expr){: #properties-property-expr .spark-required} | `any` |  | A temporal expression: always(P), eventually(P), leads_to(P, Q). |
+
 
 
 

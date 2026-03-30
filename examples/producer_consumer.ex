@@ -9,44 +9,32 @@ defmodule Examples.ProducerConsumer do
 
   use Tlx.Spec
 
-  alias Tlx.Temporal
+  variable :buf_size, 0
+  variable :produced, 0
+  variable :consumed, 0
 
-  variables do
-    variable :buf_size, default: 0
-    variable :produced, default: 0
-    variable :consumed, default: 0
+  constant :max_buf
+
+  action :produce do
+    fairness :weak
+    guard e(buf_size < max_buf)
+    next :buf_size, e(buf_size + 1)
+    next :produced, e(produced + 1)
   end
 
-  constants do
-    constant :max_buf
+  action :consume do
+    fairness :weak
+    guard e(buf_size > 0)
+    next :buf_size, e(buf_size - 1)
+    next :consumed, e(consumed + 1)
   end
 
-  actions do
-    action :produce do
-      fairness :weak
-      guard {:expr, quote(do: buf_size < max_buf)}
-      next :buf_size, {:expr, quote(do: buf_size + 1)}
-      next :produced, {:expr, quote(do: produced + 1)}
-    end
+  invariant :buffer_bounded,
+            e(buf_size >= 0 and buf_size <= max_buf)
 
-    action :consume do
-      fairness :weak
-      guard {:expr, quote(do: buf_size > 0)}
-      next :buf_size, {:expr, quote(do: buf_size - 1)}
-      next :consumed, {:expr, quote(do: consumed + 1)}
-    end
-  end
+  invariant :consumption_valid,
+            e(consumed <= produced)
 
-  invariants do
-    invariant :buffer_bounded,
-      expr: {:expr, quote(do: buf_size >= 0 and buf_size <= max_buf)}
-
-    invariant :consumption_valid,
-      expr: {:expr, quote(do: consumed <= produced)}
-  end
-
-  properties do
-    property :eventually_consumed,
-      expr: Temporal.always(Temporal.eventually({:expr, quote(do: buf_size == 0)}))
-  end
+  property :eventually_consumed,
+           always(eventually(e(buf_size == 0)))
 end

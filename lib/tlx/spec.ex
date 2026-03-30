@@ -6,17 +6,39 @@ defmodule Tlx.Spec do
         use Tlx.Spec
 
         variables do
-          variable :x, type: :integer, default: 0
+          variable :x, default: 0
         end
 
         actions do
-          action :increment, guard: {:expr, quote(do: x < 5)} do
-            next :x, {:expr, quote(do: x + 1)}
+          action :increment do
+            await e(x < 5)
+            next :x, e(x + 1)
           end
         end
 
         invariants do
-          invariant :bounded, expr: {:expr, quote(do: x >= 0 and x <= 5)}
+          invariant :bounded, e(x >= 0 and x <= 5)
+        end
+      end
+
+  Or use the shorthand `defspec`:
+
+      import Tlx
+
+      defspec MySpec do
+        variables do
+          variable :x, default: 0
+        end
+
+        actions do
+          action :increment do
+            await e(x < 5)
+            next :x, e(x + 1)
+          end
+        end
+
+        invariants do
+          invariant :bounded, e(x >= 0 and x <= 5)
         end
       end
   """

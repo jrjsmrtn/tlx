@@ -6,28 +6,20 @@ defmodule Tlx.DslTest do
   defmodule Counter do
     use Tlx.Spec
 
-    variables do
-      variable(:x, type: :integer, default: 0)
+    variable(:x, type: :integer, default: 0)
+
+    constant(:max)
+
+    action :increment do
+      guard(e(x < max))
+      next(:x, e(x + 1))
     end
 
-    constants do
-      constant(:max)
+    action :reset do
+      next(:x, 0)
     end
 
-    actions do
-      action :increment do
-        guard({:expr, quote(do: x < max)})
-        next(:x, {:expr, quote(do: x + 1)})
-      end
-
-      action :reset do
-        next(:x, {:expr, 0})
-      end
-    end
-
-    invariants do
-      invariant(:non_negative, expr: {:expr, quote(do: x >= 0)})
-    end
+    invariant(:non_negative, e(x >= 0))
   end
 
   describe "DSL compilation" do

@@ -6,52 +6,38 @@ defmodule Tlx.Emitter.TLATest do
   defmodule TwoVarSpec do
     use Tlx.Spec
 
-    variables do
-      variable(:x, default: 0)
-      variable(:y, default: 0)
+    variable(:x, 0)
+    variable(:y, 0)
+
+    action :inc_x do
+      next(:x, e(x + 1))
     end
 
-    actions do
-      action :inc_x do
-        next(:x, {:expr, quote(do: x + 1)})
-      end
-
-      action :inc_both do
-        next(:x, {:expr, quote(do: x + 1)})
-        next(:y, {:expr, quote(do: y + 1)})
-      end
+    action :inc_both do
+      next(:x, e(x + 1))
+      next(:y, e(y + 1))
     end
 
-    invariants do
-      invariant(:bounded, expr: {:expr, quote(do: x >= 0 and y >= 0)})
-    end
+    invariant(:bounded, e(x >= 0 and y >= 0))
   end
 
   defmodule Counter do
     use Tlx.Spec
 
-    variables do
-      variable(:x, type: :integer, default: 0)
+    variable(:x, type: :integer, default: 0)
+
+    constant(:max)
+
+    action :increment do
+      guard(e(x < max))
+      next(:x, e(x + 1))
     end
 
-    constants do
-      constant(:max)
+    action :reset do
+      next(:x, 0)
     end
 
-    actions do
-      action :increment do
-        guard({:expr, quote(do: x < max)})
-        next(:x, {:expr, quote(do: x + 1)})
-      end
-
-      action :reset do
-        next(:x, {:expr, 0})
-      end
-    end
-
-    invariants do
-      invariant(:non_negative, expr: {:expr, quote(do: x >= 0)})
-    end
+    invariant(:non_negative, e(x >= 0))
   end
 
   describe "TLA+ emission" do
@@ -114,25 +100,18 @@ defmodule Tlx.Emitter.TLATest do
   defmodule BranchedSpec do
     use Tlx.Spec
 
-    variables do
-      variable(:state, default: :reachable)
-    end
+    variable(:state, :reachable)
 
-    actions do
-      action :provision do
-        guard({:expr, quote(do: state == :reachable)})
+    action :provision do
+      guard(e(state == :reachable))
 
-        branch :success do
-          next(:state, {:expr, :provisioned})
-        end
-
-        branch :failure do
-          next(:state, {:expr, :degraded})
-        end
+      branch :success do
+        next(:state, :provisioned)
       end
-    end
 
-    invariants do
+      branch :failure do
+        next(:state, :degraded)
+      end
     end
   end
 

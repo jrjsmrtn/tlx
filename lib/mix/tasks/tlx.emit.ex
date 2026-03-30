@@ -50,9 +50,11 @@ defmodule Mix.Tasks.Tlx.Emit do
 
   defp emit(module, "tla"), do: Emitter.TLA.emit(module)
   defp emit(module, "pluscal"), do: Emitter.PlusCal.emit(module)
+  defp emit(module, "unicode"), do: Emitter.Unicode.emit(module)
+  defp emit(module, "elixir"), do: Emitter.Elixir.emit(module)
 
   defp emit(_module, format),
-    do: Mix.raise("Unknown format: #{format}. Use 'tla' or 'pluscal'.")
+    do: Mix.raise("Unknown format: #{format}. Use 'tla', 'pluscal', 'unicode', or 'elixir'.")
 
   defp write_file(path, content) do
     File.write!(path, content <> "\n")

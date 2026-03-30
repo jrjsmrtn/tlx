@@ -3,6 +3,7 @@ defmodule Tlx.Action do
   defstruct [
     :name,
     :guard,
+    :await,
     :fairness,
     :__identifier__,
     :__spark_metadata__,

@@ -4,40 +4,31 @@ defmodule Tlx.PropertyTest do
   alias Spark.Dsl.Extension
   alias Tlx.Emitter.Config
   alias Tlx.Emitter.TLA
-  alias Tlx.Temporal
 
   defmodule LivenessSpec do
     use Tlx.Spec
 
-    variables do
-      variable(:x, default: 0)
+    variable(:x, 0)
+
+    constant(:max)
+
+    action :increment do
+      fairness(:weak)
+      guard(e(x < max))
+      next(:x, e(x + 1))
     end
 
-    constants do
-      constant(:max)
-    end
+    invariant(:non_negative, e(x >= 0))
 
-    actions do
-      action :increment do
-        fairness(:weak)
-        guard({:expr, quote(do: x < max)})
-        next(:x, {:expr, quote(do: x + 1)})
-      end
-    end
+    property(
+      :eventually_max,
+      always(eventually(e(x == max)))
+    )
 
-    invariants do
-      invariant(:non_negative, expr: {:expr, quote(do: x >= 0)})
-    end
-
-    properties do
-      property(:eventually_max,
-        expr: Temporal.always(Temporal.eventually({:expr, quote(do: x == max)}))
-      )
-
-      property(:leads_to_positive,
-        expr: Temporal.leads_to({:expr, quote(do: x == 0)}, {:expr, quote(do: x > 0)})
-      )
-    end
+    property(
+      :leads_to_positive,
+      leads_to(e(x == 0), e(x > 0))
+    )
   end
 
   describe "property DSL" do
@@ -92,29 +83,19 @@ defmodule Tlx.PropertyTest do
     defmodule QuantifierSpec do
       use Tlx.Spec
 
-      variables do
-        variable(:flags, default: [])
-      end
+      variable(:flags, [])
 
-      constants do
-        constant(:nodes)
-      end
+      constant(:nodes)
 
-      actions do
-      end
+      invariant(
+        :all_valid,
+        forall(:n, :nodes, e(n >= 0))
+      )
 
-      invariants do
-        invariant(:all_valid,
-          expr: {:expr, Temporal.forall(:n, :nodes, quote(do: n >= 0))}
-        )
-
-        invariant(:some_active,
-          expr: {:expr, Temporal.exists(:n, :nodes, quote(do: n > 0))}
-        )
-      end
-
-      properties do
-      end
+      invariant(
+        :some_active,
+        exists(:n, :nodes, e(n > 0))
+      )
     end
 
     test "emits forall quantifier" do

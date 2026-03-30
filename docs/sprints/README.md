@@ -3,7 +3,7 @@
 ## Current Status
 
 - **Active Sprint**: Between sprints (Sprint 7 complete, Phase 4 substantially done)
-- **Latest Release**: v0.1.7
+- **Latest Release**: v0.2.0
 - **Status**: Feature-complete for initial release
 
 ## Sprint Index

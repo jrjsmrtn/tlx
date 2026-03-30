@@ -23,7 +23,7 @@ defmodule Tlx.Dsl do
   @variable %Spark.Dsl.Entity{
     name: :variable,
     target: Tlx.Variable,
-    args: [:name],
+    args: [:name, {:optional, :default}],
     identifier: :name,
     schema: [
       name: [
@@ -95,6 +95,11 @@ defmodule Tlx.Dsl do
         type: :any,
         doc: "A quoted boolean expression that must be true for this action to fire."
       ],
+      await: [
+        type: :any,
+        doc:
+          "Alias for guard. A quoted boolean expression that must be true for this action to fire."
+      ],
       fairness: [
         type: {:one_of, [:weak, :strong]},
         doc: "Fairness constraint: :weak (WF) or :strong (SF)."
@@ -104,13 +109,14 @@ defmodule Tlx.Dsl do
       transitions: [@transition],
       branches: [@branch]
     ],
+    transform: {__MODULE__, :merge_await, []},
     describe: "Define a guarded state transition."
   }
 
   @invariant %Spark.Dsl.Entity{
     name: :invariant,
     target: Tlx.Invariant,
-    args: [:name],
+    args: [:name, :expr],
     identifier: :name,
     schema: [
       name: [
@@ -130,25 +136,31 @@ defmodule Tlx.Dsl do
   @variables %Spark.Dsl.Section{
     name: :variables,
     describe: "State variables for this specification.",
+    top_level?: true,
     entities: [@variable]
   }
 
   @constants %Spark.Dsl.Section{
     name: :constants,
     describe: "Model constants (bound at model-checking time).",
+    top_level?: true,
     entities: [@constant]
   }
 
   @actions %Spark.Dsl.Section{
     name: :actions,
     describe: "Guarded state transitions.",
-    entities: [@action]
+    top_level?: true,
+    entities: [@action],
+    imports: [Tlx.Expr]
   }
 
   @invariants %Spark.Dsl.Section{
     name: :invariants,
     describe: "Safety invariants checked at every reachable state.",
-    entities: [@invariant]
+    top_level?: true,
+    entities: [@invariant],
+    imports: [Tlx.Expr, Tlx.Temporal]
   }
 
   @process %Spark.Dsl.Entity{
@@ -182,13 +194,15 @@ defmodule Tlx.Dsl do
   @processes %Spark.Dsl.Section{
     name: :processes,
     describe: "Concurrent process declarations.",
-    entities: [@process]
+    top_level?: true,
+    entities: [@process],
+    imports: [Tlx.Expr]
   }
 
   @property %Spark.Dsl.Entity{
     name: :property,
     target: Tlx.Property,
-    args: [:name],
+    args: [:name, :expr],
     identifier: :name,
     schema: [
       name: [
@@ -208,10 +222,17 @@ defmodule Tlx.Dsl do
   @properties %Spark.Dsl.Section{
     name: :properties,
     describe: "Temporal properties checked over infinite traces.",
-    entities: [@property]
+    top_level?: true,
+    entities: [@property],
+    imports: [Tlx.Expr, Tlx.Temporal]
   }
 
   use Spark.Dsl.Extension,
     sections: [@variables, @constants, @actions, @invariants, @processes, @properties],
     verifiers: [Tlx.Verifiers.TransitionTargets]
+
+  @doc false
+  def merge_await(%{await: nil} = action), do: {:ok, action}
+  def merge_await(%{guard: nil, await: await} = action), do: {:ok, %{action | guard: await}}
+  def merge_await(%{await: _}), do: {:error, "Cannot use both guard and await on the same action"}
 end

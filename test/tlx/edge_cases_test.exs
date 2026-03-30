@@ -8,36 +8,14 @@ defmodule Tlx.EdgeCasesTest do
 
   defmodule EmptySpec do
     use Tlx.Spec
-
-    variables do
-    end
-
-    actions do
-    end
-
-    invariants do
-    end
-
-    properties do
-    end
   end
 
   defmodule InvariantOnly do
     use Tlx.Spec
 
-    variables do
-      variable :x, default: 0
-    end
+    variable :x, 0
 
-    actions do
-    end
-
-    invariants do
-      invariant :always_zero, expr: {:expr, quote(do: x == 0)}
-    end
-
-    properties do
-    end
+    invariant :always_zero, e(x == 0)
   end
 
   describe "empty spec" do

@@ -21,31 +21,22 @@ Then run `mix deps.get`.
 Create a file `lib/my_counter.ex`:
 
 ```elixir
-defmodule MyCounter do
-  use Tlx.Spec
+import Tlx
 
-  variables do
-    variable :x, default: 0
+defspec MyCounter do
+  variable :x, 0
+
+  action :increment do
+    await e(x < 5)
+    next :x, e(x + 1)
   end
 
-  actions do
-    action :increment do
-      guard {:expr, quote(do: x < 5)}
-      next :x, {:expr, quote(do: x + 1)}
-    end
-
-    action :reset do
-      guard {:expr, quote(do: x >= 5)}
-      next :x, {:expr, 0}
-    end
+  action :reset do
+    await e(x >= 5)
+    next :x, 0
   end
 
-  invariants do
-    invariant :bounded, expr: {:expr, quote(do: x >= 0 and x <= 5)}
-  end
-
-  properties do
-  end
+  invariant :bounded, e(x >= 0 and x <= 5)
 end
 ```
 
@@ -59,7 +50,7 @@ This defines a counter that increments from 0 to 5, then resets. The invariant a
 
 **Invariants** are safety properties: boolean expressions that must hold in every reachable state.
 
-**Expressions** are wrapped in `{:expr, quoted}` tuples. Use `quote(do: ...)` for expressions that reference variables, or plain values like `{:expr, 0}` for literals.
+**Expressions** that reference variables use the `e()` macro: `e(x + 1)`, `e(x < 5)`. Bare literals don't need wrapping: `0`, `true`, `:idle`. The `e()` macro is automatically available inside DSL blocks.
 
 ## Emitting TLA+
 
@@ -130,8 +121,8 @@ Fairness ensures an action eventually fires if it stays enabled. Add `fairness :
 ```elixir
 action :increment do
   fairness :weak
-  guard {:expr, quote(do: x < 5)}
-  next :x, {:expr, quote(do: x + 1)}
+  guard e(x < 5)
+  next :x, e(x + 1)
 end
 ```
 
@@ -142,12 +133,7 @@ This emits `WF_vars(increment)` in the TLA+ `Spec` formula.
 Use `Tlx.Temporal` for liveness properties:
 
 ```elixir
-alias Tlx.Temporal
-
-properties do
-  property :eventually_resets,
-    expr: Temporal.always(Temporal.eventually({:expr, quote(do: x == 0)}))
-end
+property :eventually_resets, always(eventually(e(x == 0)))
 ```
 
 This asserts the counter always eventually returns to 0.
@@ -158,17 +144,30 @@ Use `branch` for either/or within an action:
 
 ```elixir
 action :provision do
-  guard {:expr, quote(do: state == :reachable)}
+  guard e(state == :reachable)
 
   branch :success do
-    next :state, {:expr, :provisioned}
+    next :state, :provisioned
   end
 
   branch :failure do
-    next :state, {:expr, :degraded}
+    next :state, :degraded
   end
 end
 ```
+
+## Batch Transitions
+
+When an action changes multiple variables, `next` accepts a keyword list:
+
+```elixir
+action :p1_try do
+  await e(pc1 == :idle)
+  next flag1: true, turn: 2, pc1: :waiting
+end
+```
+
+This expands to three individual `next` calls. Both forms work interchangeably.
 
 ## Running TLC
 

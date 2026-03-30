@@ -6,25 +6,17 @@ defmodule Tlx.Emitter.ConfigTest do
   defmodule CounterSpec do
     use Tlx.Spec
 
-    variables do
-      variable(:x, default: 0)
+    variable(:x, 0)
+
+    constant(:max)
+
+    action :increment do
+      guard(e(x < max))
+      next(:x, e(x + 1))
     end
 
-    constants do
-      constant(:max)
-    end
-
-    actions do
-      action :increment do
-        guard({:expr, quote(do: x < max)})
-        next(:x, {:expr, quote(do: x + 1)})
-      end
-    end
-
-    invariants do
-      invariant(:non_negative, expr: {:expr, quote(do: x >= 0)})
-      invariant(:bounded, expr: {:expr, quote(do: x <= max)})
-    end
+    invariant(:non_negative, e(x >= 0))
+    invariant(:bounded, e(x <= max))
   end
 
   describe "config generation" do

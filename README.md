@@ -11,25 +11,17 @@ Early development. Not yet published.
 ## Overview
 
 ```elixir
-defmodule MySpec do
-  use Tlx.Spec
+import Tlx
 
-  tla do
-    variables do
-      variable :x, type: :integer, default: 0
-    end
+defspec MySpec do
+  variable :x, type: :integer, default: 0
 
-    actions do
-      action :increment do
-        guard expr(x < 5)
-        next :x, expr(x + 1)
-      end
-    end
-
-    invariants do
-      invariant :bounded, expr(x >= 0 and x <= 5)
-    end
+  action :increment do
+    await e(x < 5)
+    next :x, e(x + 1)
   end
+
+  invariant :bounded, e(x >= 0 and x <= 5)
 end
 ```
 

@@ -6,84 +6,60 @@ defmodule Tlx.Emitter.PlusCalTest do
   defmodule Counter do
     use Tlx.Spec
 
-    variables do
-      variable(:x, type: :integer, default: 0)
+    variable(:x, type: :integer, default: 0)
+
+    constant(:max)
+
+    action :increment do
+      guard(e(x < max))
+      next(:x, e(x + 1))
     end
 
-    constants do
-      constant(:max)
+    action :reset do
+      next(:x, 0)
     end
 
-    actions do
-      action :increment do
-        guard({:expr, quote(do: x < max)})
-        next(:x, {:expr, quote(do: x + 1)})
-      end
-
-      action :reset do
-        next(:x, {:expr, 0})
-      end
-    end
-
-    invariants do
-      invariant(:non_negative, expr: {:expr, quote(do: x >= 0)})
-    end
+    invariant(:non_negative, e(x >= 0))
   end
 
   defmodule Provisioner do
     use Tlx.Spec
 
-    variables do
-      variable(:state, default: :reachable)
-    end
+    variable(:state, :reachable)
 
-    actions do
-      action :provision do
-        guard({:expr, quote(do: state == :reachable)})
+    action :provision do
+      guard(e(state == :reachable))
 
-        branch :success do
-          next(:state, {:expr, :provisioned})
-        end
-
-        branch :failure do
-          next(:state, {:expr, :degraded})
-        end
+      branch :success do
+        next(:state, :provisioned)
       end
-    end
 
-    invariants do
+      branch :failure do
+        next(:state, :degraded)
+      end
     end
   end
 
   defmodule MutexSpec do
     use Tlx.Spec
 
-    variables do
-      variable(:flag, default: [])
-    end
+    variable(:flag, [])
 
-    constants do
-      constant(:procs)
-    end
+    constant(:procs)
 
-    processes do
-      process :worker do
-        set(:procs)
-        variable(:local_state, default: :idle)
+    process :worker do
+      set(:procs)
+      variable(:local_state, :idle)
 
-        action :try_enter do
-          guard({:expr, quote(do: local_state == :idle)})
-          next(:local_state, {:expr, :waiting})
-        end
-
-        action :enter_cs do
-          guard({:expr, quote(do: local_state == :waiting)})
-          next(:local_state, {:expr, :in_cs})
-        end
+      action :try_enter do
+        guard(e(local_state == :idle))
+        next(:local_state, :waiting)
       end
-    end
 
-    invariants do
+      action :enter_cs do
+        guard(e(local_state == :waiting))
+        next(:local_state, :in_cs)
+      end
     end
   end
 
