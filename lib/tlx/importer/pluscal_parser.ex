@@ -37,13 +37,15 @@ defmodule Tlx.Importer.PlusCalParser do
     }
   end
 
+  alias Tlx.Importer.Codegen
+
   @doc """
   Convert parsed PlusCal into Tlx DSL source code.
 
   Delegates to `Tlx.Importer.Codegen.to_tlx/1`.
   """
   def to_tlx(parsed) do
-    Tlx.Importer.Codegen.to_tlx(parsed)
+    Codegen.to_tlx(parsed)
   end
 
   # --- Module-level extraction ---
@@ -65,23 +67,23 @@ defmodule Tlx.Importer.PlusCalParser do
   defp extract_invariants(tla_string) do
     # Invariants appear after END TRANSLATION, before ====
     case Regex.split(~r/\\?\*\s*END TRANSLATION/, tla_string) do
-      [_, after_translation] ->
-        after_translation
-        |> String.split("\n")
-        |> Enum.map(&String.trim/1)
-        |> Enum.filter(&Regex.match?(~r/^\w+ == .+$/, &1))
-        |> Enum.reject(&String.starts_with?(&1, "===="))
-        |> Enum.map(fn line ->
-          case Regex.run(~r/^(\w+) == (.+)$/, line) do
-            [_, name, expr] -> %{name: name, expr: expr}
-            _ -> nil
-          end
-        end)
-        |> Enum.reject(&is_nil/1)
-
-      _ ->
-        []
+      [_, after_translation] -> parse_invariant_lines(after_translation)
+      _ -> []
     end
+  end
+
+  defp parse_invariant_lines(text) do
+    text
+    |> String.split("\n")
+    |> Enum.map(&String.trim/1)
+    |> Enum.filter(&Regex.match?(~r/^\w+ == .+$/, &1))
+    |> Enum.reject(&String.starts_with?(&1, "===="))
+    |> Enum.flat_map(fn line ->
+      case Regex.run(~r/^(\w+) == (.+)$/, line) do
+        [_, name, expr] -> [%{name: name, expr: expr}]
+        _ -> []
+      end
+    end)
   end
 
   # --- Algorithm extraction ---
@@ -212,19 +214,21 @@ defmodule Tlx.Importer.PlusCalParser do
 
   defp chunk_by_labels(parts) do
     parts
-    |> Enum.reduce([], fn part, acc ->
-      case Regex.run(~r/^\s*(\w+):\s*$/, part) do
-        [_, label] ->
-          [{label, ""} | acc]
-
-        _ ->
-          case acc do
-            [{label, existing} | rest] -> [{label, existing <> part} | rest]
-            [] -> acc
-          end
-      end
-    end)
+    |> Enum.reduce([], &chunk_label_part/2)
     |> Enum.reverse()
+  end
+
+  defp chunk_label_part(part, acc) do
+    case Regex.run(~r/^\s*(\w+):\s*$/, part) do
+      [_, label] ->
+        [{label, ""} | acc]
+
+      _ ->
+        case acc do
+          [{label, existing} | rest] -> [{label, existing <> part} | rest]
+          [] -> acc
+        end
+    end
   end
 
   defp parse_single_action(label, body, syntax) do

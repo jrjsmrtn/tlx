@@ -150,13 +150,15 @@ defmodule Tlx.Importer.TlaParser do
     end
   end
 
+  alias Tlx.Importer.Codegen
+
   @doc """
   Convert parsed TLA+ into Tlx DSL source code.
 
   Delegates to `Tlx.Importer.Codegen.to_tlx/1`.
   """
   def to_tlx(parsed) do
-    Tlx.Importer.Codegen.to_tlx(parsed)
+    Codegen.to_tlx(parsed)
   end
 
   # --- Build the parsed map from tokens ---

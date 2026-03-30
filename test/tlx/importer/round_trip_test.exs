@@ -58,7 +58,7 @@ defmodule Tlx.Importer.RoundTripTest do
       inc = Enum.find(parsed.actions, &(&1.name == "increment"))
       assert inc != nil
       assert inc.guard =~ "x"
-      assert length(inc.transitions) >= 1
+      assert inc.transitions != []
 
       reset = Enum.find(parsed.actions, &(&1.name == "reset"))
       assert reset != nil
@@ -82,7 +82,7 @@ defmodule Tlx.Importer.RoundTripTest do
 
       assert parsed.module_name == "Provisioner"
       assert "state" in parsed.variables
-      assert length(parsed.actions) >= 1
+      assert parsed.actions != []
     end
 
     test "Mutex example: emit → parse → codegen round-trip" do

@@ -13,6 +13,8 @@ defmodule Mix.Tasks.Tlx.Gen.FromStateMachine do
 
   use Mix.Task
 
+  alias Tlx.Importer.Codegen
+
   @shortdoc "Generate a Tlx spec skeleton from a GenStateMachine module"
 
   @switches [output: :string]
@@ -50,7 +52,7 @@ defmodule Mix.Tasks.Tlx.Gen.FromStateMachine do
   def generate(module) do
     spec_name = module |> Module.split() |> List.last()
     callbacks = extract_callbacks(module)
-    Tlx.Importer.Codegen.from_state_machine(spec_name, module, callbacks)
+    Codegen.from_state_machine(spec_name, module, callbacks)
   end
 
   defp extract_callbacks(module) do

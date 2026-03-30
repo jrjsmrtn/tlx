@@ -119,28 +119,30 @@ defmodule Tlx.Importer.Codegen do
   defp emit_processes([]), do: nil
 
   defp emit_processes(processes) do
-    Enum.map_join(processes, "\n\n", fn proc ->
-      actions = emit_process_actions(proc[:actions] || [])
+    Enum.map_join(processes, "\n\n", &emit_single_process/1) <> "\n"
+  end
 
-      vars =
-        (proc[:variables] || [])
-        |> Enum.map_join("\n", fn v ->
-          default = if v[:default], do: ", #{format_default(v[:default])}", else: ""
-          "    variable :#{v[:name]}#{default}"
-        end)
+  defp emit_single_process(proc) do
+    actions = emit_process_actions(proc[:actions] || [])
 
-      set_str = proc[:set] || "unknown"
+    vars =
+      (proc[:variables] || [])
+      |> Enum.map_join("\n", fn v ->
+        default = if v[:default], do: ", #{format_default(v[:default])}", else: ""
+        "    variable :#{v[:name]}#{default}"
+      end)
 
-      [
-        "  process :#{proc.name} do",
-        "    set :#{set_str}",
-        if(vars != "", do: vars, else: nil),
-        actions,
-        "  end"
-      ]
-      |> Enum.reject(&is_nil/1)
-      |> Enum.join("\n")
-    end) <> "\n"
+    set_str = proc[:set] || "unknown"
+
+    [
+      "  process :#{proc.name} do",
+      "    set :#{set_str}",
+      if(vars != "", do: vars, else: nil),
+      actions,
+      "  end"
+    ]
+    |> Enum.reject(&is_nil/1)
+    |> Enum.join("\n")
   end
 
   defp emit_process_actions(actions) do
