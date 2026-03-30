@@ -1,11 +1,15 @@
 ---
 name: formal-spec
 description: >
-  This skill should be used when the user asks to "write a spec",
-  "formally specify", "create a TLX spec from an ADR",
-  "verify a state machine", "check refinement", "generate a concrete spec",
-  "compare abstract and concrete specs", or discusses formal verification
-  of state machines, GenServers, or gen_statem modules.
+  Formal specification workflow for state machines using TLX (TLA+ in Elixir).
+  Covers writing abstract specs from ADRs, generating concrete specs from code,
+  refinement checking, and CI integration. Use when asked to write a spec,
+  formally specify, verify a state machine, check refinement, generate a
+  concrete spec, or compare abstract and concrete specs.
+license: MIT
+metadata:
+  author: jrjsmrtn
+  version: "0.2.8"
 ---
 
 # Formal Specification Workflow with TLX
