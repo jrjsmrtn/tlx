@@ -62,16 +62,16 @@ Enable Elixir developers to write formally verifiable TLA+/PlusCal specification
 - [x] Better error messages with source locations and suggestions
 - [x] Simulator constant injection
 
-### Phase 6: Expressiveness (proposed)
+### Phase 6: Expressiveness (complete)
 
 **Target**: v0.2.x
 **Focus**: Close the gap with full TLA+/PlusCal
 
-- [ ] IF/THEN/ELSE in expressions
-- [ ] Set operations (union, intersect, subset, cardinality)
-- [ ] Non-deterministic set pick (`with` / `pick`)
-- [ ] Custom Init expressions
-- [ ] LET/IN local definitions
+- [x] IF/THEN/ELSE in expressions (`ite/3`)
+- [x] Set operations (union, intersect, subset, cardinality, set_of, in_set)
+- [x] Non-deterministic set pick (`pick :var, :set`)
+- [x] Custom Init expressions (`initial` section with `constraint`)
+- [x] LET/IN local definitions (`let_in/3`)
 
 ### Phase 7: Tooling (partial)
 
@@ -125,6 +125,7 @@ Sprint 16 — Proper parsers and AST-based code gen:
 
 | Sprint | Phase                 | Version | Summary                                             |
 | ------ | --------------------- | ------- | --------------------------------------------------- |
+| 10     | Expressiveness        | v0.2.7  | ite, sets, let_in, custom init, pick from sets      |
 | 16     | Robustness            | v0.2.6  | NimbleParsec parsers, AST codegen, round-trip tests |
 | 15     | Robustness            | v0.2.5  | TLC tool mode, PlusCal pcal.trans compat, P-syntax  |
 | 14     | Quality               | v0.2.4  | TLC integration testing against real subprocess     |
@@ -142,7 +143,6 @@ Sprint 16 — Proper parsers and AST-based code gen:
 
 ## Proposed Sprints
 
-| Sprint | Phase          | Plan                                   |
-| ------ | -------------- | -------------------------------------- |
-| 10     | Expressiveness | [Plan](../sprints/sprint-0010-plan.md) |
-| 11     | Tooling        | [Plan](../sprints/sprint-0011-plan.md) |
+| Sprint | Phase   | Plan                                   |
+| ------ | ------- | -------------------------------------- |
+| 11     | Tooling | [Plan](../sprints/sprint-0011-plan.md) |

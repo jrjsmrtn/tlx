@@ -1,8 +1,8 @@
 # Sprint 10 — DSL Expressiveness Gaps
 
-**Target Version**: v0.2.2
+**Target Version**: v0.2.7
 **Phase**: Expressiveness
-**Status**: Draft
+**Status**: Complete
 
 ## Goal
 
