@@ -1,42 +1,54 @@
-# Sprint 12 — Forge Integration
+# Sprint 12 — GenStateMachine and TLA+ Import
 
-**Target Version**: v0.3.0
+**Target Version**: v0.2.3
 **Phase**: Integration
-**Status**: Draft
+**Status**: In Progress
+**Started**: 2026-03-30
 
 ## Goal
 
-Connect Tlx to its original motivation: formally specifying Forge subsystems. Generate Tlx spec skeletons from Elixir state machines and import existing TLA+ files.
-
-## Context
-
-The TLA+ curriculum (Claude Desktop, 2026-03-29) identified Forge's node lifecycle, discovery, concurrent operators, and TUF trust chain as prime candidates for formal specification. This sprint bridges the gap between Tlx and real Forge code.
+Build generic tools to import specifications into Tlx from two sources: Elixir GenStateMachine modules and existing TLA+ files. These are general-purpose tools, not tied to any specific project.
 
 ## Deliverables
 
 ### 1. GenStateMachine → Tlx Skeleton Generator
 
-`mix tlx.gen.from_state_machine MyApp.NodeLifecycle`:
+`mix tlx.gen.from_state_machine MyApp.MyStateMachine`:
 
-- Introspects a `GenStateMachine` module
-- Extracts states, events, and transitions
+- Introspects a `GenStateMachine` module at compile time
+- Extracts states, events, and transitions from callback definitions
 - Generates a Tlx spec skeleton with variables, actions, and guards
 - Human completes invariants and properties
+- Works with any GenStateMachine, not project-specific
 
 ### 2. TLA+ → Tlx Importer
 
 `mix tlx.import path/to/spec.tla`:
 
-- Parses a subset of TLA+ syntax (variables, operators, Init, Next)
-- Generates equivalent Tlx DSL source
+- Parses a subset of TLA+ syntax (VARIABLES, operators, Init, Next)
+- Generates equivalent Tlx DSL source via the Elixir emitter
 - Handles common patterns (UNCHANGED, primed variables, conjunctions)
 - Best-effort — complex TLA+ may need manual cleanup
 
-### 3. Forge Example Specs
+### 3. Tests
 
-Write Tlx specs for Forge subsystems from the TLA+ curriculum:
+- GenStateMachine generator test with a sample state machine
+- TLA+ importer test with the mutex.tla example (round-trip)
 
-- Node lifecycle state machine (from Lesson 2)
-- Concurrent operators with locking (from Lesson 3)
+## Files
 
-These validate that Tlx can express the specs discussed in the curriculum.
+| Action | File                                          |
+| ------ | --------------------------------------------- |
+| Create | `lib/mix/tasks/tlx.gen.from_state_machine.ex` |
+| Create | `lib/tlx/importer/tla_parser.ex`              |
+| Create | `lib/mix/tasks/tlx.import.ex`                 |
+| Create | `test/mix/tasks/tlx_gen_test.exs`             |
+| Create | `test/tlx/importer/tla_parser_test.exs`       |
+
+## Acceptance Criteria
+
+- [ ] `mix tlx.gen.from_state_machine` generates valid Tlx DSL skeleton
+- [ ] `mix tlx.import` parses basic TLA+ and emits Tlx DSL
+- [ ] Round-trip: emit .tla from Tlx, import back, verify structure preserved
+- [ ] All tests pass
+- [ ] Code quality gates pass
