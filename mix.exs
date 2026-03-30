@@ -43,6 +43,7 @@ defmodule TLX.MixProject do
       usage_rules: ["usage_rules:all"],
       skills: [
         location: ".claude/skills",
+        package_skills: [:tlx],
         build: [
           spark: [
             description:
@@ -62,7 +63,8 @@ defmodule TLX.MixProject do
         "GitHub" => "https://github.com/jrjsmrtn/tlx",
         "Changelog" => "https://github.com/jrjsmrtn/tlx/blob/main/CHANGELOG.md"
       },
-      files: ~w(lib examples .formatter.exs mix.exs README.md LICENSE CHANGELOG.md)
+      files:
+        ~w(lib examples .formatter.exs mix.exs README.md LICENSE CHANGELOG.md usage-rules.md usage-rules/)
     ]
   end
 
