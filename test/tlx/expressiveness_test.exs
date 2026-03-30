@@ -1,9 +1,9 @@
 defmodule Tlx.ExpressivenessTest do
   use ExUnit.Case
 
-  alias Tlx.Emitter.TLA
   alias Tlx.Emitter.PlusCal
   alias Tlx.Emitter.PlusCalP
+  alias Tlx.Emitter.TLA
 
   # --- Test specs ---
 

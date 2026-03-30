@@ -62,7 +62,6 @@ defmodule Tlx.Dsl do
     name: :pick,
     target: Tlx.WithChoice,
     args: [:variable, :set],
-    identifier: :variable,
     schema: [
       variable: [
         type: :atom,
