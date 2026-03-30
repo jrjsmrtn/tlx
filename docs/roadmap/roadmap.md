@@ -88,8 +88,8 @@ Enable Elixir developers to write formally verifiable TLA+/PlusCal specification
 **Target**: v0.3.x
 **Focus**: Bridge to the original motivation
 
-- [ ] GenStateMachine → Tlx skeleton generator
-- [ ] TLA+ → Tlx importer
+- [x] GenStateMachine → Tlx skeleton generator
+- [x] TLA+ → Tlx importer
 - [ ] Forge example specs (node lifecycle, concurrent operators)
 
 ### Phase 9: Examples and Documentation (proposed)
@@ -106,6 +106,7 @@ Enable Elixir developers to write formally verifiable TLA+/PlusCal specification
 
 | Sprint | Phase                 | Version | Summary                                            |
 | ------ | --------------------- | ------- | -------------------------------------------------- |
+| 12     | Integration           | v0.2.3  | TLA+ importer, GenStateMachine generator           |
 | 13     | Validation            | v0.2.2  | 2PC and Raft examples, simulator found Raft bugs   |
 | 9      | Semantic Intelligence | v0.2.1  | Auto TypeOK, empty action warning, better errors   |
 | 8      | DX Overhaul           | v0.2.0  | e() macro, flat sections, await, defspec, emitters |

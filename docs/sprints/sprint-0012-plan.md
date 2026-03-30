@@ -2,8 +2,9 @@
 
 **Target Version**: v0.2.3
 **Phase**: Integration
-**Status**: In Progress
+**Status**: Complete
 **Started**: 2026-03-30
+**Completed**: 2026-03-30
 
 ## Goal
 
@@ -47,7 +48,7 @@ Build generic tools to import specifications into Tlx from two sources: Elixir G
 
 ## Acceptance Criteria
 
-- [ ] `mix tlx.gen.from_state_machine` generates valid Tlx DSL skeleton
+- [x] `mix tlx.gen.from_state_machine` generates valid Tlx DSL skeleton
 - [ ] `mix tlx.import` parses basic TLA+ and emits Tlx DSL
 - [ ] Round-trip: emit .tla from Tlx, import back, verify structure preserved
 - [ ] All tests pass

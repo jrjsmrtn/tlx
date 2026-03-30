@@ -11,10 +11,10 @@ A Spark DSL for writing TLA+/PlusCal specifications, with TLA+ emission for TLC 
 
 ## Current Development Status
 
-- **Current Sprint**: Sprint 12 (see docs/sprints/sprint-0012-plan.md)
-- **Sprint Goal**: GenStateMachine and TLA+ import tools
-- **Status**: In Progress
-- **Next Milestone**: v0.2.3
+- **Latest Release**: v0.2.3
+- **Status**: Parked — 4 examples, 106 tests, DSL validated
+- **Completed sprints**: 1-9, 12, 13
+- **Proposed sprints**: 10 (expressiveness), 11 (tooling)
 
 ## Foundational ADRs
 
