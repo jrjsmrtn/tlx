@@ -73,14 +73,14 @@ Enable Elixir developers to write formally verifiable TLA+/PlusCal specification
 - [ ] Custom Init expressions
 - [ ] LET/IN local definitions
 
-### Phase 7: Tooling (proposed)
+### Phase 7: Tooling (partial)
 
 **Target**: v0.2.x
 **Focus**: Developer workflow
 
 - [ ] `mix tlx.watch` — auto-simulate on save
 - [ ] `mix tlx.list` — discover spec modules
-- [ ] Extract shared AST formatting into common module
+- [x] Extract shared AST formatting into `Tlx.Emitter.Format` (symbol-table-parameterized)
 - [ ] CI integration template
 
 ### Phase 8: Forge Integration (proposed)
@@ -92,24 +92,24 @@ Enable Elixir developers to write formally verifiable TLA+/PlusCal specification
 - [x] TLA+ → Tlx importer
 - [ ] Forge example specs (node lifecycle, concurrent operators)
 
-### Phase 9: Robustness (proposed)
+### Phase 9: Robustness (complete)
 
 **Target**: v0.2.x
 **Focus**: Replace fragile string-based approaches with proper tools
 
-Sprint 15 — TLC JSON and PlusCal emitter compat:
+Sprint 15 — TLC tool mode and PlusCal emitter compat:
 
-- [ ] TLC JSON output parsing (replaces regex stdout scraping)
-- [ ] PlusCal C-syntax emitter fixed for pcal.trans acceptance
-- [ ] PlusCal P-syntax emitter (begin/end style)
-- [ ] Integration tested: PlusCal → pcal.trans → TLC
+- [x] TLC `-tool` mode output parsing (replaces regex stdout scraping; JSON unavailable in TLC 2.19)
+- [x] PlusCal C-syntax emitter fixed for pcal.trans acceptance
+- [x] PlusCal P-syntax emitter (begin/end style)
+- [x] Integration tested: PlusCal → pcal.trans → TLC
 
-Sprint 16 — Proper parsers and Igniter code gen:
+Sprint 16 — Proper parsers and AST-based code gen:
 
-- [ ] NimbleParsec TLA+ parser (replaces regex importer)
-- [ ] PlusCal parser for importing PlusCal specs
-- [ ] Igniter-based code generation for `mix tlx.import` and `mix tlx.gen.from_state_machine`
-- [ ] Round-trip fidelity: import → emit → import produces identical output
+- [x] NimbleParsec TLA+ parser (replaces regex importer)
+- [x] PlusCal parser for importing PlusCal specs (C-syntax and P-syntax)
+- [x] AST-based code generation via `Code.format_string!/1` for `mix tlx.import` and `mix tlx.gen.from_state_machine`
+- [x] Round-trip fidelity tests: emit → parse → codegen preserves structure
 
 ### Phase 10: Examples and Documentation (proposed)
 
@@ -123,26 +123,26 @@ Sprint 16 — Proper parsers and Igniter code gen:
 
 ## Sprint History
 
-| Sprint | Phase                 | Version | Summary                                            |
-| ------ | --------------------- | ------- | -------------------------------------------------- |
-| 14     | Quality               | v0.2.4  | TLC integration testing against real subprocess    |
-| 12     | Integration           | v0.2.3  | TLA+ importer, GenStateMachine generator           |
-| 13     | Validation            | v0.2.2  | 2PC and Raft examples, simulator found Raft bugs   |
-| 9      | Semantic Intelligence | v0.2.1  | Auto TypeOK, empty action warning, better errors   |
-| 8      | DX Overhaul           | v0.2.0  | e() macro, flat sections, await, defspec, emitters |
-| 7      | Production Ready      | v0.1.7  | Examples, tutorial, Hex prep, edge case tests      |
-| 6      | Simulation/Tooling    | v0.1.6  | Trace formatting, Spark docs generation            |
-| 5      | Simulation/Tooling    | v0.1.5  | Mutex example, Elixir simulator                    |
-| 4      | PlusCal/Concurrency   | v0.1.4  | Temporal properties, fairness, quantifiers         |
-| 3      | PlusCal/Concurrency   | v0.1.3  | Processes, TLC integration, config generation      |
-| 2      | Foundation/PlusCal    | v0.1.2  | PlusCal emitter, either/or, mix tlx.emit task      |
-| 1      | Foundation            | v0.1.1  | Core DSL (Spark), TLA+ emitter, quality gates      |
+| Sprint | Phase                 | Version | Summary                                             |
+| ------ | --------------------- | ------- | --------------------------------------------------- |
+| 16     | Robustness            | v0.2.6  | NimbleParsec parsers, AST codegen, round-trip tests |
+| 15     | Robustness            | v0.2.5  | TLC tool mode, PlusCal pcal.trans compat, P-syntax  |
+| 14     | Quality               | v0.2.4  | TLC integration testing against real subprocess     |
+| 12     | Integration           | v0.2.3  | TLA+ importer, GenStateMachine generator            |
+| 13     | Validation            | v0.2.2  | 2PC and Raft examples, simulator found Raft bugs    |
+| 9      | Semantic Intelligence | v0.2.1  | Auto TypeOK, empty action warning, better errors    |
+| 8      | DX Overhaul           | v0.2.0  | e() macro, flat sections, await, defspec, emitters  |
+| 7      | Production Ready      | v0.1.7  | Examples, tutorial, Hex prep, edge case tests       |
+| 6      | Simulation/Tooling    | v0.1.6  | Trace formatting, Spark docs generation             |
+| 5      | Simulation/Tooling    | v0.1.5  | Mutex example, Elixir simulator                     |
+| 4      | PlusCal/Concurrency   | v0.1.4  | Temporal properties, fairness, quantifiers          |
+| 3      | PlusCal/Concurrency   | v0.1.3  | Processes, TLC integration, config generation       |
+| 2      | Foundation/PlusCal    | v0.1.2  | PlusCal emitter, either/or, mix tlx.emit task       |
+| 1      | Foundation            | v0.1.1  | Core DSL (Spark), TLA+ emitter, quality gates       |
 
 ## Proposed Sprints
 
 | Sprint | Phase          | Plan                                   |
 | ------ | -------------- | -------------------------------------- |
-| 15     | Robustness     | [Plan](../sprints/sprint-0015-plan.md) |
-| 16     | Robustness     | [Plan](../sprints/sprint-0016-plan.md) |
 | 10     | Expressiveness | [Plan](../sprints/sprint-0010-plan.md) |
 | 11     | Tooling        | [Plan](../sprints/sprint-0011-plan.md) |

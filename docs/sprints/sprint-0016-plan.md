@@ -2,7 +2,7 @@
 
 **Target Version**: v0.2.6
 **Phase**: Robustness
-**Status**: Draft
+**Status**: Complete
 
 ## Goal
 
@@ -49,9 +49,9 @@ Replace string concatenation in `mix tlx.import` and `mix tlx.gen.from_state_mac
 
 ## Acceptance Criteria
 
-- [ ] NimbleParsec parser handles all TLA+ output from Tlx emitter
-- [ ] PlusCal parser handles both C-syntax and P-syntax
-- [ ] Igniter generates correctly formatted Elixir code
-- [ ] Round-trip tests pass
-- [ ] All tests pass
-- [ ] Code quality gates pass
+- [x] NimbleParsec parser handles all TLA+ output from Tlx emitter
+- [x] PlusCal parser handles both C-syntax and P-syntax
+- [x] Code.format_string!/1 generates correctly formatted Elixir code (Igniter not needed)
+- [x] Round-trip tests pass
+- [x] All tests pass
+- [x] Code quality gates pass

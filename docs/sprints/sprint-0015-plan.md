@@ -2,7 +2,7 @@
 
 **Target Version**: v0.2.5
 **Phase**: Robustness (Phase 9, part 1 of 2)
-**Status**: Draft
+**Status**: Complete
 
 ## Goal
 
@@ -80,9 +80,9 @@ end algorithm; *)
 
 ## Acceptance Criteria
 
-- [ ] TLC JSON output parsed for counterexample traces
-- [ ] PlusCal C-syntax output accepted by `pcal.trans`
-- [ ] PlusCal P-syntax output accepted by `pcal.trans`
-- [ ] Integration test: PlusCal → pcal.trans → TLC passes
-- [ ] All tests pass
-- [ ] Code quality gates pass
+- [x] TLC tool mode output parsed for counterexample traces (JSON unavailable in TLC 2.19)
+- [x] PlusCal C-syntax output accepted by `pcal.trans`
+- [x] PlusCal P-syntax output accepted by `pcal.trans`
+- [x] Integration test: PlusCal → pcal.trans → TLC passes
+- [x] All tests pass
+- [x] Code quality gates pass
