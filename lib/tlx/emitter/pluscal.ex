@@ -102,10 +102,10 @@ defmodule Tlx.Emitter.PlusCal do
   defp emit_pluscal_action(action) do
     label = "    #{Atom.to_string(action.name)}:"
 
-    if action.branches != [] do
-      emit_pluscal_branched(action, label)
-    else
-      emit_pluscal_simple(action, label)
+    cond do
+      action.branches != [] -> emit_pluscal_branched(action, label)
+      action.with_choices != [] -> emit_pluscal_with(action, label)
+      true -> emit_pluscal_simple(action, label)
     end
   end
 
@@ -142,6 +142,25 @@ defmodule Tlx.Emitter.PlusCal do
 
     "#{label}#{await}\n#{branches}"
   end
+
+  defp emit_pluscal_with(action, label) do
+    await =
+      if action.guard, do: "\n        await #{format_ast(unwrap_expr(action.guard))};", else: ""
+
+    with_blocks =
+      Enum.map_join(action.with_choices, "\n", fn wc ->
+        var = Atom.to_string(wc.variable)
+        set = format_set_ref(wc.set)
+        assignments = format_pluscal_assignments(wc.transitions)
+        "        with (#{var} \\in #{set}) {\n#{assignments}\n        }"
+      end)
+
+    "#{label}#{await}\n#{with_blocks}"
+  end
+
+  defp format_set_ref(set) when is_atom(set), do: Atom.to_string(set)
+  defp format_set_ref({:expr, ast}), do: format_ast(ast)
+  defp format_set_ref(other), do: inspect(other)
 
   defp format_pluscal_assignments(transitions) do
     Enum.map_join(transitions, "\n", fn t ->

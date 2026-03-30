@@ -26,6 +26,6 @@ defmodule Tlx.Verifiers.EmptyAction do
   end
 
   defp empty_action?(action) do
-    action.transitions == [] and action.branches == []
+    action.transitions == [] and action.branches == [] and action.with_choices == []
   end
 end

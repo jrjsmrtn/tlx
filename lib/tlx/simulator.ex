@@ -195,6 +195,34 @@ defmodule Tlx.Simulator do
   defp eval_ast({:*, _, [left, right]}, state),
     do: eval_ast(left, state) * eval_ast(right, state)
 
+  # IF/THEN/ELSE
+  defp eval_ast({:ite, cond, then_expr, else_expr}, state) do
+    if eval_ast(cond, state), do: eval_ast(then_expr, state), else: eval_ast(else_expr, state)
+  end
+
+  # Set operations
+  defp eval_ast({:union, a, b}, state),
+    do: MapSet.union(to_mapset(eval_ast(a, state)), to_mapset(eval_ast(b, state)))
+
+  defp eval_ast({:intersect, a, b}, state),
+    do: MapSet.intersection(to_mapset(eval_ast(a, state)), to_mapset(eval_ast(b, state)))
+
+  defp eval_ast({:subset, a, b}, state),
+    do: MapSet.subset?(to_mapset(eval_ast(a, state)), to_mapset(eval_ast(b, state)))
+
+  defp eval_ast({:cardinality, set}, state), do: MapSet.size(to_mapset(eval_ast(set, state)))
+
+  defp eval_ast({:in_set, elem, set}, state),
+    do: MapSet.member?(to_mapset(eval_ast(set, state)), eval_ast(elem, state))
+
+  defp eval_ast({:set_of, elements}, state), do: MapSet.new(elements, &eval_ast(&1, state))
+
+  # LET/IN
+  defp eval_ast({:let_in, var, binding, body}, state) do
+    val = eval_ast(binding, state)
+    eval_ast(body, Map.put(state, var, val))
+  end
+
   # Variable reference
   defp eval_ast({name, _meta, context}, state) when is_atom(name) and is_atom(context),
     do: Map.fetch!(state, name)
@@ -203,4 +231,7 @@ defmodule Tlx.Simulator do
   defp eval_ast(literal, _state) when is_integer(literal), do: literal
   defp eval_ast(literal, _state) when is_atom(literal), do: literal
   defp eval_ast(literal, _state) when is_binary(literal), do: literal
+
+  defp to_mapset(%MapSet{} = s), do: s
+  defp to_mapset(list) when is_list(list), do: MapSet.new(list)
 end

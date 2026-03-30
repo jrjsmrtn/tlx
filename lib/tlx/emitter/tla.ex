@@ -19,6 +19,7 @@ defmodule Tlx.Emitter.TLA do
     processes = Extension.get_entities(module, [:processes])
     properties = Extension.get_entities(module, [:properties])
 
+    init_constraints = Extension.get_entities(module, [:initial])
     all_actions = actions ++ Enum.flat_map(processes, & &1.actions)
     all_variables = variables ++ Enum.flat_map(processes, & &1.variables)
     var_names = Enum.map(all_variables, & &1.name)
@@ -31,7 +32,7 @@ defmodule Tlx.Emitter.TLA do
       emit_constants(constants),
       emit_variables(all_variables),
       emit_vars_tuple(var_names),
-      emit_init(all_variables),
+      emit_init(all_variables, init_constraints),
       emit_actions(all_actions, MapSet.new(var_names)),
       emit_next(all_actions),
       emit_fairness(actions, processes, var_names),
@@ -73,13 +74,20 @@ defmodule Tlx.Emitter.TLA do
     "VARIABLES #{names}\n"
   end
 
-  defp emit_init(variables) do
-    clauses =
+  defp emit_init(variables, init_constraints) do
+    var_clauses =
       variables
       |> Enum.filter(&(&1.default != nil))
       |> Enum.map(fn var ->
         "    /\\ #{Atom.to_string(var.name)} = #{format_value(var.default)}"
       end)
+
+    custom_clauses =
+      Enum.map(init_constraints, fn c ->
+        "    /\\ #{format_expr(c.expr)}"
+      end)
+
+    clauses = var_clauses ++ custom_clauses
 
     case clauses do
       [] -> nil
@@ -94,10 +102,10 @@ defmodule Tlx.Emitter.TLA do
   end
 
   defp emit_action(action, all_variables) do
-    if action.branches != [] do
-      emit_branched_action(action, all_variables)
-    else
-      emit_simple_action(action, all_variables)
+    cond do
+      action.branches != [] -> emit_branched_action(action, all_variables)
+      action.with_choices != [] -> emit_with_action(action, all_variables)
+      true -> emit_simple_action(action, all_variables)
     end
   end
 
@@ -123,6 +131,34 @@ defmodule Tlx.Emitter.TLA do
     body = guard_parts ++ ["    \\/ #{disjunction}"]
 
     "#{Atom.to_string(action.name)} ==\n#{Enum.join(body, "\n")}\n"
+  end
+
+  defp emit_with_action(action, all_variables) do
+    guard_parts = if action.guard, do: [format_guard(action.guard)], else: []
+
+    with_parts =
+      Enum.map(action.with_choices, fn wc ->
+        var = Atom.to_string(wc.variable)
+        set = format_set_ref(wc.set)
+        transitions = format_transitions(wc.transitions, all_variables)
+        inner = Enum.join(transitions, "\n")
+        "    /\\ \\E #{var} \\in #{set} :\n#{indent_lines(inner, 4)}"
+      end)
+
+    body = guard_parts ++ with_parts
+    "#{Atom.to_string(action.name)} ==\n#{Enum.join(body, "\n")}\n"
+  end
+
+  defp format_set_ref(set) when is_atom(set), do: Atom.to_string(set)
+  defp format_set_ref({:expr, ast}), do: format_ast(ast)
+  defp format_set_ref(other), do: inspect(other)
+
+  defp indent_lines(text, spaces) do
+    prefix = String.duplicate(" ", spaces)
+
+    text
+    |> String.split("\n")
+    |> Enum.map_join("\n", &(prefix <> &1))
   end
 
   defp format_transitions(transitions, all_variables) do

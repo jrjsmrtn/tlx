@@ -58,6 +58,29 @@ defmodule Tlx.Dsl do
     describe: "Declare a model constant."
   }
 
+  @with_choice %Spark.Dsl.Entity{
+    name: :pick,
+    target: Tlx.WithChoice,
+    args: [:variable, :set],
+    identifier: :variable,
+    schema: [
+      variable: [
+        type: :atom,
+        required: true,
+        doc: "The bound variable name for the non-deterministic choice."
+      ],
+      set: [
+        type: :any,
+        required: true,
+        doc: "The set to pick from (constant name or expression)."
+      ]
+    ],
+    entities: [
+      transitions: [@transition]
+    ],
+    describe: "Non-deterministic choice from a set (PlusCal `with (x \\in S)`)."
+  }
+
   @branch %Spark.Dsl.Entity{
     name: :branch,
     target: Tlx.Branch,
@@ -107,7 +130,8 @@ defmodule Tlx.Dsl do
     ],
     entities: [
       transitions: [@transition],
-      branches: [@branch]
+      branches: [@branch],
+      with_choices: [@with_choice]
     ],
     transform: {__MODULE__, :merge_await, []},
     describe: "Define a guarded state transition."
@@ -133,6 +157,27 @@ defmodule Tlx.Dsl do
     describe: "Declare a safety invariant."
   }
 
+  @init_constraint %Spark.Dsl.Entity{
+    name: :constraint,
+    target: Tlx.InitConstraint,
+    args: [:expr],
+    schema: [
+      expr: [
+        type: :any,
+        required: true,
+        doc: "A quoted boolean expression constraining the initial state."
+      ]
+    ],
+    describe: "An explicit constraint on the initial state."
+  }
+
+  @init %Spark.Dsl.Section{
+    name: :initial,
+    describe: "Custom initial state constraints (added to auto-generated Init).",
+    entities: [@init_constraint],
+    imports: [Tlx.Expr, Tlx.Temporal, Tlx.Sets]
+  }
+
   @variables %Spark.Dsl.Section{
     name: :variables,
     describe: "State variables for this specification.",
@@ -152,7 +197,7 @@ defmodule Tlx.Dsl do
     describe: "Guarded state transitions.",
     top_level?: true,
     entities: [@action],
-    imports: [Tlx.Expr]
+    imports: [Tlx.Expr, Tlx.Temporal, Tlx.Sets]
   }
 
   @invariants %Spark.Dsl.Section{
@@ -160,7 +205,7 @@ defmodule Tlx.Dsl do
     describe: "Safety invariants checked at every reachable state.",
     top_level?: true,
     entities: [@invariant],
-    imports: [Tlx.Expr, Tlx.Temporal]
+    imports: [Tlx.Expr, Tlx.Temporal, Tlx.Sets]
   }
 
   @process %Spark.Dsl.Entity{
@@ -196,7 +241,7 @@ defmodule Tlx.Dsl do
     describe: "Concurrent process declarations.",
     top_level?: true,
     entities: [@process],
-    imports: [Tlx.Expr]
+    imports: [Tlx.Expr, Tlx.Temporal, Tlx.Sets]
   }
 
   @property %Spark.Dsl.Entity{
@@ -224,11 +269,11 @@ defmodule Tlx.Dsl do
     describe: "Temporal properties checked over infinite traces.",
     top_level?: true,
     entities: [@property],
-    imports: [Tlx.Expr, Tlx.Temporal]
+    imports: [Tlx.Expr, Tlx.Temporal, Tlx.Sets]
   }
 
   use Spark.Dsl.Extension,
-    sections: [@variables, @constants, @actions, @invariants, @processes, @properties],
+    sections: [@variables, @constants, @init, @actions, @invariants, @processes, @properties],
     transformers: [Tlx.Transformers.TypeOK],
     verifiers: [Tlx.Verifiers.TransitionTargets, Tlx.Verifiers.EmptyAction]
 

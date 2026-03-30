@@ -152,6 +152,14 @@ defmodule Tlx.Emitter.Elixir do
   defp fmt({:expr, ast}), do: fmt_ast(ast)
   defp fmt({:forall, var, set, expr}), do: "forall(:#{var}, :#{set}, e(#{fmt(expr)}))"
   defp fmt({:exists, var, set, expr}), do: "exists(:#{var}, :#{set}, e(#{fmt(expr)}))"
+  defp fmt({:ite, c, t, e}), do: "ite(#{fmt(c)}, #{fmt(t)}, #{fmt(e)})"
+  defp fmt({:let_in, var, binding, body}), do: "let_in(:#{var}, #{fmt(binding)}, #{fmt(body)})"
+  defp fmt({:union, a, b}), do: "union(#{fmt(a)}, #{fmt(b)})"
+  defp fmt({:intersect, a, b}), do: "intersect(#{fmt(a)}, #{fmt(b)})"
+  defp fmt({:subset, a, b}), do: "subset(#{fmt(a)}, #{fmt(b)})"
+  defp fmt({:cardinality, s}), do: "cardinality(#{fmt(s)})"
+  defp fmt({:in_set, elem, s}), do: "in_set(#{fmt(elem)}, #{fmt(s)})"
+  defp fmt({:set_of, elems}), do: "set_of([#{Enum.map_join(elems, ", ", &fmt/1)}])"
   defp fmt(val), do: Format.format_expr(val, @symbols)
 
   defp fmt_temporal({:always, inner}), do: "always(#{fmt_temporal(inner)})"

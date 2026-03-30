@@ -8,6 +8,7 @@ defmodule Tlx.Action do
     :__identifier__,
     :__spark_metadata__,
     transitions: [],
-    branches: []
+    branches: [],
+    with_choices: []
   ]
 end

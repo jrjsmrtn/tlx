@@ -132,6 +132,32 @@ defmodule Tlx.Emitter.Format do
     "#{s.exists} #{Atom.to_string(var)} #{s.member} #{format_ast(set, s)} : #{format_expr(inner, s)}"
   end
 
+  # IF/THEN/ELSE
+  def format_ast({:ite, cond, then_expr, else_expr}, s) do
+    "IF #{format_expr(cond, s)} THEN #{format_expr(then_expr, s)} ELSE #{format_expr(else_expr, s)}"
+  end
+
+  # LET/IN
+  def format_ast({:let_in, var, binding, body}, s) do
+    "LET #{Atom.to_string(var)} == #{format_expr(binding, s)} IN #{format_expr(body, s)}"
+  end
+
+  # Set operations
+  def format_ast({:union, a, b}, s), do: "(#{format_expr(a, s)} \\union #{format_expr(b, s)})"
+
+  def format_ast({:intersect, a, b}, s),
+    do: "(#{format_expr(a, s)} \\intersect #{format_expr(b, s)})"
+
+  def format_ast({:subset, a, b}, s), do: "(#{format_expr(a, s)} \\subseteq #{format_expr(b, s)})"
+  def format_ast({:cardinality, set}, s), do: "Cardinality(#{format_expr(set, s)})"
+
+  def format_ast({:in_set, elem, set}, s),
+    do: "#{format_expr(elem, s)} #{s.member} #{format_expr(set, s)}"
+
+  def format_ast({:set_of, elements}, s) when is_list(elements) do
+    "{#{Enum.map_join(elements, ", ", &format_expr(&1, s))}}"
+  end
+
   # Variable reference
   def format_ast({name, _meta, ctx}, _s) when is_atom(name) and is_atom(ctx),
     do: Atom.to_string(name)
@@ -150,6 +176,14 @@ defmodule Tlx.Emitter.Format do
   def format_expr({:expr, ast}, s), do: format_ast(ast, s)
   def format_expr({:forall, _, _, _} = q, s), do: format_ast(q, s)
   def format_expr({:exists, _, _, _} = q, s), do: format_ast(q, s)
+  def format_expr({:ite, _, _, _} = q, s), do: format_ast(q, s)
+  def format_expr({:let_in, _, _, _} = q, s), do: format_ast(q, s)
+  def format_expr({:union, _, _} = q, s), do: format_ast(q, s)
+  def format_expr({:intersect, _, _} = q, s), do: format_ast(q, s)
+  def format_expr({:subset, _, _} = q, s), do: format_ast(q, s)
+  def format_expr({:cardinality, _} = q, s), do: format_ast(q, s)
+  def format_expr({:in_set, _, _} = q, s), do: format_ast(q, s)
+  def format_expr({:set_of, _} = q, s), do: format_ast(q, s)
 
   def format_expr({:member, var, values}, s) do
     vals = Enum.map_join(values, ", ", &Atom.to_string/1)
