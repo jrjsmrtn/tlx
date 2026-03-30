@@ -1,8 +1,9 @@
 # Sprint 13 — Examples and Documentation
 
-**Target Version**: v0.3.1
-**Phase**: Documentation
-**Status**: Draft
+**Target Version**: v0.2.2
+**Phase**: Validation
+**Status**: In Progress
+**Started**: 2026-03-30
 
 ## Goal
 
