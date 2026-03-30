@@ -19,6 +19,9 @@ defmodule Tlx.Emitter.Unicode do
   """
 
   alias Spark.Dsl.Extension
+  alias Tlx.Emitter.Format
+
+  @symbols Format.unicode_symbols()
 
   def emit(module) do
     variables = Extension.get_entities(module, [:variables])
@@ -170,60 +173,7 @@ defmodule Tlx.Emitter.Unicode do
   defp fmt_temporal({:expr, ast}), do: fmt_ast(ast)
   defp fmt_temporal(other), do: fmt(other)
 
-  # Expression formatting
-  defp fmt({:expr, ast}), do: fmt_ast(ast)
-  defp fmt({:forall, _, _, _} = q), do: fmt_ast(q)
-  defp fmt({:exists, _, _, _} = q), do: fmt_ast(q)
-
-  defp fmt({:member, var, values}) do
-    vals = Enum.map_join(values, ", ", &Atom.to_string/1)
-    "#{Atom.to_string(var)} ∈ {#{vals}}"
-  end
-
-  defp fmt({:and_members, clauses}) do
-    Enum.map_join(clauses, " ∧ ", fn {var, values} ->
-      vals = Enum.map_join(values, ", ", &Atom.to_string/1)
-      "#{Atom.to_string(var)} ∈ {#{vals}}"
-    end)
-  end
-
-  defp fmt(val) when is_integer(val), do: Integer.to_string(val)
-  defp fmt(true), do: "TRUE"
-  defp fmt(false), do: "FALSE"
-  defp fmt(val) when is_atom(val), do: Atom.to_string(val)
-  defp fmt(other), do: inspect(other)
-
-  defp fmt_ast({:and, _, [l, r]}), do: "(#{fmt_ast(l)} ∧ #{fmt_ast(r)})"
-  defp fmt_ast({:or, _, [l, r]}), do: "(#{fmt_ast(l)} ∨ #{fmt_ast(r)})"
-  defp fmt_ast({:not, _, [inner]}), do: "¬(#{fmt_ast(inner)})"
-  defp fmt_ast({:==, _, [l, r]}), do: "#{fmt_ast(l)} = #{fmt_ast(r)}"
-  defp fmt_ast({:!=, _, [l, r]}), do: "#{fmt_ast(l)} ≠ #{fmt_ast(r)}"
-  defp fmt_ast({:>=, _, [l, r]}), do: "#{fmt_ast(l)} ≥ #{fmt_ast(r)}"
-  defp fmt_ast({:<=, _, [l, r]}), do: "#{fmt_ast(l)} ≤ #{fmt_ast(r)}"
-  defp fmt_ast({:>, _, [l, r]}), do: "#{fmt_ast(l)} > #{fmt_ast(r)}"
-  defp fmt_ast({:<, _, [l, r]}), do: "#{fmt_ast(l)} < #{fmt_ast(r)}"
-  defp fmt_ast({:+, _, [l, r]}), do: "#{fmt_ast(l)} + #{fmt_ast(r)}"
-  defp fmt_ast({:-, _, [l, r]}), do: "#{fmt_ast(l)} - #{fmt_ast(r)}"
-  defp fmt_ast({:*, _, [l, r]}), do: "#{fmt_ast(l)} × #{fmt_ast(r)}"
-
-  defp fmt_ast({:forall, var, set, expr}),
-    do: "∀ #{Atom.to_string(var)} ∈ #{fmt_ast(set)} : #{fmt(expr)}"
-
-  defp fmt_ast({:exists, var, set, expr}),
-    do: "∃ #{Atom.to_string(var)} ∈ #{fmt_ast(set)} : #{fmt(expr)}"
-
-  defp fmt_ast({name, _meta, ctx}) when is_atom(name) and is_atom(ctx),
-    do: Atom.to_string(name)
-
-  defp fmt_ast(int) when is_integer(int), do: Integer.to_string(int)
-  defp fmt_ast(true), do: "TRUE"
-  defp fmt_ast(false), do: "FALSE"
-  defp fmt_ast(atom) when is_atom(atom), do: Atom.to_string(atom)
-  defp fmt_ast(other), do: inspect(other)
-
-  defp format_value(val) when is_integer(val), do: Integer.to_string(val)
-  defp format_value(true), do: "TRUE"
-  defp format_value(false), do: "FALSE"
-  defp format_value(val) when is_atom(val), do: Atom.to_string(val)
-  defp format_value(val), do: inspect(val)
+  defp fmt(expr), do: Format.format_expr(expr, @symbols)
+  defp fmt_ast(ast), do: Format.format_ast(ast, @symbols)
+  defp format_value(val), do: Format.format_value(val, @symbols)
 end

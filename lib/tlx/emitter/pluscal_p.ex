@@ -5,6 +5,9 @@ defmodule Tlx.Emitter.PlusCalP do
   """
 
   alias Spark.Dsl.Extension
+  alias Tlx.Emitter.Format
+
+  @symbols Format.pluscal_symbols()
 
   @doc """
   Generate a PlusCal P-syntax `.tla` string from a compiled spec module.
@@ -157,58 +160,8 @@ defmodule Tlx.Emitter.PlusCalP do
 
   defp emit_footer, do: "===="
 
-  defp unwrap_expr({:expr, ast}), do: ast
-  defp unwrap_expr(other), do: other
-
-  defp format_expr({:expr, ast}), do: format_ast(ast)
-  defp format_expr(val) when is_integer(val), do: Integer.to_string(val)
-  defp format_expr(true), do: "TRUE"
-  defp format_expr(false), do: "FALSE"
-  defp format_expr(val) when is_atom(val), do: "\"#{Atom.to_string(val)}\""
-  defp format_expr(other), do: inspect(other)
-
-  # Elixir AST → PlusCal expression
-
-  defp format_ast({:and, _, [left, right]}),
-    do: "(#{format_ast(left)} /\\ #{format_ast(right)})"
-
-  defp format_ast({:or, _, [left, right]}),
-    do: "(#{format_ast(left)} \\/ #{format_ast(right)})"
-
-  defp format_ast({:not, _, [inner]}), do: "~(#{format_ast(inner)})"
-  defp format_ast({:>=, _, [l, r]}), do: "#{format_ast(l)} >= #{format_ast(r)}"
-  defp format_ast({:<=, _, [l, r]}), do: "#{format_ast(l)} <= #{format_ast(r)}"
-  defp format_ast({:>, _, [l, r]}), do: "#{format_ast(l)} > #{format_ast(r)}"
-  defp format_ast({:<, _, [l, r]}), do: "#{format_ast(l)} < #{format_ast(r)}"
-  defp format_ast({:==, _, [l, r]}), do: "#{format_ast(l)} = #{format_ast(r)}"
-  defp format_ast({:!=, _, [l, r]}), do: "#{format_ast(l)} # #{format_ast(r)}"
-  defp format_ast({:+, _, [l, r]}), do: "#{format_ast(l)} + #{format_ast(r)}"
-  defp format_ast({:-, _, [l, r]}), do: "#{format_ast(l)} - #{format_ast(r)}"
-  defp format_ast({:*, _, [l, r]}), do: "#{format_ast(l)} * #{format_ast(r)}"
-
-  defp format_ast({name, _meta, context}) when is_atom(name) and is_atom(context),
-    do: Atom.to_string(name)
-
-  defp format_ast(int) when is_integer(int), do: Integer.to_string(int)
-  defp format_ast(true), do: "TRUE"
-  defp format_ast(false), do: "FALSE"
-
-  defp format_ast(atom) when is_atom(atom),
-    do: "\"#{Atom.to_string(atom)}\""
-
-  defp format_ast(other), do: inspect(other)
-
-  defp format_value(val) when is_integer(val), do: Integer.to_string(val)
-
-  defp format_value(val) when is_atom(val) and val not in [true, false, nil],
-    do: "\"#{Atom.to_string(val)}\""
-
-  defp format_value(true), do: "TRUE"
-  defp format_value(false), do: "FALSE"
-  defp format_value(val) when is_binary(val), do: inspect(val)
-
-  defp format_value(val) when is_list(val),
-    do: "<< #{Enum.map_join(val, ", ", &format_value/1)} >>"
-
-  defp format_value(val), do: inspect(val)
+  defp unwrap_expr(expr), do: Format.unwrap_expr(expr)
+  defp format_expr(expr), do: Format.format_expr(expr, @symbols)
+  defp format_ast(ast), do: Format.format_ast(ast, @symbols)
+  defp format_value(val), do: Format.format_value(val, @symbols)
 end

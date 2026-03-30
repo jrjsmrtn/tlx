@@ -6,6 +6,9 @@ defmodule Tlx.Emitter.Elixir do
   """
 
   alias Spark.Dsl.Extension
+  alias Tlx.Emitter.Format
+
+  @symbols Format.elixir_symbols()
 
   def emit(module) do
     variables = Extension.get_entities(module, [:variables])
@@ -149,11 +152,7 @@ defmodule Tlx.Emitter.Elixir do
   defp fmt({:expr, ast}), do: fmt_ast(ast)
   defp fmt({:forall, var, set, expr}), do: "forall(:#{var}, :#{set}, e(#{fmt(expr)}))"
   defp fmt({:exists, var, set, expr}), do: "exists(:#{var}, :#{set}, e(#{fmt(expr)}))"
-  defp fmt(val) when is_integer(val), do: Integer.to_string(val)
-  defp fmt(true), do: "true"
-  defp fmt(false), do: "false"
-  defp fmt(val) when is_atom(val), do: ":#{val}"
-  defp fmt(other), do: inspect(other)
+  defp fmt(val), do: Format.format_expr(val, @symbols)
 
   defp fmt_temporal({:always, inner}), do: "always(#{fmt_temporal(inner)})"
   defp fmt_temporal({:eventually, inner}), do: "eventually(#{fmt_temporal(inner)})"
@@ -161,24 +160,12 @@ defmodule Tlx.Emitter.Elixir do
   defp fmt_temporal({:expr, ast}), do: "e(#{fmt_ast(ast)})"
   defp fmt_temporal(other), do: fmt(other)
 
+  # Elixir and/or/not need paren_if_compound on sub-expressions
   defp fmt_ast({:and, _, [l, r]}), do: "#{paren_if_compound(l)} and #{paren_if_compound(r)}"
   defp fmt_ast({:or, _, [l, r]}), do: "#{paren_if_compound(l)} or #{paren_if_compound(r)}"
   defp fmt_ast({:not, _, [inner]}), do: "not (#{fmt_ast(inner)})"
-  defp fmt_ast({:==, _, [l, r]}), do: "#{fmt_ast(l)} == #{fmt_ast(r)}"
-  defp fmt_ast({:!=, _, [l, r]}), do: "#{fmt_ast(l)} != #{fmt_ast(r)}"
-  defp fmt_ast({:>=, _, [l, r]}), do: "#{fmt_ast(l)} >= #{fmt_ast(r)}"
-  defp fmt_ast({:<=, _, [l, r]}), do: "#{fmt_ast(l)} <= #{fmt_ast(r)}"
-  defp fmt_ast({:>, _, [l, r]}), do: "#{fmt_ast(l)} > #{fmt_ast(r)}"
-  defp fmt_ast({:<, _, [l, r]}), do: "#{fmt_ast(l)} < #{fmt_ast(r)}"
-  defp fmt_ast({:+, _, [l, r]}), do: "#{fmt_ast(l)} + #{fmt_ast(r)}"
-  defp fmt_ast({:-, _, [l, r]}), do: "#{fmt_ast(l)} - #{fmt_ast(r)}"
-  defp fmt_ast({:*, _, [l, r]}), do: "#{fmt_ast(l)} * #{fmt_ast(r)}"
-  defp fmt_ast({name, _meta, ctx}) when is_atom(name) and is_atom(ctx), do: Atom.to_string(name)
-  defp fmt_ast(int) when is_integer(int), do: Integer.to_string(int)
-  defp fmt_ast(true), do: "true"
-  defp fmt_ast(false), do: "false"
-  defp fmt_ast(atom) when is_atom(atom), do: ":#{atom}"
-  defp fmt_ast(other), do: inspect(other)
+  # Delegate all other AST nodes to shared Format
+  defp fmt_ast(ast), do: Format.format_ast(ast, @symbols)
 
   # Wrap in e() only when the value is an expression tuple, not a bare literal
   defp fmt_val({:expr, _} = expr), do: "e(#{fmt(expr)})"
