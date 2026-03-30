@@ -92,7 +92,17 @@ Enable Elixir developers to write formally verifiable TLA+/PlusCal specification
 - [x] TLA+ → Tlx importer
 - [ ] Forge example specs (node lifecycle, concurrent operators)
 
-### Phase 9: Examples and Documentation (proposed)
+### Phase 9: Parser and Code Generation Hardening (proposed)
+
+**Target**: v0.3.x
+**Focus**: Replace regex parsing and string templates with proper tools
+
+- [ ] Igniter-based code generation for `mix tlx.import` and `mix tlx.gen.from_state_machine`
+- [ ] Proper TLA+ parser (NimbleParsec or Yecc) replacing regex extraction
+- [ ] PlusCal parser for importing PlusCal specs
+- [ ] Round-trip fidelity: import → emit → import produces identical output
+
+### Phase 10: Examples and Documentation (proposed)
 
 **Target**: v0.3.x
 **Focus**: Real-world validation and learning materials
