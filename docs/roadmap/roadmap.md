@@ -92,14 +92,23 @@ Enable Elixir developers to write formally verifiable TLA+/PlusCal specification
 - [x] TLA+ → Tlx importer
 - [ ] Forge example specs (node lifecycle, concurrent operators)
 
-### Phase 9: Parser and Code Generation Hardening (proposed)
+### Phase 9: Robustness (proposed)
 
-**Target**: v0.3.x
-**Focus**: Replace regex parsing and string templates with proper tools
+**Target**: v0.2.x
+**Focus**: Replace fragile string-based approaches with proper tools
 
-- [ ] Igniter-based code generation for `mix tlx.import` and `mix tlx.gen.from_state_machine`
-- [ ] Proper TLA+ parser (NimbleParsec or Yecc) replacing regex extraction
+Sprint 15 — TLC JSON and PlusCal emitter compat:
+
+- [ ] TLC JSON output parsing (replaces regex stdout scraping)
+- [ ] PlusCal C-syntax emitter fixed for pcal.trans acceptance
+- [ ] PlusCal P-syntax emitter (begin/end style)
+- [ ] Integration tested: PlusCal → pcal.trans → TLC
+
+Sprint 16 — Proper parsers and Igniter code gen:
+
+- [ ] NimbleParsec TLA+ parser (replaces regex importer)
 - [ ] PlusCal parser for importing PlusCal specs
+- [ ] Igniter-based code generation for `mix tlx.import` and `mix tlx.gen.from_state_machine`
 - [ ] Round-trip fidelity: import → emit → import produces identical output
 
 ### Phase 10: Examples and Documentation (proposed)
@@ -116,6 +125,7 @@ Enable Elixir developers to write formally verifiable TLA+/PlusCal specification
 
 | Sprint | Phase                 | Version | Summary                                            |
 | ------ | --------------------- | ------- | -------------------------------------------------- |
+| 14     | Quality               | v0.2.4  | TLC integration testing against real subprocess    |
 | 12     | Integration           | v0.2.3  | TLA+ importer, GenStateMachine generator           |
 | 13     | Validation            | v0.2.2  | 2PC and Raft examples, simulator found Raft bugs   |
 | 9      | Semantic Intelligence | v0.2.1  | Auto TypeOK, empty action warning, better errors   |
@@ -130,10 +140,9 @@ Enable Elixir developers to write formally verifiable TLA+/PlusCal specification
 
 ## Proposed Sprints
 
-| Sprint | Phase                 | Plan                                   |
-| ------ | --------------------- | -------------------------------------- |
-| 9      | Semantic Intelligence | [Plan](../sprints/sprint-0009-plan.md) |
-| 10     | Expressiveness        | [Plan](../sprints/sprint-0010-plan.md) |
-| 11     | Tooling               | [Plan](../sprints/sprint-0011-plan.md) |
-| 12     | Forge Integration     | [Plan](../sprints/sprint-0012-plan.md) |
-| 13     | Examples & Docs       | [Plan](../sprints/sprint-0013-plan.md) |
+| Sprint | Phase          | Plan                                   |
+| ------ | -------------- | -------------------------------------- |
+| 15     | Robustness     | [Plan](../sprints/sprint-0015-plan.md) |
+| 16     | Robustness     | [Plan](../sprints/sprint-0016-plan.md) |
+| 10     | Expressiveness | [Plan](../sprints/sprint-0010-plan.md) |
+| 11     | Tooling        | [Plan](../sprints/sprint-0011-plan.md) |

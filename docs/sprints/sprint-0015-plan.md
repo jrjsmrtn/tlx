@@ -1,7 +1,7 @@
 # Sprint 15 — TLC JSON Output and PlusCal Compatibility
 
 **Target Version**: v0.2.5
-**Phase**: Quality / Compatibility
+**Phase**: Robustness (Phase 9, part 1 of 2)
 **Status**: Draft
 
 ## Goal
