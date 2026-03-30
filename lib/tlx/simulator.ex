@@ -25,10 +25,17 @@ defmodule Tlx.Simulator do
     if seed = opts[:seed], do: :rand.seed(:exsss, {seed, seed, seed})
 
     variables = Extension.get_entities(module, [:variables])
+    constants = Extension.get_entities(module, [:constants])
     actions = Extension.get_entities(module, [:actions])
     invariants = Extension.get_entities(module, [:invariants])
 
-    init_state = build_init(variables)
+    constant_values = opts[:constants] || %{}
+
+    init_state =
+      variables
+      |> build_init()
+      |> Map.merge(build_constants(constants, constant_values))
+
     action_list = build_actions(actions)
     invariant_list = build_invariants(invariants)
 
@@ -102,6 +109,12 @@ defmodule Tlx.Simulator do
 
   defp build_init(variables) do
     Map.new(variables, fn var -> {var.name, var.default} end)
+  end
+
+  defp build_constants(constants, values) do
+    Map.new(constants, fn c ->
+      {c.name, Map.get(values, c.name, c.name)}
+    end)
   end
 
   defp build_actions(actions) do

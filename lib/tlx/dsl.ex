@@ -229,7 +229,8 @@ defmodule Tlx.Dsl do
 
   use Spark.Dsl.Extension,
     sections: [@variables, @constants, @actions, @invariants, @processes, @properties],
-    verifiers: [Tlx.Verifiers.TransitionTargets]
+    transformers: [Tlx.Transformers.TypeOK],
+    verifiers: [Tlx.Verifiers.TransitionTargets, Tlx.Verifiers.EmptyAction]
 
   @doc false
   def merge_await(%{await: nil} = action), do: {:ok, action}

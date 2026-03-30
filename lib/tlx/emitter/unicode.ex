@@ -174,6 +174,19 @@ defmodule Tlx.Emitter.Unicode do
   defp fmt({:expr, ast}), do: fmt_ast(ast)
   defp fmt({:forall, _, _, _} = q), do: fmt_ast(q)
   defp fmt({:exists, _, _, _} = q), do: fmt_ast(q)
+
+  defp fmt({:member, var, values}) do
+    vals = Enum.map_join(values, ", ", &Atom.to_string/1)
+    "#{Atom.to_string(var)} ∈ {#{vals}}"
+  end
+
+  defp fmt({:and_members, clauses}) do
+    Enum.map_join(clauses, " ∧ ", fn {var, values} ->
+      vals = Enum.map_join(values, ", ", &Atom.to_string/1)
+      "#{Atom.to_string(var)} ∈ {#{vals}}"
+    end)
+  end
+
   defp fmt(val) when is_integer(val), do: Integer.to_string(val)
   defp fmt(true), do: "TRUE"
   defp fmt(false), do: "FALSE"

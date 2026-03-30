@@ -232,6 +232,19 @@ defmodule Tlx.Emitter.TLA do
   defp format_expr({:expr, ast}), do: format_ast(ast)
   defp format_expr({:forall, _, _, _} = q), do: format_ast(q)
   defp format_expr({:exists, _, _, _} = q), do: format_ast(q)
+
+  defp format_expr({:member, var, values}) do
+    vals = Enum.map_join(values, ", ", &Atom.to_string/1)
+    "#{Atom.to_string(var)} \\in {#{vals}}"
+  end
+
+  defp format_expr({:and_members, clauses}) do
+    Enum.map_join(clauses, " /\\ ", fn {var, values} ->
+      vals = Enum.map_join(values, ", ", &Atom.to_string/1)
+      "#{Atom.to_string(var)} \\in {#{vals}}"
+    end)
+  end
+
   defp format_expr(val) when is_integer(val), do: Integer.to_string(val)
   defp format_expr(true), do: "TRUE"
   defp format_expr(false), do: "FALSE"
