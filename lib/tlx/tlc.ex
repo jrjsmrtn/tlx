@@ -39,10 +39,13 @@ defmodule Tlx.TLC do
     ]
 
     case System.cmd("java", args, stderr_to_stdout: true) do
-      {output, 0} -> {:ok, parse_output(output)}
-      {output, 12} -> {:error, :violation, parse_output(output)}
-      {output, 13} -> {:error, :deadlock, parse_output(output)}
-      {output, code} -> {:error, {:exit_code, code}, parse_output(output)}
+      {output, 0} ->
+        {:ok, parse_output(output)}
+
+      {output, _code} ->
+        parsed = parse_output(output)
+        kind = parsed.violation || :unknown
+        {:error, kind, parsed}
     end
   end
 
@@ -85,11 +88,10 @@ defmodule Tlx.TLC do
   end
 
   defp extract_trace(output) do
-    case Regex.split(~r/Error: The behavior up to this point is:/, output) do
+    case Regex.split(~r/Error: The behavior up to this point is:\n?/, output) do
       [_, trace_part] ->
         trace_part
-        |> String.split(~r/State \d+ :/)
-        |> Enum.drop(1)
+        |> String.split(~r/\s*State \d+ ?:[^\n]*\n/)
         |> Enum.map(&String.trim/1)
         |> Enum.reject(&(&1 == ""))
 

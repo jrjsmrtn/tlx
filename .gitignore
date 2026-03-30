@@ -30,6 +30,7 @@ tlx-*.tar
 .envrc.local
 *.pem
 *.key
+tla2tools.jar
 credentials.json
 secrets.yaml
 

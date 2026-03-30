@@ -6,7 +6,7 @@ defmodule Tlx.TLCTest do
   describe "output parsing" do
     test "parses successful output" do
       output = """
-      TLC2 Version 2.18
+      TLC2 Version 2.19
       Model checking completed. No error has been found.
         Finished in 01s at (2026-03-30)
       3400 distinct states found
@@ -18,24 +18,33 @@ defmodule Tlx.TLCTest do
       assert result.trace == []
     end
 
-    test "parses invariant violation" do
+    test "parses invariant violation with real TLC format" do
       output = """
       Error: Invariant TypeOK is violated.
       Error: The behavior up to this point is:
-      State 1 : /\\ x = 0
-      State 2 : /\\ x = -1
+      State 1: <Initial predicate>
+      /\\ x = 0
+
+      State 2: <inc line 5, col 1 to line 5, col 10 of module Test>
+      /\\ x = -1
+
+      2 states generated, 2 distinct states found, 0 states left on queue.
       """
 
       result = TLC.parse_output(output)
       assert result.violation == {:invariant, "TypeOK"}
       assert length(result.trace) == 2
+      assert hd(result.trace) =~ "x = 0"
     end
 
     test "parses deadlock" do
       output = """
       Error: deadlock reached.
       Error: The behavior up to this point is:
-      State 1 : /\\ x = 5
+      State 1: <Initial predicate>
+      /\\ x = 5
+
+      1 states generated, 1 distinct states found, 0 states left on queue.
       """
 
       result = TLC.parse_output(output)

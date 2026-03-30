@@ -2,7 +2,8 @@
 
 **Target Version**: v0.2.4
 **Phase**: Quality
-**Status**: Draft
+**Status**: In Progress
+**Started**: 2026-03-30
 
 ## Goal
 
