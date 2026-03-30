@@ -2,14 +2,15 @@
 
 ## Current Status
 
-- **Active Sprint**: Between sprints (Sprint 7 complete, Phase 4 substantially done)
+- **Active Sprint**: Between sprints (Sprint 8 complete)
 - **Latest Release**: v0.2.0
-- **Status**: Feature-complete for initial release
+- **Status**: Feature-complete, roadmap done
 
 ## Sprint Index
 
 | Sprint | Phase               | Version | Status   | Plan                        | Retrospective                         |
 | ------ | ------------------- | ------- | -------- | --------------------------- | ------------------------------------- |
+| 8      | DX Overhaul         | v0.2.0  | Complete | [Plan](sprint-0008-plan.md) | [Retro](sprint-0008-retrospective.md) |
 | 7      | Production Ready    | v0.1.7  | Complete | [Plan](sprint-0007-plan.md) | [Retro](sprint-0007-retrospective.md) |
 | 6      | Simulation/Tooling  | v0.1.6  | Complete | [Plan](sprint-0006-plan.md) | [Retro](sprint-0006-retrospective.md) |
 | 5      | Simulation/Tooling  | v0.1.5  | Complete | [Plan](sprint-0005-plan.md) | [Retro](sprint-0005-retrospective.md) |

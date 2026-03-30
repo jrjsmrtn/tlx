@@ -54,12 +54,13 @@ Enable Elixir developers to write formally verifiable TLA+/PlusCal specification
 
 ## Sprint History
 
-| Sprint | Phase               | Version | Summary                                       |
-| ------ | ------------------- | ------- | --------------------------------------------- |
-| 7      | Production Ready    | v0.1.7  | Examples, tutorial, Hex prep, edge case tests |
-| 6      | Simulation/Tooling  | v0.1.6  | Trace formatting, Spark docs generation       |
-| 5      | Simulation/Tooling  | v0.1.5  | Mutex example, Elixir simulator               |
-| 4      | PlusCal/Concurrency | v0.1.4  | Temporal properties, fairness, quantifiers    |
-| 3      | PlusCal/Concurrency | v0.1.3  | Processes, TLC integration, config generation |
-| 2      | Foundation/PlusCal  | v0.1.2  | PlusCal emitter, either/or, mix tlx.emit task |
-| 1      | Foundation          | v0.1.1  | Core DSL (Spark), TLA+ emitter, quality gates |
+| Sprint | Phase               | Version | Summary                                            |
+| ------ | ------------------- | ------- | -------------------------------------------------- |
+| 8      | DX Overhaul         | v0.2.0  | e() macro, flat sections, await, defspec, emitters |
+| 7      | Production Ready    | v0.1.7  | Examples, tutorial, Hex prep, edge case tests      |
+| 6      | Simulation/Tooling  | v0.1.6  | Trace formatting, Spark docs generation            |
+| 5      | Simulation/Tooling  | v0.1.5  | Mutex example, Elixir simulator                    |
+| 4      | PlusCal/Concurrency | v0.1.4  | Temporal properties, fairness, quantifiers         |
+| 3      | PlusCal/Concurrency | v0.1.3  | Processes, TLC integration, config generation      |
+| 2      | Foundation/PlusCal  | v0.1.2  | PlusCal emitter, either/or, mix tlx.emit task      |
+| 1      | Foundation          | v0.1.1  | Core DSL (Spark), TLA+ emitter, quality gates      |
