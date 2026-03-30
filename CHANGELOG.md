@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-03-30
+
+### Added
+
+- Two-Phase Commit example (`examples/two_phase_commit.ex`)
+- Raft leader election example (`examples/raft_leader.ex`)
+- Simulator found and helped fix two Raft bugs: vote clearing on step-down and stale-term quorum checks
+
 ## [0.2.1] - 2026-03-30
 
 ### Added

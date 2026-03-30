@@ -2,8 +2,9 @@
 
 **Target Version**: v0.2.2
 **Phase**: Validation
-**Status**: In Progress
+**Status**: Partial (examples done, how-to docs postponed)
 **Started**: 2026-03-30
+**Completed**: 2026-03-30
 
 ## Goal
 

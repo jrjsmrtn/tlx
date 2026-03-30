@@ -11,10 +11,10 @@ A Spark DSL for writing TLA+/PlusCal specifications, with TLA+ emission for TLC 
 
 ## Current Development Status
 
-- **Current Sprint**: Sprint 13 (see docs/sprints/sprint-0013-plan.md)
-- **Sprint Goal**: Real-world examples (2PC, Raft) to validate DSL
-- **Status**: In Progress
-- **Next Milestone**: v0.2.2
+- **Latest Release**: v0.2.2
+- **Status**: Parked — 4 examples, 98 tests, DSL validated
+- **Phases 1-5**: Complete
+- **Proposed sprints**: 10 (expressiveness), 11 (tooling), 12 (Forge integration)
 
 ## Foundational ADRs
 

@@ -97,8 +97,8 @@ Enable Elixir developers to write formally verifiable TLA+/PlusCal specification
 **Target**: v0.3.x
 **Focus**: Real-world validation and learning materials
 
-- [ ] Raft leader election spec
-- [ ] Two-phase commit spec
+- [x] Raft leader election spec
+- [x] Two-phase commit spec
 - [ ] How-to guides (model state machines, find race conditions, run TLC)
 - [ ] Explanation pages (why formal verification, Tlx vs PlusCal, TLA+ vs property testing)
 
@@ -106,6 +106,7 @@ Enable Elixir developers to write formally verifiable TLA+/PlusCal specification
 
 | Sprint | Phase                 | Version | Summary                                            |
 | ------ | --------------------- | ------- | -------------------------------------------------- |
+| 13     | Validation            | v0.2.2  | 2PC and Raft examples, simulator found Raft bugs   |
 | 9      | Semantic Intelligence | v0.2.1  | Auto TypeOK, empty action warning, better errors   |
 | 8      | DX Overhaul           | v0.2.0  | e() macro, flat sections, await, defspec, emitters |
 | 7      | Production Ready      | v0.1.7  | Examples, tutorial, Hex prep, edge case tests      |

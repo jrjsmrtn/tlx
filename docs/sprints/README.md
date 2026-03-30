@@ -2,14 +2,15 @@
 
 ## Current Status
 
-- **Active Sprint**: Between sprints (Sprint 9 complete)
-- **Latest Release**: v0.2.1
-- **Status**: Phases 1-5 complete
+- **Active Sprint**: Parked
+- **Latest Release**: v0.2.2
+- **Status**: DSL validated with 4 real-world examples
 
 ## Sprint Index
 
 | Sprint | Phase                 | Version | Status   | Plan                        | Retrospective                         |
 | ------ | --------------------- | ------- | -------- | --------------------------- | ------------------------------------- |
+| 13     | Validation            | v0.2.2  | Partial  | [Plan](sprint-0013-plan.md) | [Retro](sprint-0013-retrospective.md) |
 | 9      | Semantic Intelligence | v0.2.1  | Complete | [Plan](sprint-0009-plan.md) | [Retro](sprint-0009-retrospective.md) |
 | 8      | DX Overhaul           | v0.2.0  | Complete | [Plan](sprint-0008-plan.md) | [Retro](sprint-0008-retrospective.md) |
 | 7      | Production Ready      | v0.1.7  | Complete | [Plan](sprint-0007-plan.md) | [Retro](sprint-0007-retrospective.md) |
