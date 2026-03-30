@@ -2,8 +2,9 @@
 
 **Target Version**: v0.2.4
 **Phase**: Quality
-**Status**: In Progress
+**Status**: Partial (TLA+ integration done, PlusCal deferred)
 **Started**: 2026-03-30
+**Completed**: 2026-03-30
 
 ## Goal
 

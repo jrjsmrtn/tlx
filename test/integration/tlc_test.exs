@@ -1,6 +1,11 @@
 defmodule Tlx.Integration.TLCTest do
   use ExUnit.Case
 
+  alias Tlx.Emitter.Config
+  alias Tlx.Emitter.PlusCal
+  alias Tlx.Emitter.TLA
+  alias Tlx.TLC
+
   @moduletag :integration
 
   @tla2tools Path.expand("tla2tools.jar", File.cwd!())
@@ -38,14 +43,14 @@ defmodule Tlx.Integration.TLCTest do
   end
 
   setup do
-    unless File.exists?(@tla2tools) do
-      IO.puts("Skipping TLC integration tests: tla2tools.jar not found")
-      :skip
-    else
+    if File.exists?(@tla2tools) do
       dir = Path.join(System.tmp_dir!(), "tlx_integration_#{:rand.uniform(100_000)}")
       File.mkdir_p!(dir)
       on_exit(fn -> File.rm_rf!(dir) end)
       {:ok, dir: dir}
+    else
+      IO.puts("Skipping TLC integration tests: tla2tools.jar not found")
+      :skip
     end
   end
 
@@ -54,10 +59,10 @@ defmodule Tlx.Integration.TLCTest do
       tla_path = Path.join(dir, "CorrectCounter.tla")
       cfg_path = Path.join(dir, "CorrectCounter.cfg")
 
-      File.write!(tla_path, Tlx.Emitter.TLA.emit(CorrectCounter) <> "\n")
-      File.write!(cfg_path, Tlx.Emitter.Config.emit(CorrectCounter) <> "\n")
+      File.write!(tla_path, TLA.emit(CorrectCounter) <> "\n")
+      File.write!(cfg_path, Config.emit(CorrectCounter) <> "\n")
 
-      assert {:ok, result} = Tlx.TLC.check(tla_path, cfg_path, tla2tools: @tla2tools)
+      assert {:ok, result} = TLC.check(tla_path, cfg_path, tla2tools: @tla2tools)
       assert result.states != nil
       assert result.states > 0
       assert result.violation == nil
@@ -67,10 +72,10 @@ defmodule Tlx.Integration.TLCTest do
       tla_path = Path.join(dir, "BuggyCounter.tla")
       cfg_path = Path.join(dir, "BuggyCounter.cfg")
 
-      File.write!(tla_path, Tlx.Emitter.TLA.emit(BuggyCounter) <> "\n")
-      File.write!(cfg_path, Tlx.Emitter.Config.emit(BuggyCounter) <> "\n")
+      File.write!(tla_path, TLA.emit(BuggyCounter) <> "\n")
+      File.write!(cfg_path, Config.emit(BuggyCounter) <> "\n")
 
-      assert {:error, _kind, result} = Tlx.TLC.check(tla_path, cfg_path, tla2tools: @tla2tools)
+      assert {:error, _kind, result} = TLC.check(tla_path, cfg_path, tla2tools: @tla2tools)
       assert result.violation != nil
     end
   end
@@ -84,10 +89,10 @@ defmodule Tlx.Integration.TLCTest do
       tla_path = Path.join(dir, "BuggyCounter.tla")
       cfg_path = Path.join(dir, "BuggyCounter.cfg")
 
-      File.write!(tla_path, Tlx.Emitter.TLA.emit(BuggyCounter) <> "\n")
-      File.write!(cfg_path, Tlx.Emitter.Config.emit(BuggyCounter) <> "\n")
+      File.write!(tla_path, TLA.emit(BuggyCounter) <> "\n")
+      File.write!(cfg_path, Config.emit(BuggyCounter) <> "\n")
 
-      assert {:error, _kind, result} = Tlx.TLC.check(tla_path, cfg_path, tla2tools: @tla2tools)
+      assert {:error, _kind, result} = TLC.check(tla_path, cfg_path, tla2tools: @tla2tools)
       assert result.trace != []
     end
   end
