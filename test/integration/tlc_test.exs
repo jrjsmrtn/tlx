@@ -38,14 +38,14 @@ defmodule Tlx.Integration.TLCTest do
   end
 
   setup do
-    unless File.exists?(@tla2tools) do
-      IO.puts("Skipping TLC integration tests: tla2tools.jar not found")
-      :skip
-    else
+    if File.exists?(@tla2tools) do
       dir = Path.join(System.tmp_dir!(), "tlx_integration_#{:rand.uniform(100_000)}")
       File.mkdir_p!(dir)
       on_exit(fn -> File.rm_rf!(dir) end)
       {:ok, dir: dir}
+    else
+      IO.puts("Skipping TLC integration tests: tla2tools.jar not found")
+      :skip
     end
   end
 
