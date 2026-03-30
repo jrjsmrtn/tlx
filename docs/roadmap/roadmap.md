@@ -83,14 +83,15 @@ Enable Elixir developers to write formally verifiable TLA+/PlusCal specification
 - [x] Extract shared AST formatting into `Tlx.Emitter.Format` (symbol-table-parameterized)
 - [ ] CI integration template
 
-### Phase 8: Forge Integration (proposed)
+### Phase 8: Forge Integration (complete)
 
 **Target**: v0.3.x
 **Focus**: Bridge to the original motivation
 
 - [x] GenStateMachine → Tlx skeleton generator
 - [x] TLA+ → Tlx importer
-- [ ] Forge example specs (node lifecycle, concurrent operators)
+- [x] Forge example specs — 6 abstract (from ADRs) + 6 concrete (from code), all TLC-verified
+- [x] Refinement checking — concrete specs refine abstract specs via INSTANCE/WITH
 
 ### Phase 9: Robustness (complete)
 
@@ -111,6 +112,19 @@ Sprint 16 — Proper parsers and AST-based code gen:
 - [x] AST-based code generation via `Code.format_string!/1` for `mix tlx.import` and `mix tlx.gen.from_state_machine`
 - [x] Round-trip fidelity tests: emit → parse → codegen preserves structure
 
+### Phase 11: Refinement and Verification (complete)
+
+**Target**: v0.2.8
+**Focus**: Spec-vs-spec comparison, emitter robustness
+
+- [x] `refines` DSL block with `mapping` entities
+- [x] TLA+ INSTANCE/WITH emission for refinement checking
+- [x] Auto-declare atom model values as CONSTANTS (TLA+ and .cfg)
+- [x] Fix branched action TLA+ emission (UNCHANGED inside disjunctions)
+- [x] Handle 3-tuple AST forms for ite/let_in/set ops inside `e()`
+- [x] Auto-include abstract spec atoms in INSTANCE identity mappings
+- [x] `formal-spec` skill — workflow from ADR to refinement-checked specs
+
 ### Phase 10: Examples and Documentation (proposed)
 
 **Target**: v0.3.x
@@ -125,6 +139,7 @@ Sprint 16 — Proper parsers and AST-based code gen:
 
 | Sprint | Phase                 | Version | Summary                                             |
 | ------ | --------------------- | ------- | --------------------------------------------------- |
+| —      | Refinement            | v0.2.8  | Refinement DSL, emitter fixes, formal-spec skill    |
 | 10     | Expressiveness        | v0.2.7  | ite, sets, let_in, custom init, pick from sets      |
 | 16     | Robustness            | v0.2.6  | NimbleParsec parsers, AST codegen, round-trip tests |
 | 15     | Robustness            | v0.2.5  | TLC tool mode, PlusCal pcal.trans compat, P-syntax  |
