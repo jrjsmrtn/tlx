@@ -1,7 +1,7 @@
-defmodule Tlx.Emitter.PlusCalTest do
+defmodule Tlx.Emitter.PlusCalPTest do
   use ExUnit.Case
 
-  alias Tlx.Emitter.PlusCal
+  alias Tlx.Emitter.PlusCalP
 
   defmodule Counter do
     use Tlx.Spec
@@ -63,92 +63,95 @@ defmodule Tlx.Emitter.PlusCalTest do
     end
   end
 
-  describe "PlusCal process emission" do
-    test "emits process block with set" do
-      output = PlusCal.emit(MutexSpec)
+  describe "P-syntax structure" do
+    test "emits begin/end algorithm" do
+      output = PlusCalP.emit(Counter)
 
-      assert output =~ "process (worker \\in procs)"
+      assert output =~ "(* --algorithm Counter"
+      refute output =~ "{"
+      assert output =~ "begin"
+      assert output =~ "end algorithm; *)"
     end
 
-    test "emits process actions as labeled blocks" do
-      output = PlusCal.emit(MutexSpec)
+    test "emits translation markers" do
+      output = PlusCalP.emit(Counter)
 
-      assert output =~ "try_enter:"
-      assert output =~ "enter_cs:"
+      assert output =~ "\\* BEGIN TRANSLATION"
+      assert output =~ "\\* END TRANSLATION"
     end
 
-    test "emits await from process action guards" do
-      output = PlusCal.emit(MutexSpec)
-
-      assert output =~ ~s(await local_state = "idle";)
-      assert output =~ ~s(await local_state = "waiting";)
-    end
-
-    test "emits process-local variable assignments" do
-      output = PlusCal.emit(MutexSpec)
-
-      assert output =~ ~s(local_state := "waiting";)
-      assert output =~ ~s(local_state := "in_cs";)
-    end
-
-    test "includes process-local variables in global variables block" do
-      output = PlusCal.emit(MutexSpec)
-
-      assert output =~ "local_state = \"idle\""
-    end
-  end
-
-  describe "PlusCal emission" do
-    test "emits valid PlusCal structure" do
-      output = PlusCal.emit(Counter)
+    test "emits module header and footer" do
+      output = PlusCalP.emit(Counter)
 
       assert output =~ "---- MODULE Counter ----"
       assert output =~ "EXTENDS Integers, FiniteSets"
       assert output =~ "CONSTANTS max"
-      assert output =~ "(* --algorithm Counter {"
-      assert output =~ "variables"
-      assert output =~ "x = 0"
-      assert output =~ "} *)"
-      assert output =~ "\\* BEGIN TRANSLATION"
-      assert output =~ "\\* END TRANSLATION"
       assert output =~ "===="
     end
 
+    test "emits variables" do
+      output = PlusCalP.emit(Counter)
+
+      assert output =~ "variables"
+      assert output =~ "x = 0"
+    end
+
     test "emits labels from action names" do
-      output = PlusCal.emit(Counter)
+      output = PlusCalP.emit(Counter)
 
       assert output =~ "increment:"
       assert output =~ "reset:"
     end
 
     test "emits await from guards" do
-      output = PlusCal.emit(Counter)
+      output = PlusCalP.emit(Counter)
 
       assert output =~ "await x < max;"
     end
 
     test "emits assignments with :=" do
-      output = PlusCal.emit(Counter)
+      output = PlusCalP.emit(Counter)
 
       assert output =~ "x := x + 1;"
       assert output =~ "x := 0;"
     end
 
-    test "emits either/or for branched actions" do
-      output = PlusCal.emit(Provisioner)
+    test "emits invariants after translation markers" do
+      output = PlusCalP.emit(Counter)
+
+      assert output =~ "non_negative == x >= 0"
+    end
+  end
+
+  describe "P-syntax branching" do
+    test "emits either/or with end either" do
+      output = PlusCalP.emit(Provisioner)
 
       assert output =~ "provision:"
       assert output =~ ~s(await state = "reachable";)
-      assert output =~ "either {"
+      assert output =~ "either"
       assert output =~ ~s(state := "provisioned";)
-      assert output =~ "or {"
+      assert output =~ "or"
       assert output =~ ~s(state := "degraded";)
+      assert output =~ "end either;"
+    end
+  end
+
+  describe "P-syntax processes" do
+    test "emits process with begin/end" do
+      output = PlusCalP.emit(MutexSpec)
+
+      assert output =~ "process worker \\in procs"
+      assert output =~ "end process;"
     end
 
-    test "emits invariants after algorithm block" do
-      output = PlusCal.emit(Counter)
+    test "emits process actions" do
+      output = PlusCalP.emit(MutexSpec)
 
-      assert output =~ "non_negative == x >= 0"
+      assert output =~ "try_enter:"
+      assert output =~ "enter_cs:"
+      assert output =~ ~s(await local_state = "idle";)
+      assert output =~ ~s(local_state := "waiting";)
     end
   end
 end

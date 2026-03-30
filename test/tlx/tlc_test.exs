@@ -3,33 +3,46 @@ defmodule Tlx.TLCTest do
 
   alias Tlx.TLC
 
-  describe "output parsing" do
-    test "parses successful output" do
+  describe "parse_messages/1" do
+    test "parses tool-mode delimited messages" do
       output = """
+      @!@!@STARTMSG 2262:0 @!@!@
       TLC2 Version 2.19
-      Model checking completed. No error has been found.
-        Finished in 01s at (2026-03-30)
-      3400 distinct states found
+      @!@!@ENDMSG 2262 @!@!@
+      @!@!@STARTMSG 2199:0 @!@!@
+      42 states generated, 42 distinct states found, 0 states left on queue.
+      @!@!@ENDMSG 2199 @!@!@
       """
 
+      messages = TLC.parse_messages(output)
+      assert length(messages) == 2
+      assert {2262, 0, "TLC2 Version 2.19"} = hd(messages)
+    end
+  end
+
+  describe "parse_output/1" do
+    test "parses successful output" do
+      output =
+        tool_output([
+          {2262, 0, "TLC2 Version 2.19"},
+          {2199, 0, "42 states generated, 42 distinct states found, 0 states left on queue."}
+        ])
+
       result = TLC.parse_output(output)
-      assert result.states == 3400
+      assert result.states == 42
       assert result.violation == nil
       assert result.trace == []
     end
 
-    test "parses invariant violation with real TLC format" do
-      output = """
-      Error: Invariant TypeOK is violated.
-      Error: The behavior up to this point is:
-      State 1: <Initial predicate>
-      /\\ x = 0
-
-      State 2: <inc line 5, col 1 to line 5, col 10 of module Test>
-      /\\ x = -1
-
-      2 states generated, 2 distinct states found, 0 states left on queue.
-      """
+    test "parses invariant violation with trace" do
+      output =
+        tool_output([
+          {2110, 1, "Invariant TypeOK is violated."},
+          {2121, 1, "The behavior up to this point is:"},
+          {2217, 4, "1: <Initial predicate>\n/\\ x = 0"},
+          {2217, 4, "2: <inc line 5, col 1 to line 5, col 10 of module Test>\n/\\ x = -1"},
+          {2199, 0, "2 states generated, 2 distinct states found, 0 states left on queue."}
+        ])
 
       result = TLC.parse_output(output)
       assert result.violation == {:invariant, "TypeOK"}
@@ -38,24 +51,29 @@ defmodule Tlx.TLCTest do
     end
 
     test "parses deadlock" do
-      output = """
-      Error: deadlock reached.
-      Error: The behavior up to this point is:
-      State 1: <Initial predicate>
-      /\\ x = 5
-
-      1 states generated, 1 distinct states found, 0 states left on queue.
-      """
+      output =
+        tool_output([
+          {2114, 1, "Deadlock reached."},
+          {2121, 1, "The behavior up to this point is:"},
+          {2217, 4, "1: <Initial predicate>\n/\\ x = 5"},
+          {2199, 0, "1 states generated, 1 distinct states found, 0 states left on queue."}
+        ])
 
       result = TLC.parse_output(output)
       assert result.violation == :deadlock
       assert length(result.trace) == 1
     end
 
-    test "parses state count" do
-      output = "42 distinct states found"
+    test "parses temporal property violation" do
+      output =
+        tool_output([
+          {2116, 1, "Temporal properties were violated."},
+          {2199, 0, "10 states generated, 5 distinct states found, 0 states left on queue."}
+        ])
+
       result = TLC.parse_output(output)
-      assert result.states == 42
+      assert result.violation == :liveness
+      assert result.states == 5
     end
 
     test "handles output with no state count" do
@@ -64,5 +82,11 @@ defmodule Tlx.TLCTest do
       assert result.violation == nil
       assert result.trace == []
     end
+  end
+
+  defp tool_output(messages) do
+    Enum.map_join(messages, "\n", fn {code, level, body} ->
+      "@!@!@STARTMSG #{code}:#{level} @!@!@\n#{body}\n@!@!@ENDMSG #{code} @!@!@"
+    end)
   end
 end

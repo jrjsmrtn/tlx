@@ -1,13 +1,13 @@
-defmodule Tlx.Emitter.PlusCal do
+defmodule Tlx.Emitter.PlusCalP do
   @moduledoc """
-  Emits a PlusCal algorithm (C-syntax) from a compiled `Tlx.Spec` module,
-  wrapped in a valid `.tla` file.
+  Emits a PlusCal algorithm (P-syntax / begin-end) from a compiled `Tlx.Spec` module,
+  wrapped in a valid `.tla` file compatible with `pcal.trans`.
   """
 
   alias Spark.Dsl.Extension
 
   @doc """
-  Generate a PlusCal `.tla` string from a compiled spec module.
+  Generate a PlusCal P-syntax `.tla` string from a compiled spec module.
   """
   def emit(module) do
     variables = Extension.get_entities(module, [:variables])
@@ -53,68 +53,69 @@ defmodule Tlx.Emitter.PlusCal do
 
     body =
       if actions != [] do
-        ["{", emit_pluscal_actions(actions), "}"]
+        emit_p_actions(actions)
       else
-        Enum.map(processes, &emit_pluscal_process/1)
+        Enum.map(processes, &emit_p_process/1)
       end
 
     [
-      "(* --algorithm #{name} {",
-      emit_pluscal_variables(all_vars),
+      "(* --algorithm #{name}",
+      emit_p_variables(all_vars),
+      "begin",
       body,
-      "} *)\n"
+      "end algorithm; *)\n"
     ]
   end
 
-  defp emit_pluscal_process(process) do
+  defp emit_p_process(process) do
     name = Atom.to_string(process.name)
     set = format_set(process.set)
-    actions = emit_pluscal_actions(process.actions)
+    actions = emit_p_actions(process.actions)
 
     [
-      "process (#{name} \\in #{set})",
-      "{",
+      "process #{name} \\in #{set}",
+      "begin",
       actions,
-      "}"
+      "end process;"
     ]
   end
 
   defp format_set(atom) when is_atom(atom), do: Atom.to_string(atom)
   defp format_set(other), do: inspect(other)
 
-  defp emit_pluscal_variables(variables) do
+  defp emit_p_variables(variables) do
     decls =
       Enum.map_join(variables, ",\n", fn var ->
         default = if var.default != nil, do: " = #{format_value(var.default)}", else: ""
         "    #{Atom.to_string(var.name)}#{default}"
       end)
 
-    "variables\n#{decls};\n"
+    "variables\n#{decls};"
   end
 
-  defp emit_pluscal_actions(actions) do
-    Enum.map_join(actions, "\n", &emit_pluscal_action/1)
+  defp emit_p_actions(actions) do
+    Enum.map_join(actions, "\n", &emit_p_action/1)
   end
 
-  defp emit_pluscal_action(action) do
+  defp emit_p_action(action) do
     label = "    #{Atom.to_string(action.name)}:"
 
     if action.branches != [] do
-      emit_pluscal_branched(action, label)
+      emit_p_branched(action, label)
     else
-      emit_pluscal_simple(action, label)
+      emit_p_simple(action, label)
     end
   end
 
-  defp emit_pluscal_simple(action, label) do
+  defp emit_p_simple(action, label) do
     await =
       if action.guard, do: "\n        await #{format_ast(unwrap_expr(action.guard))};", else: ""
 
-    assignments = format_pluscal_assignments(action.transitions)
+    assignments = format_p_assignments(action.transitions)
     "#{label}#{await}\n#{assignments}"
   end
 
-  defp emit_pluscal_branched(action, label) do
+  defp emit_p_branched(action, label) do
     await =
       if action.guard, do: "\n        await #{format_ast(unwrap_expr(action.guard))};", else: ""
 
@@ -134,13 +135,13 @@ defmodule Tlx.Emitter.PlusCal do
             "            #{Atom.to_string(t.variable)} := #{format_expr(t.expr)};"
           end)
 
-        "        #{keyword} {#{branch_await}\n#{assignments}\n        }"
+        "        #{keyword}#{branch_await}\n#{assignments}"
       end)
 
-    "#{label}#{await}\n#{branches}"
+    "#{label}#{await}\n#{branches}\n        end either;"
   end
 
-  defp format_pluscal_assignments(transitions) do
+  defp format_p_assignments(transitions) do
     Enum.map_join(transitions, "\n", fn t ->
       "        #{Atom.to_string(t.variable)} := #{format_expr(t.expr)};"
     end)
@@ -166,7 +167,7 @@ defmodule Tlx.Emitter.PlusCal do
   defp format_expr(val) when is_atom(val), do: "\"#{Atom.to_string(val)}\""
   defp format_expr(other), do: inspect(other)
 
-  # Elixir AST → PlusCal expression (mostly same as TLA+ but uses := for assignment)
+  # Elixir AST → PlusCal expression
 
   defp format_ast({:and, _, [left, right]}),
     do: "(#{format_ast(left)} /\\ #{format_ast(right)})"
