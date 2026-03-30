@@ -4,6 +4,7 @@ defmodule Tlx.Emitter.Config do
   """
 
   alias Spark.Dsl.Extension
+  alias Tlx.Emitter.Atoms
 
   @doc """
   Generate a `.cfg` string for TLC from a compiled spec module.
@@ -17,10 +18,12 @@ defmodule Tlx.Emitter.Config do
     invariants = Extension.get_entities(module, [:invariants])
     properties = Extension.get_entities(module, [:properties])
     model_values = opts[:model_values] || %{}
+    atom_values = Atoms.collect(module)
 
     [
       emit_specification(),
       emit_constants(constants, model_values),
+      emit_atom_model_values(atom_values),
       emit_invariants(invariants),
       emit_properties(properties)
     ]
@@ -47,6 +50,18 @@ defmodule Tlx.Emitter.Config do
             formatted = Enum.map_join(values, ", ", &"#{&1}")
             "CONSTANT #{name} = {#{formatted}}"
         end
+      end)
+
+    lines <> "\n"
+  end
+
+  defp emit_atom_model_values([]), do: nil
+
+  defp emit_atom_model_values(atoms) do
+    lines =
+      Enum.map_join(atoms, "\n", fn atom ->
+        name = Atom.to_string(atom)
+        "CONSTANT #{name} = #{name}"
       end)
 
     lines <> "\n"

@@ -4,6 +4,7 @@ defmodule Tlx.Emitter.TLA do
   """
 
   alias Spark.Dsl.Extension
+  alias Tlx.Emitter.Atoms
   alias Tlx.Emitter.Format
 
   @symbols Format.tla_symbols()
@@ -20,6 +21,7 @@ defmodule Tlx.Emitter.TLA do
     properties = Extension.get_entities(module, [:properties])
 
     init_constraints = Extension.get_entities(module, [:initial])
+    atom_values = Atoms.collect(module)
     all_actions = actions ++ Enum.flat_map(processes, & &1.actions)
     all_variables = variables ++ Enum.flat_map(processes, & &1.variables)
     var_names = Enum.map(all_variables, & &1.name)
@@ -29,7 +31,7 @@ defmodule Tlx.Emitter.TLA do
     [
       emit_header(module_name),
       emit_extends(),
-      emit_constants(constants),
+      emit_constants(constants, atom_values),
       emit_variables(all_variables),
       emit_vars_tuple(var_names),
       emit_init(all_variables, init_constraints),
@@ -60,11 +62,17 @@ defmodule Tlx.Emitter.TLA do
     "EXTENDS Integers, FiniteSets\n"
   end
 
-  defp emit_constants([]), do: nil
+  defp emit_constants([], []), do: nil
 
-  defp emit_constants(constants) do
-    names = Enum.map_join(constants, ", ", &Atom.to_string(&1.name))
-    "CONSTANTS #{names}\n"
+  defp emit_constants(constants, atom_values) do
+    constant_names = Enum.map(constants, &Atom.to_string(&1.name))
+    atom_names = Enum.map(atom_values, &Atom.to_string/1)
+    all_names = constant_names ++ atom_names
+
+    case all_names do
+      [] -> nil
+      _ -> "CONSTANTS #{Enum.join(all_names, ", ")}\n"
+    end
   end
 
   defp emit_variables([]), do: nil
@@ -122,13 +130,17 @@ defmodule Tlx.Emitter.TLA do
 
     branch_lines =
       Enum.map(action.branches, fn branch ->
-        branch_guard = if branch.guard, do: [format_guard(branch.guard)], else: []
-        transitions = format_transitions(branch.transitions, all_variables)
-        Enum.join(branch_guard ++ transitions, "\n")
+        branch_guard =
+          if branch.guard, do: ["/\\ #{format_expr(branch.guard)}"], else: []
+
+        transitions = format_branch_transitions(branch.transitions, all_variables)
+        parts = branch_guard ++ transitions
+        # Join with indent aligned to after "/\ \/ "
+        Enum.join(parts, "\n          ")
       end)
 
-    disjunction = Enum.map_join(branch_lines, "\n    \\/ ", &"#{&1}")
-    body = guard_parts ++ ["    \\/ #{disjunction}"]
+    disjunction = Enum.map_join(branch_lines, "\n       \\/ ", & &1)
+    body = guard_parts ++ ["    /\\ \\/ #{disjunction}"]
 
     "#{Atom.to_string(action.name)} ==\n#{Enum.join(body, "\n")}\n"
   end
@@ -159,6 +171,25 @@ defmodule Tlx.Emitter.TLA do
     text
     |> String.split("\n")
     |> Enum.map_join("\n", &(prefix <> &1))
+  end
+
+  defp format_branch_transitions(transitions, all_variables) do
+    transition_vars = MapSet.new(transitions, & &1.variable)
+
+    transition_parts =
+      Enum.map(transitions, fn t ->
+        "/\\ #{Atom.to_string(t.variable)}' = #{format_expr(t.expr)}"
+      end)
+
+    unchanged =
+      all_variables
+      |> Enum.reject(&MapSet.member?(transition_vars, &1))
+      |> case do
+        [] -> []
+        vars -> ["/\\ UNCHANGED << #{Enum.map_join(vars, ", ", &Atom.to_string/1)} >>"]
+      end
+
+    transition_parts ++ unchanged
   end
 
   defp format_transitions(transitions, all_variables) do
