@@ -17,6 +17,7 @@ defmodule Tlx.Emitter.Config do
     constants = Extension.get_entities(module, [:constants])
     invariants = Extension.get_entities(module, [:invariants])
     properties = Extension.get_entities(module, [:properties])
+    refinements = Extension.get_entities(module, [:refinements])
     model_values = opts[:model_values] || %{}
     atom_values = Atoms.collect(module)
 
@@ -25,7 +26,8 @@ defmodule Tlx.Emitter.Config do
       emit_constants(constants, model_values),
       emit_atom_model_values(atom_values),
       emit_invariants(invariants),
-      emit_properties(properties)
+      emit_properties(properties),
+      emit_refinement_properties(refinements)
     ]
     |> Enum.reject(&is_nil/1)
     |> Enum.join("\n")
@@ -78,6 +80,18 @@ defmodule Tlx.Emitter.Config do
 
   defp emit_properties(properties) do
     lines = Enum.map_join(properties, "\n", &"PROPERTY #{Atom.to_string(&1.name)}")
+    lines <> "\n"
+  end
+
+  defp emit_refinement_properties([]), do: nil
+
+  defp emit_refinement_properties(refinements) do
+    lines =
+      Enum.map_join(refinements, "\n", fn ref ->
+        alias_name = ref.module |> Module.split() |> List.last()
+        "PROPERTY #{alias_name}Spec"
+      end)
+
     lines <> "\n"
   end
 end

@@ -271,8 +271,62 @@ defmodule Tlx.Dsl do
     imports: [Tlx.Expr, Tlx.Temporal, Tlx.Sets]
   }
 
+  @refinement_mapping %Spark.Dsl.Entity{
+    name: :mapping,
+    target: Tlx.RefinementMapping,
+    args: [:variable, :expr],
+    schema: [
+      variable: [
+        type: :atom,
+        required: true,
+        doc: "The abstract spec variable being mapped to."
+      ],
+      expr: [
+        type: :any,
+        required: true,
+        doc: "Expression over concrete variables that produces the abstract variable's value."
+      ]
+    ],
+    describe: "Map a concrete expression to an abstract variable."
+  }
+
+  @refines %Spark.Dsl.Entity{
+    name: :refines,
+    target: Tlx.Refinement,
+    args: [:module],
+    identifier: :module,
+    schema: [
+      module: [
+        type: :atom,
+        required: true,
+        doc: "The abstract spec module that this spec refines."
+      ]
+    ],
+    entities: [
+      mappings: [@refinement_mapping]
+    ],
+    describe: "Declare that this spec refines an abstract spec via a variable mapping."
+  }
+
+  @refinements %Spark.Dsl.Section{
+    name: :refinements,
+    describe: "Refinement mappings to abstract specs.",
+    top_level?: true,
+    entities: [@refines],
+    imports: [Tlx.Expr, Tlx.Temporal, Tlx.Sets]
+  }
+
   use Spark.Dsl.Extension,
-    sections: [@variables, @constants, @init, @actions, @invariants, @processes, @properties],
+    sections: [
+      @variables,
+      @constants,
+      @init,
+      @actions,
+      @invariants,
+      @processes,
+      @properties,
+      @refinements
+    ],
     transformers: [Tlx.Transformers.TypeOK],
     verifiers: [Tlx.Verifiers.TransitionTargets, Tlx.Verifiers.EmptyAction]
 

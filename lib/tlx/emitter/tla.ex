@@ -20,6 +20,7 @@ defmodule Tlx.Emitter.TLA do
     processes = Extension.get_entities(module, [:processes])
     properties = Extension.get_entities(module, [:properties])
 
+    refinements = Extension.get_entities(module, [:refinements])
     init_constraints = Extension.get_entities(module, [:initial])
     atom_values = Atoms.collect(module)
     all_actions = actions ++ Enum.flat_map(processes, & &1.actions)
@@ -39,6 +40,7 @@ defmodule Tlx.Emitter.TLA do
       emit_next(all_actions),
       emit_fairness(actions, processes, var_names),
       emit_spec(actions, processes),
+      emit_refinements(refinements),
       emit_invariants(invariants),
       emit_properties(properties),
       emit_footer()
@@ -264,6 +266,23 @@ defmodule Tlx.Emitter.TLA do
     else
       "Spec == Init /\\ [][Next]_vars\n"
     end
+  end
+
+  defp emit_refinements([]), do: nil
+
+  defp emit_refinements(refinements) do
+    Enum.map_join(refinements, "\n\n", fn ref ->
+      alias_name = ref.module |> Module.split() |> List.last()
+
+      with_clause =
+        Enum.map_join(ref.mappings, ", ", fn m ->
+          "#{Atom.to_string(m.variable)} <- #{format_expr(m.expr)}"
+        end)
+
+      instance = "#{alias_name} == INSTANCE #{alias_name} WITH #{with_clause}"
+      property = "#{alias_name}Spec == #{alias_name}!Spec"
+      "#{instance}\n#{property}"
+    end) <> "\n"
   end
 
   defp emit_invariants([]), do: nil
