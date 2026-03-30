@@ -30,10 +30,13 @@ defmodule Tlx.Emitter.Atoms do
           Enum.flat_map(action.with_choices, & &1.transitions)
       end)
 
+    refinements = Extension.get_entities(module, [:refinements])
+
     atoms =
       MapSet.new()
       |> collect_from_defaults(all_variables)
       |> collect_from_transitions(all_transitions)
+      |> collect_from_refinements(refinements)
 
     atoms
     |> MapSet.difference(constant_names)
@@ -53,6 +56,21 @@ defmodule Tlx.Emitter.Atoms do
   defp collect_from_transitions(set, transitions) do
     Enum.reduce(transitions, set, fn t, acc ->
       collect_atom_from_expr(acc, t.expr)
+    end)
+  end
+
+  defp collect_from_refinements(set, refinements) do
+    Enum.reduce(refinements, set, fn ref, acc ->
+      # Collect atoms from mapping expressions
+      acc =
+        Enum.reduce(ref.mappings, acc, fn m, inner_acc ->
+          collect_atom_from_expr(inner_acc, m.expr)
+        end)
+
+      # Also include all atom values from the abstract spec
+      # (needed for INSTANCE WITH identity mappings)
+      abstract_atoms = collect(ref.module)
+      Enum.reduce(abstract_atoms, acc, &MapSet.put(&2, &1))
     end)
   end
 

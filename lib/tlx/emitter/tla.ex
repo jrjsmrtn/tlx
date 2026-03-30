@@ -274,11 +274,25 @@ defmodule Tlx.Emitter.TLA do
     Enum.map_join(refinements, "\n\n", fn ref ->
       alias_name = ref.module |> Module.split() |> List.last()
 
-      with_clause =
-        Enum.map_join(ref.mappings, ", ", fn m ->
+      # Explicit mappings from the refines block
+      explicit =
+        Enum.map(ref.mappings, fn m ->
           "#{Atom.to_string(m.variable)} <- #{format_expr(m.expr)}"
         end)
 
+      # Abstract spec's atom model values need identity mappings
+      abstract_atoms = Atoms.collect(ref.module)
+      abstract_constants = Extension.get_entities(ref.module, [:constants])
+      abstract_constant_names = MapSet.new(abstract_constants, & &1.name)
+      mapped_names = MapSet.new(ref.mappings, & &1.variable)
+
+      # Identity-map abstract atoms and constants not already explicitly mapped
+      identity =
+        (abstract_atoms ++ MapSet.to_list(abstract_constant_names))
+        |> Enum.reject(&MapSet.member?(mapped_names, &1))
+        |> Enum.map(fn name -> "#{Atom.to_string(name)} <- #{Atom.to_string(name)}" end)
+
+      with_clause = Enum.join(explicit ++ identity, ", ")
       instance = "#{alias_name} == INSTANCE #{alias_name} WITH #{with_clause}"
       property = "#{alias_name}Spec == #{alias_name}!Spec"
       "#{instance}\n#{property}"
