@@ -2,8 +2,8 @@
 
 **Target Version**: v0.2.1
 **Phase**: DX (semantic intelligence)
-**Status**: Proposed
-**Proposed**: 2026-03-30
+**Status**: In Progress
+**Started**: 2026-03-30
 
 ## Goal
 
