@@ -39,7 +39,7 @@ defmodule TLX.MixProject do
 
   defp usage_rules do
     [
-      file: "CLAUDE.md",
+      file: "AGENTS.md",
       usage_rules: ["usage_rules:all"],
       skills: [
         location: ".claude/skills",
