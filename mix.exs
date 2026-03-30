@@ -1,7 +1,7 @@
 defmodule Tlx.MixProject do
   use Mix.Project
 
-  @version "0.2.5"
+  @version "0.2.6"
 
   def project do
     [
@@ -28,6 +28,7 @@ defmodule Tlx.MixProject do
   defp deps do
     [
       {:spark, "~> 2.6"},
+      {:nimble_parsec, "~> 1.4"},
       {:ex_doc, "~> 0.35", only: :dev, runtime: false},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},

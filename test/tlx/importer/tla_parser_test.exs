@@ -90,10 +90,12 @@ defmodule Tlx.Importer.TlaParserTest do
       tlx_source = TlaParser.to_tlx(parsed)
 
       assert tlx_source =~ "defspec Counter do"
-      assert tlx_source =~ "variable :x, 0"
+      assert tlx_source =~ "variable("
+      assert tlx_source =~ ":x, 0"
       assert tlx_source =~ "action :increment do"
       assert tlx_source =~ "action :reset do"
-      assert tlx_source =~ "invariant :bounded"
+      assert tlx_source =~ "invariant("
+      assert tlx_source =~ ":bounded"
     end
   end
 end
