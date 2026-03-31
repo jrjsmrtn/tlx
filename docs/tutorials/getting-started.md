@@ -1,6 +1,6 @@
 # Getting Started with TLX
 
-TLX lets you write TLA+/PlusCal specifications in Elixir using a Spark DSL, then emit them for model checking with TLC or simulate them directly in Elixir.
+TLX lets you write formal specifications in Elixir and prove they're correct — no TLA+ syntax required. Define your state machine, declare what should always be true, and let TLC check every possible execution.
 
 ## Installation
 
@@ -40,7 +40,7 @@ defspec MyCounter do
 end
 ```
 
-This defines a counter that increments from 0 to 5, then resets. The invariant asserts the counter is always within bounds.
+That's it. A counter that increments from 0 to 5, then resets. The invariant says: the counter is always within bounds. TLC will check this in every reachable state.
 
 ## Key Concepts
 
@@ -50,7 +50,12 @@ This defines a counter that increments from 0 to 5, then resets. The invariant a
 
 **Invariants** are safety properties: boolean expressions that must hold in every reachable state.
 
-**Expressions** that reference variables use the `e()` macro: `e(x + 1)`, `e(x < 5)`. Bare literals don't need wrapping: `0`, `true`, `:idle`. The `e()` macro is automatically available inside DSL blocks.
+**Expressions** that reference variables use the `e()` macro: `e(x + 1)`, `e(x < 5)`. Bare literals don't need wrapping: `0`, `true`, `:idle`. The `e()` macro is automatically available inside DSL blocks. You can use Elixir's `if` inside `e()` for conditional values:
+
+```elixir
+invariant :bounded, e(if x > 0, do: x <= 5, else: x == 0)
+next :x, e(if x > max, do: max, else: x)
+```
 
 ## Emitting TLA+
 
@@ -106,7 +111,7 @@ mix tlx.emit MyCounter --output my_counter.tla
 
 ## Simulating in Elixir
 
-Run random walk simulations without TLC:
+Don't have TLC installed yet? No problem. Run random walk simulations directly in Elixir:
 
 ```bash
 mix tlx.simulate MyCounter --runs 1000 --steps 50
@@ -171,25 +176,11 @@ This expands to three individual `next` calls. Both forms work interchangeably.
 
 ## Running TLC
 
-If you have `tla2tools.jar`, run full model checking:
+Ready for exhaustive verification? If you have `tla2tools.jar` ([download here](https://github.com/tlaplus/tlaplus/releases)), run full model checking:
 
 ```bash
 mix tlx.check MyCounter --tla2tools path/to/tla2tools.jar
 ```
-
-## Conditional Expressions
-
-Use Elixir's `if` inside `e()` for conditional values:
-
-```elixir
-invariant :bounded, e(if x > 0, do: x <= 5, else: x == 0)
-
-action :clamp do
-  next :x, e(if x > max, do: max, else: x)
-end
-```
-
-This emits `IF x > 0 THEN x <= 5 ELSE x = 0` in TLA+.
 
 ## What to Read Next
 
