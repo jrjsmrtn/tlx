@@ -37,7 +37,7 @@ TLX is a Spark DSL for writing TLA+/PlusCal specifications in Elixir with TLC mo
 
 ## Mix Tasks
 
-- `mix tlx.emit MySpec --format tla|pluscal-c|pluscal-p|unicode|elixir` — emit specification
+- `mix tlx.emit MySpec --format tla|pluscal-c|pluscal-p|elixir` — emit specification
 - `mix tlx.check MySpec` — emit PlusCal, translate, run TLC
 - `mix tlx.simulate MySpec --runs 100` — Elixir random walk simulation
 - `mix tlx.import spec.tla --format tla|pluscal` — import TLA+/PlusCal to TLX DSL

@@ -56,25 +56,25 @@ defmodule TLX.Emitter.FormatTest do
     end
   end
 
-  describe "format_ast/2 with Unicode symbols" do
+  describe "format_ast/2 with symbol (math) symbols" do
     setup do
       {:ok, s: Format.unicode_symbols()}
     end
 
-    test "uses Unicode operators", %{s: s} do
+    test "uses math operators", %{s: s} do
       ast = {:and, [], [var_ast(:a), var_ast(:b)]}
       assert Format.format_ast(ast, s) == "(a ∧ b)"
     end
 
-    test "uses Unicode not", %{s: s} do
+    test "uses math not", %{s: s} do
       assert Format.format_ast({:not, [], [var_ast(:x)]}, s) == "¬(x)"
     end
 
-    test "uses Unicode multiplication", %{s: s} do
+    test "uses math multiplication", %{s: s} do
       assert Format.format_ast({:*, [], [var_ast(:a), var_ast(:b)]}, s) == "a × b"
     end
 
-    test "uses Unicode inequality", %{s: s} do
+    test "uses math inequality", %{s: s} do
       assert Format.format_ast({:!=, [], [var_ast(:x), 0]}, s) == "x ≠ 0"
     end
   end

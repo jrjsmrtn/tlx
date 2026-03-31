@@ -6,20 +6,20 @@ Everything valid inside `e()`, with the TLA+ output for each.
 
 All standard Elixir operators work inside `e()`:
 
-| Elixir inside `e()` | TLA+ output | Notes                    |
-| ------------------- | ----------- | ------------------------ |
-| `x + 1`             | `x + 1`     |                          |
-| `x - 1`             | `x - 1`     |                          |
-| `x * y`             | `x * y`     | Unicode emitter uses `×` |
-| `x == y`            | `x = y`     |                          |
-| `x != y`            | `x # y`     | Unicode emitter uses `≠` |
-| `x > y`             | `x > y`     |                          |
-| `x < y`             | `x < y`     |                          |
-| `x >= y`            | `x >= y`    | Unicode emitter uses `≥` |
-| `x <= y`            | `x <= y`    | Unicode emitter uses `≤` |
-| `x and y`           | `(x /\ y)`  | Unicode emitter uses `∧` |
-| `x or y`            | `(x \\/ y)` | Unicode emitter uses `∨` |
-| `not x`             | `~(x)`      | Unicode emitter uses `¬` |
+| Elixir inside `e()` | TLA+ output |
+| ------------------- | ----------- |
+| `x + 1`             | `x + 1`     |
+| `x - 1`             | `x - 1`     |
+| `x * y`             | `x * y`     |
+| `x == y`            | `x = y`     |
+| `x != y`            | `x # y`     |
+| `x > y`             | `x > y`     |
+| `x < y`             | `x < y`     |
+| `x >= y`            | `x >= y`    |
+| `x <= y`            | `x <= y`    |
+| `x and y`           | `(x /\ y)`  |
+| `x or y`            | `(x \\/ y)` |
+| `not x`             | `~(x)`      |
 
 ## Conditionals
 

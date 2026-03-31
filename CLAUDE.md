@@ -4,7 +4,7 @@ A Spark DSL for writing TLA+/PlusCal specifications, with TLA+ emission for TLC 
 
 ## Deliverables
 
-**TLX library** — Elixir DSL for formal specifications. Emits TLA+, PlusCal (C/P syntax), Unicode. Includes NimbleParsec importers, Elixir simulator, TLC integration, refinement checking.
+**TLX library** — Elixir DSL for formal specifications. Emits TLA+, PlusCal (C/P syntax), Elixir (round-trip). Includes NimbleParsec importers, Elixir simulator, TLC integration, refinement checking.
 
 **`formal-spec` agent skill** — workflow for AI-assisted formal specification (ADR → abstract spec → concrete spec → refinement). Shipped via `usage-rules/skills/` per [agentskills.io](https://agentskills.io/specification) spec. Distributed to consumers via [usage_rules](https://hexdocs.pm/usage_rules/) `package_skills: [:tlx]`.
 

@@ -4,7 +4,7 @@ A Spark DSL for writing TLA+/PlusCal specifications in Elixir, with TLC model ch
 
 ## What TLX provides
 
-**The TLX library** — an Elixir DSL for defining state machines, invariants, temporal properties, and refinement mappings. Emits TLA+, PlusCal (C and P syntax), and Unicode. Includes NimbleParsec importers, an Elixir simulator, and TLC integration.
+**The TLX library** — an Elixir DSL for defining state machines, invariants, temporal properties, and refinement mappings. Emits TLA+, PlusCal (C and P syntax), and Elixir (for round-trip). Includes NimbleParsec importers, an Elixir simulator, and TLC integration.
 
 **The `formal-spec` agent skill** — a structured workflow for AI-assisted formal specification, distributed as an [agentskills.io](https://agentskills.io/specification)-compliant skill via [usage_rules](https://hexdocs.pm/usage_rules/). Teaches the full lifecycle from ADR to refinement-checked specs.
 
@@ -66,7 +66,7 @@ The skill provides the workflow checklist, common TLX patterns, and working exam
 
 Both workflows use the same mix tasks:
 
-- `mix tlx.emit` — emit to TLA+, PlusCal, Unicode, or Elixir
+- `mix tlx.emit` — emit to TLA+, PlusCal, or Elixir
 - `mix tlx.check` — full pipeline: emit, translate, run TLC
 - `mix tlx.simulate` — Elixir random walk simulation
 - `mix tlx.import` — import TLA+ or PlusCal back to TLX DSL

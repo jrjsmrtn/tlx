@@ -8,8 +8,8 @@ Emit a specification in various formats.
 mix tlx.emit MySpec                        # TLA+ to stdout
 mix tlx.emit MySpec --format pluscal-c     # PlusCal C-syntax (braces)
 mix tlx.emit MySpec --format pluscal-p     # PlusCal P-syntax (begin/end)
-mix tlx.emit MySpec --format unicode       # Unicode math symbols (human-readable)
 mix tlx.emit MySpec --format elixir        # TLX DSL round-trip
+mix tlx.emit MySpec --format symbols       # TLX DSL with math symbols
 mix tlx.emit MySpec --output spec.tla      # write to file
 ```
 
@@ -17,7 +17,7 @@ mix tlx.emit MySpec --output spec.tla      # write to file
 
 | Flag             | Default | Description                                                         |
 | ---------------- | ------- | ------------------------------------------------------------------- |
-| `--format`, `-f` | `tla`   | Output format: `tla`, `pluscal-c`, `pluscal-p`, `unicode`, `elixir` |
+| `--format`, `-f` | `tla`   | Output format: `tla`, `pluscal-c`, `pluscal-p`, `elixir`, `symbols` |
 | `--output`, `-o` | stdout  | Write to file instead of stdout                                     |
 
 ## mix tlx.check

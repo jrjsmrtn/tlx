@@ -69,7 +69,7 @@ They're equivalent. TLC produces the same result for both. The TLX version is 14
 
 **Auto-CONSTANTS** — atom values used in specs are automatically declared as TLA+ constants and model values. In raw TLA+, you manage the `.cfg` file manually.
 
-**Multiple output formats** — one spec, six outputs: TLA+, PlusCal (C and P syntax), Unicode (for humans), Elixir (for round-trip), config (for TLC).
+**Multiple output formats** — one spec, five outputs: TLA+, PlusCal (C and P syntax), Elixir (for round-trip), config (for TLC).
 
 **Elixir simulator** — `mix tlx.simulate` gives instant feedback without installing Java or TLC. Good for rapid iteration.
 
@@ -81,16 +81,16 @@ They're equivalent. TLC produces the same result for both. The TLX version is 14
 
 TLX is an on-ramp to TLA+, not a replacement. It doesn't cover:
 
-- **Multi-module specifications** — TLA+ modules can import and extend each other. TLX specs are self-contained.
-- **CHOOSE operator** — TLA+'s non-deterministic choice from a set (TLX has `pick` for PlusCal `with`, but not the full CHOOSE semantics).
+- **Multi-module specifications** — TLA+ modules can import and extend each other. TLX specs are self-contained (refinement uses INSTANCE, but not general module composition).
 - **Recursive operators** — TLA+ operators can be recursive. TLX doesn't support this.
+- **LAMBDA** — TLA+ anonymous functions. Rare in practice.
 - **Proof system (TLAPS)** — TLA+ has a proof system for mechanized proofs. TLX targets model checking only.
 - **Advanced temporal logic** — TLX supports `always`, `eventually`, and `leads_to`. Raw TLA+ has the full temporal logic (arbitrary nesting of `[]` and `<>`).
 
 ## When to Graduate to Raw TLA+
 
-- Your spec needs multiple interacting modules
-- You need recursive operators or complex set comprehensions
+- Your spec needs multiple interacting modules (beyond refinement)
+- You need recursive operators or LAMBDA expressions
 - You want mechanized proofs (TLAPS)
 - You're writing specs for publication or academic collaboration
 - The TLX abstraction is getting in the way
