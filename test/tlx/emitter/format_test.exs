@@ -32,6 +32,11 @@ defmodule TLX.Emitter.FormatTest do
       assert Format.format_ast({:*, [], [var_ast(:a), var_ast(:b)]}, s) == "a * b"
     end
 
+    test "formats Elixir if as IF/THEN/ELSE", %{s: s} do
+      ast = {:if, [], [var_ast(:x), [do: 1, else: 0]]}
+      assert Format.format_ast(ast, s) == "IF x THEN 1 ELSE 0"
+    end
+
     test "formats variable reference", %{s: s} do
       assert Format.format_ast(var_ast(:my_var), s) == "my_var"
     end

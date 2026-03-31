@@ -142,6 +142,11 @@ defmodule TLX.Emitter.Format do
     "IF #{format_ast(cond, s)} THEN #{format_ast(then_expr, s)} ELSE #{format_ast(else_expr, s)}"
   end
 
+  # IF/THEN/ELSE — Elixir `if` AST from e(if cond, do: x, else: y)
+  def format_ast({:if, _meta, [cond, [do: then_expr, else: else_expr]]}, s) do
+    "IF #{format_ast(cond, s)} THEN #{format_ast(then_expr, s)} ELSE #{format_ast(else_expr, s)}"
+  end
+
   # LET/IN — 4-tuple from let_in/3 function call
   def format_ast({:let_in, var, binding, body}, s) do
     "LET #{Atom.to_string(var)} == #{format_expr(binding, s)} IN #{format_expr(body, s)}"

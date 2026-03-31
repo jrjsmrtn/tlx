@@ -168,6 +168,10 @@ defmodule TLX.Emitter.Elixir do
   defp fmt_temporal({:expr, ast}), do: "e(#{fmt_ast(ast)})"
   defp fmt_temporal(other), do: fmt(other)
 
+  # Elixir if — round-trips naturally
+  defp fmt_ast({:if, _, [cond, [do: then_expr, else: else_expr]]}),
+    do: "if #{fmt_ast(cond)}, do: #{fmt_ast(then_expr)}, else: #{fmt_ast(else_expr)}"
+
   # Elixir and/or/not need paren_if_compound on sub-expressions
   defp fmt_ast({:and, _, [l, r]}), do: "#{paren_if_compound(l)} and #{paren_if_compound(r)}"
   defp fmt_ast({:or, _, [l, r]}), do: "#{paren_if_compound(l)} or #{paren_if_compound(r)}"

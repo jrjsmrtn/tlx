@@ -19,6 +19,18 @@ defmodule TLX.ExpressivenessTest do
     invariant(:bounded, ite(e(x > 0), e(x <= 10), e(x == 0)))
   end
 
+  defmodule IfSpec do
+    use TLX.Spec
+
+    variable(:x, type: :integer, default: 5)
+
+    action :clamp do
+      next(:x, e(if x > 10, do: 10, else: x))
+    end
+
+    invariant(:bounded, e(if x > 0, do: x <= 10, else: x == 0))
+  end
+
   defmodule SetSpec do
     use TLX.Spec
 
@@ -81,6 +93,18 @@ defmodule TLX.ExpressivenessTest do
       assert output =~ "IF"
       assert output =~ "THEN"
       assert output =~ "ELSE"
+    end
+  end
+
+  describe "Elixir if inside e()" do
+    test "TLA+ emits IF/THEN/ELSE from e(if ...)" do
+      output = TLA.emit(IfSpec)
+      assert output =~ "IF x > 10 THEN 10 ELSE x"
+    end
+
+    test "TLA+ emits IF/THEN/ELSE in invariants from e(if ...)" do
+      output = TLA.emit(IfSpec)
+      assert output =~ "IF x > 0 THEN x <= 10 ELSE x = 0"
     end
   end
 

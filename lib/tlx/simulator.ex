@@ -195,8 +195,13 @@ defmodule TLX.Simulator do
   defp eval_ast({:*, _, [left, right]}, state),
     do: eval_ast(left, state) * eval_ast(right, state)
 
-  # IF/THEN/ELSE
+  # IF/THEN/ELSE — from ite/3 function call
   defp eval_ast({:ite, cond, then_expr, else_expr}, state) do
+    if eval_ast(cond, state), do: eval_ast(then_expr, state), else: eval_ast(else_expr, state)
+  end
+
+  # IF/THEN/ELSE — from e(if cond, do: x, else: y) capture
+  defp eval_ast({:if, _meta, [cond, [do: then_expr, else: else_expr]]}, state) do
     if eval_ast(cond, state), do: eval_ast(then_expr, state), else: eval_ast(else_expr, state)
   end
 
