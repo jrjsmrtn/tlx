@@ -22,6 +22,7 @@ defmodule TLX.Emitter.TLA do
 
     refinements = Extension.get_entities(module, [:refinements])
     init_constraints = Extension.get_entities(module, [:initial])
+    extra_extends = Extension.get_opt(module, [:spec_config], :extends, [], []) || []
     atom_values = Atoms.collect(module)
     all_actions = actions ++ Enum.flat_map(processes, & &1.actions)
     all_variables = variables ++ Enum.flat_map(processes, & &1.variables)
@@ -31,7 +32,7 @@ defmodule TLX.Emitter.TLA do
 
     [
       emit_header(module_name),
-      emit_extends(),
+      emit_extends(extra_extends),
       emit_constants(constants, atom_values),
       emit_variables(all_variables),
       emit_vars_tuple(var_names),
@@ -60,8 +61,10 @@ defmodule TLX.Emitter.TLA do
     "#{dashes} MODULE #{name} #{dashes}"
   end
 
-  defp emit_extends do
-    "EXTENDS Integers, FiniteSets\n"
+  defp emit_extends(extra) do
+    base = ["Integers", "FiniteSets"]
+    all = base ++ Enum.map(extra, &Atom.to_string/1)
+    "EXTENDS #{Enum.join(all, ", ")}\n"
   end
 
   defp emit_constants([], []), do: nil

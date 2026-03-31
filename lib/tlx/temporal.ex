@@ -58,4 +58,10 @@ defmodule TLX.Temporal do
 
   @doc "Integer range set. `a..b` in TLA+."
   def range(a, b), do: {:range, a, b}
+
+  @doc "Record construction. `[a |-> 1, b |-> 2]` in TLA+."
+  def record(pairs) when is_list(pairs), do: {:record, pairs}
+
+  @doc "Multi-key functional update. `[f EXCEPT ![k1] = v1, ![k2] = v2]` in TLA+."
+  def except_many(f, pairs) when is_list(pairs), do: {:except_many, f, pairs}
 end

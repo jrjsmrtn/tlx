@@ -178,6 +178,13 @@ defmodule TLX.Emitter.Elixir do
   defp fmt({:seq_tail, s}), do: "tail(#{fmt(s)})"
   defp fmt({:seq_sub_seq, s, m, n}), do: "sub_seq(#{fmt(s)}, #{fmt(m)}, #{fmt(n)})"
 
+  defp fmt({:record, pairs}),
+    do: "record(#{Enum.map_join(pairs, ", ", fn {k, v} -> "#{k}: #{fmt(v)}" end)})"
+
+  defp fmt({:except_many, f, pairs}),
+    do:
+      "except_many(#{fmt(f)}, [#{Enum.map_join(pairs, ", ", fn {k, v} -> "{#{fmt(k)}, #{fmt(v)}}" end)}])"
+
   defp fmt(val), do: Format.format_expr(val, @symbols)
 
   defp fmt_temporal({:always, inner}), do: "always(#{fmt_temporal(inner)})"

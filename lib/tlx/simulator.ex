@@ -265,6 +265,20 @@ defmodule TLX.Simulator do
   # DOMAIN
   defp eval_ast({:domain, f}, state), do: eval_ast(f, state) |> Map.keys() |> MapSet.new()
 
+  # Record construction
+  defp eval_ast({:record, pairs}, state) when is_list(pairs) do
+    Map.new(pairs, fn {k, v} -> {k, eval_ast(v, state)} end)
+  end
+
+  # Multi-key EXCEPT
+  defp eval_ast({:except_many, f, pairs}, state) when is_list(pairs) do
+    func = eval_ast(f, state)
+
+    Enum.reduce(pairs, func, fn {k, v}, acc ->
+      Map.put(acc, eval_ast(k, state), eval_ast(v, state))
+    end)
+  end
+
   # Implication / Equivalence
   defp eval_ast({:implies, p, q}, state),
     do: not eval_ast(p, state) or eval_ast(q, state)

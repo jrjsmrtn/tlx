@@ -215,6 +215,44 @@ defmodule TLX.Emitter.Format do
   def format_ast({:domain, f}, s), do: "DOMAIN #{format_expr(f, s)}"
   def format_ast({:domain, meta, [f]}, s) when is_list(meta), do: "DOMAIN #{format_ast(f, s)}"
 
+  # Record construction
+  def format_ast({:record, pairs}, s) when is_list(pairs) do
+    fields =
+      Enum.map_join(pairs, ", ", fn {k, v} ->
+        "#{Atom.to_string(k)} |-> #{format_expr(v, s)}"
+      end)
+
+    "[#{fields}]"
+  end
+
+  def format_ast({:record, meta, [pairs]}, s) when is_list(meta) and is_list(pairs) do
+    fields =
+      Enum.map_join(pairs, ", ", fn {k, v} ->
+        "#{Atom.to_string(k)} |-> #{format_ast(v, s)}"
+      end)
+
+    "[#{fields}]"
+  end
+
+  # Multi-key EXCEPT
+  def format_ast({:except_many, f, pairs}, s) when is_list(pairs) do
+    updates =
+      Enum.map_join(pairs, ", ", fn {k, v} ->
+        "![#{format_expr(k, s)}] = #{format_expr(v, s)}"
+      end)
+
+    "[#{format_expr(f, s)} EXCEPT #{updates}]"
+  end
+
+  def format_ast({:except_many, meta, [f, pairs]}, s) when is_list(meta) and is_list(pairs) do
+    updates =
+      Enum.map_join(pairs, ", ", fn {k, v} ->
+        "![#{format_ast(k, s)}] = #{format_ast(v, s)}"
+      end)
+
+    "[#{format_ast(f, s)} EXCEPT #{updates}]"
+  end
+
   # Implication / Equivalence — guarded AST form first
   def format_ast({:implies, meta, [p, q]}, s) when is_list(meta),
     do: "(#{format_ast(p, s)} => #{format_ast(q, s)})"
@@ -313,6 +351,8 @@ defmodule TLX.Emitter.Format do
   def format_expr({:filter, _, _, _} = q, s), do: format_ast(q, s)
   def format_expr({:case_of, _} = q, s), do: format_ast(q, s)
   def format_expr({:domain, _} = q, s), do: format_ast(q, s)
+  def format_expr({:record, _} = q, s), do: format_ast(q, s)
+  def format_expr({:except_many, _, _} = q, s), do: format_ast(q, s)
   def format_expr({:implies, _, _} = q, s), do: format_ast(q, s)
   def format_expr({:equiv, _, _} = q, s), do: format_ast(q, s)
   def format_expr({:range, _, _} = q, s), do: format_ast(q, s)

@@ -295,6 +295,61 @@ defmodule TLX.ExpressivenessTest do
     end
   end
 
+  defmodule ExtendsSpec do
+    use TLX.Spec
+
+    extends([:Sequences])
+
+    variable(:q, [])
+
+    action :push do
+      next(:q, e(append(q, :item)))
+    end
+  end
+
+  defmodule RecordSpec do
+    use TLX.Spec
+
+    variable(:state, %{})
+
+    action :init_record do
+      next(:state, record(status: :idle, count: 0))
+    end
+  end
+
+  defmodule ExceptManySpec do
+    use TLX.Spec
+
+    variable(:flags, %{})
+
+    action :update do
+      next(:flags, except_many(e(flags), [{e(:p1), true}, {e(:p2), false}]))
+    end
+  end
+
+  describe "configurable extends" do
+    test "TLA+ emits extra EXTENDS modules" do
+      output = TLA.emit(ExtendsSpec)
+      assert output =~ "EXTENDS Integers, FiniteSets, Sequences"
+    end
+  end
+
+  describe "record construction" do
+    test "TLA+ emits [key |-> val]" do
+      output = TLA.emit(RecordSpec)
+      assert output =~ "|-> "
+    end
+  end
+
+  describe "multi-key EXCEPT" do
+    test "TLA+ emits EXCEPT with multiple keys" do
+      output = TLA.emit(ExceptManySpec)
+      assert output =~ "EXCEPT"
+      assert output =~ "![p1]"
+      assert output =~ "![p2]"
+    end
+  end
+
   describe "non-deterministic pick" do
     test "TLA+ emits existential quantifier for pick" do
       output = TLA.emit(PickSpec)

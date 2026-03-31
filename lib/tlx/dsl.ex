@@ -177,6 +177,20 @@ defmodule TLX.Dsl do
     imports: [TLX.Expr, TLX.Temporal, TLX.Sets, TLX.Sequences]
   }
 
+  @spec_config %Spark.Dsl.Section{
+    name: :spec_config,
+    describe: "Specification configuration options.",
+    top_level?: true,
+    schema: [
+      extends: [
+        type: {:list, :atom},
+        default: [],
+        doc:
+          "Additional TLA+ modules to extend (e.g., `[:Sequences, :Bags]`). Integers and FiniteSets are always included."
+      ]
+    ]
+  }
+
   @variables %Spark.Dsl.Section{
     name: :variables,
     describe: "State variables for this specification.",
@@ -318,6 +332,7 @@ defmodule TLX.Dsl do
 
   use Spark.Dsl.Extension,
     sections: [
+      @spec_config,
       @variables,
       @constants,
       @init,
