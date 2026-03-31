@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Georges Martin
+# SPDX-License-Identifier: MIT
+
 defmodule TLX.Trace do
   @moduledoc """
   Formats counterexample traces from the simulator or TLC

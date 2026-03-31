@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Georges Martin
+# SPDX-License-Identifier: MIT
+
 defmodule TLX.Spec do
   @moduledoc """
   Use this module to define a TLA+ specification.

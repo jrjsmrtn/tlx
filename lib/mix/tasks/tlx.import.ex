@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Georges Martin
+# SPDX-License-Identifier: MIT
+
 defmodule Mix.Tasks.TLX.Import do
   @moduledoc """
   Import a TLA+ or PlusCal specification file into TLX DSL syntax.

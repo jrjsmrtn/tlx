@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Georges Martin
+# SPDX-License-Identifier: MIT
+
 defmodule TLX.Emitter.PlusCalP do
   @moduledoc """
   Emits a PlusCal algorithm (P-syntax / begin-end) from a compiled `TLX.Spec` module,

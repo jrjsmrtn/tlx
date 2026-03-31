@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Georges Martin
+# SPDX-License-Identifier: MIT
+
 defmodule Examples.RaftLeader do
   @moduledoc """
   Simplified Raft leader election in the TLX DSL.

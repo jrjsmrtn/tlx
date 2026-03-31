@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Georges Martin
+# SPDX-License-Identifier: MIT
+
 # Abstract spec: a bounded counter (design-level, from ADR)
 #
 # Invariant: count never exceeds 3

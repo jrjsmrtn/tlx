@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Georges Martin
+# SPDX-License-Identifier: MIT
+
 defmodule TLX.Transformers.TypeOKTest do
   use ExUnit.Case
 

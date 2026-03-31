@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Georges Martin
+# SPDX-License-Identifier: MIT
+
 defmodule Examples.TwoPhaseCommit do
   @moduledoc """
   Two-Phase Commit protocol in the TLX DSL.

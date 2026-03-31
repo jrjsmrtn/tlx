@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Georges Martin
+# SPDX-License-Identifier: MIT
+
 defmodule TLX.Temporal do
   @moduledoc """
   Temporal operators, quantifiers, and expression helpers for use in

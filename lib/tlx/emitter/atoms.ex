@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Georges Martin
+# SPDX-License-Identifier: MIT
+
 defmodule TLX.Emitter.Atoms do
   @moduledoc """
   Collects all atom literal values used in a spec's variables, transitions,

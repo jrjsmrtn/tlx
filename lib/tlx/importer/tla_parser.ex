@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Georges Martin
+# SPDX-License-Identifier: MIT
+
 defmodule TLX.Importer.TlaParser do
   @moduledoc """
   Parses a subset of TLA+ syntax into a structured map using NimbleParsec,

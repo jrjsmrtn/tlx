@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Georges Martin
+# SPDX-License-Identifier: MIT
+
 defmodule TLX.Emitter.Symbols do
   @moduledoc """
   Emits TLX DSL source with Unicode mathematical symbols.

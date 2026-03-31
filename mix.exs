@@ -1,7 +1,10 @@
+# SPDX-FileCopyrightText: 2026 Georges Martin
+# SPDX-License-Identifier: MIT
+
 defmodule TLX.MixProject do
   use Mix.Project
 
-  @version "0.2.11"
+  @version "0.3.0"
 
   def project do
     [

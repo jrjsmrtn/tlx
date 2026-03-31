@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-03-31
+
+### Added
+
+- SPDX copyright and license headers on all source files (REUSE-compliant)
+
 ## [0.2.11] - 2026-03-31
 
 ### Added

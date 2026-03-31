@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Georges Martin
+# SPDX-License-Identifier: MIT
+
 # Concrete spec: two sub-counters that refine the abstract counter
 #
 # The implementation splits the count into two independent sub-counters.

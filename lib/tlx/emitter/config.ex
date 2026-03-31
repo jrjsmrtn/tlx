@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Georges Martin
+# SPDX-License-Identifier: MIT
+
 defmodule TLX.Emitter.Config do
   @moduledoc """
   Generates TLC model configuration (`.cfg`) files from a compiled `TLX.Spec` module.

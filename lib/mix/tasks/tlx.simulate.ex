@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Georges Martin
+# SPDX-License-Identifier: MIT
+
 defmodule Mix.Tasks.TLX.Simulate do
   @moduledoc """
   Run random walk simulations on a TLX.Spec module.

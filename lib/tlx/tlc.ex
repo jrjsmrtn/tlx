@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Georges Martin
+# SPDX-License-Identifier: MIT
+
 defmodule TLX.TLC do
   @moduledoc """
   Invokes TLC model checker as a Java subprocess using `-tool` mode

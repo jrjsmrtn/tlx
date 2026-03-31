@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Georges Martin
+# SPDX-License-Identifier: MIT
+
 defmodule TLX.Emitter.Format do
   @moduledoc """
   Shared AST formatting parameterized by symbol tables.
