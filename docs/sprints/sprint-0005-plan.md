@@ -14,14 +14,14 @@ Validate the DSL end-to-end with a real mutual exclusion spec (from the TLA+ les
 
 ### 1. Mutual Exclusion Example Spec
 
-- `examples/mutex.ex` — Peterson's mutual exclusion in the Tlx DSL
+- `examples/mutex.ex` — Peterson's mutual exclusion in the TLX DSL
 - Uses: processes, guards, transitions, branches, invariants, temporal properties, fairness
 - Emit both TLA+ and PlusCal, verify output is valid
 - Document any DSL gaps discovered and fix them
 
 ### 2. Elixir Simulator
 
-- `Tlx.Simulator` — random walk state exploration
+- `TLX.Simulator` — random walk state exploration
 - Evaluates guards and transitions in Elixir (no TLC needed)
 - Runs N random steps from Init, checking invariants at each state
 - Returns `{:ok, trace}` or `{:error, :invariant_violated, invariant_name, trace}`

@@ -26,3 +26,5 @@ pre-push:
       run: mix deps.audit
     hex-audit:
       run: mix hex.audit
+    docs:
+      run: mix docs

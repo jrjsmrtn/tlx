@@ -1,9 +1,12 @@
-defmodule Tlx.Info do
+# SPDX-FileCopyrightText: 2026 Georges Martin
+# SPDX-License-Identifier: MIT
+
+defmodule TLX.Info do
   @moduledoc """
-  Introspection functions for compiled Tlx specs.
+  Introspection functions for compiled TLX specs.
   """
 
   use Spark.InfoGenerator,
-    extension: Tlx.Dsl,
+    extension: TLX.Dsl,
     sections: [:variables, :constants, :actions, :invariants]
 end

@@ -1,7 +1,10 @@
-defmodule Tlx.Importer.TlaParserTest do
+# SPDX-FileCopyrightText: 2026 Georges Martin
+# SPDX-License-Identifier: MIT
+
+defmodule TLX.Importer.TlaParserTest do
   use ExUnit.Case
 
-  alias Tlx.Importer.TlaParser
+  alias TLX.Importer.TlaParser
 
   @simple_tla """
   ---- MODULE Counter ----
@@ -85,15 +88,17 @@ defmodule Tlx.Importer.TlaParserTest do
       assert length(parsed.actions) >= 6
     end
 
-    test "generates valid Tlx source" do
+    test "generates valid TLX source" do
       parsed = TlaParser.parse(@simple_tla)
       tlx_source = TlaParser.to_tlx(parsed)
 
       assert tlx_source =~ "defspec Counter do"
-      assert tlx_source =~ "variable :x, 0"
+      assert tlx_source =~ "variable("
+      assert tlx_source =~ ":x, 0"
       assert tlx_source =~ "action :increment do"
       assert tlx_source =~ "action :reset do"
-      assert tlx_source =~ "invariant :bounded"
+      assert tlx_source =~ "invariant("
+      assert tlx_source =~ ":bounded"
     end
   end
 end

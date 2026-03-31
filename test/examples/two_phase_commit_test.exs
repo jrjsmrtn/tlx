@@ -1,8 +1,11 @@
+# SPDX-FileCopyrightText: 2026 Georges Martin
+# SPDX-License-Identifier: MIT
+
 defmodule Examples.TwoPhaseCommitTest do
   use ExUnit.Case
 
-  alias Tlx.Emitter.TLA
-  alias Tlx.Simulator
+  alias TLX.Emitter.TLA
+  alias TLX.Simulator
 
   Code.require_file("examples/two_phase_commit.ex", File.cwd!())
 

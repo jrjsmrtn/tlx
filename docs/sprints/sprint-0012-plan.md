@@ -8,26 +8,26 @@
 
 ## Goal
 
-Build generic tools to import specifications into Tlx from two sources: Elixir GenStateMachine modules and existing TLA+ files. These are general-purpose tools, not tied to any specific project.
+Build generic tools to import specifications into TLX from two sources: Elixir GenStateMachine modules and existing TLA+ files. These are general-purpose tools, not tied to any specific project.
 
 ## Deliverables
 
-### 1. GenStateMachine → Tlx Skeleton Generator
+### 1. GenStateMachine → TLX Skeleton Generator
 
 `mix tlx.gen.from_state_machine MyApp.MyStateMachine`:
 
 - Introspects a `GenStateMachine` module at compile time
 - Extracts states, events, and transitions from callback definitions
-- Generates a Tlx spec skeleton with variables, actions, and guards
+- Generates a TLX spec skeleton with variables, actions, and guards
 - Human completes invariants and properties
 - Works with any GenStateMachine, not project-specific
 
-### 2. TLA+ → Tlx Importer
+### 2. TLA+ → TLX Importer
 
 `mix tlx.import path/to/spec.tla`:
 
 - Parses a subset of TLA+ syntax (VARIABLES, operators, Init, Next)
-- Generates equivalent Tlx DSL source via the Elixir emitter
+- Generates equivalent TLX DSL source via the Elixir emitter
 - Handles common patterns (UNCHANGED, primed variables, conjunctions)
 - Best-effort — complex TLA+ may need manual cleanup
 
@@ -48,8 +48,8 @@ Build generic tools to import specifications into Tlx from two sources: Elixir G
 
 ## Acceptance Criteria
 
-- [x] `mix tlx.gen.from_state_machine` generates valid Tlx DSL skeleton
-- [ ] `mix tlx.import` parses basic TLA+ and emits Tlx DSL
-- [ ] Round-trip: emit .tla from Tlx, import back, verify structure preserved
+- [x] `mix tlx.gen.from_state_machine` generates valid TLX DSL skeleton
+- [ ] `mix tlx.import` parses basic TLA+ and emits TLX DSL
+- [ ] Round-trip: emit .tla from TLX, import back, verify structure preserved
 - [ ] All tests pass
 - [ ] Code quality gates pass

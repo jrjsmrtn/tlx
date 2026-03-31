@@ -8,7 +8,7 @@ Accepted
 
 ## Context
 
-TLx requires a systematic approach to documenting significant architectural and technical decisions. As the project evolves, we need to maintain a clear record of why decisions were made, what alternatives were considered, and what trade-offs were accepted.
+TLX requires a systematic approach to documenting significant architectural and technical decisions. As the project evolves, we need to maintain a clear record of why decisions were made, what alternatives were considered, and what trade-offs were accepted.
 
 This is especially important for AI-assisted development, where decisions made in one session need to be understood in future sessions.
 

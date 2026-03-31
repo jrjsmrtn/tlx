@@ -1,10 +1,13 @@
-defmodule Tlx.DslTest do
+# SPDX-FileCopyrightText: 2026 Georges Martin
+# SPDX-License-Identifier: MIT
+
+defmodule TLX.DslTest do
   use ExUnit.Case
 
   alias Spark.Dsl.Extension
 
   defmodule Counter do
-    use Tlx.Spec
+    use TLX.Spec
 
     variable(:x, type: :integer, default: 0)
 

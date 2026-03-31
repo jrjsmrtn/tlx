@@ -14,7 +14,7 @@ Complete Phase 3 by adding pretty-printed counterexample traces and Spark-powere
 
 ### 1. Counterexample Trace Formatting
 
-- `Tlx.Trace` module — formats state traces into readable output
+- `TLX.Trace` module — formats state traces into readable output
 - Numbered states with variable diffs (highlight what changed)
 - Used by both `mix tlx.check` (TLC traces) and `mix tlx.simulate` (simulator traces)
 - Compact single-line and verbose multi-line modes

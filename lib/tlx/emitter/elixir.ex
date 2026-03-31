@@ -1,11 +1,17 @@
-defmodule Tlx.Emitter.Elixir do
+# SPDX-FileCopyrightText: 2026 Georges Martin
+# SPDX-License-Identifier: MIT
+
+defmodule TLX.Emitter.Elixir do
   @moduledoc """
-  Emits Tlx DSL source code from a compiled spec module.
+  Emits TLX DSL source code from a compiled spec module.
 
   Useful for documentation, code generation, and round-trip verification.
   """
 
   alias Spark.Dsl.Extension
+  alias TLX.Emitter.Format
+
+  @symbols Format.elixir_symbols()
 
   def emit(module) do
     variables = Extension.get_entities(module, [:variables])
@@ -19,7 +25,7 @@ defmodule Tlx.Emitter.Elixir do
 
     [
       "defmodule #{module_name} do",
-      "  use Tlx.Spec",
+      "  use TLX.Spec",
       "",
       emit_variables(variables),
       emit_constants(constants),
@@ -149,11 +155,40 @@ defmodule Tlx.Emitter.Elixir do
   defp fmt({:expr, ast}), do: fmt_ast(ast)
   defp fmt({:forall, var, set, expr}), do: "forall(:#{var}, :#{set}, e(#{fmt(expr)}))"
   defp fmt({:exists, var, set, expr}), do: "exists(:#{var}, :#{set}, e(#{fmt(expr)}))"
-  defp fmt(val) when is_integer(val), do: Integer.to_string(val)
-  defp fmt(true), do: "true"
-  defp fmt(false), do: "false"
-  defp fmt(val) when is_atom(val), do: ":#{val}"
-  defp fmt(other), do: inspect(other)
+  defp fmt({:ite, c, t, e}), do: "ite(#{fmt(c)}, #{fmt(t)}, #{fmt(e)})"
+  defp fmt({:let_in, var, binding, body}), do: "let_in(:#{var}, #{fmt(binding)}, #{fmt(body)})"
+  defp fmt({:union, a, b}), do: "union(#{fmt(a)}, #{fmt(b)})"
+  defp fmt({:intersect, a, b}), do: "intersect(#{fmt(a)}, #{fmt(b)})"
+  defp fmt({:subset, a, b}), do: "subset(#{fmt(a)}, #{fmt(b)})"
+  defp fmt({:cardinality, s}), do: "cardinality(#{fmt(s)})"
+  defp fmt({:in_set, elem, s}), do: "in_set(#{fmt(elem)}, #{fmt(s)})"
+  defp fmt({:set_of, elems}), do: "set_of([#{Enum.map_join(elems, ", ", &fmt/1)}])"
+  defp fmt({:at, f, x}), do: "at(#{fmt(f)}, #{fmt(x)})"
+  defp fmt({:except, f, x, v}), do: "except(#{fmt(f)}, #{fmt(x)}, #{fmt(v)})"
+  defp fmt({:choose, var, set, expr}), do: "choose(:#{var}, :#{set}, #{fmt(expr)})"
+  defp fmt({:filter, var, set, expr}), do: "filter(:#{var}, :#{set}, #{fmt(expr)})"
+
+  defp fmt({:case_of, clauses}),
+    do: "case_of([#{Enum.map_join(clauses, ", ", fn {c, e} -> "{#{fmt(c)}, #{fmt(e)}}" end)}])"
+
+  defp fmt({:domain, f}), do: "domain(#{fmt(f)})"
+  defp fmt({:implies, p, q}), do: "implies(#{fmt(p)}, #{fmt(q)})"
+  defp fmt({:equiv, p, q}), do: "equiv(#{fmt(p)}, #{fmt(q)})"
+  defp fmt({:range, a, b}), do: "range(#{fmt(a)}, #{fmt(b)})"
+  defp fmt({:seq_len, s}), do: "len(#{fmt(s)})"
+  defp fmt({:seq_append, s, x}), do: "append(#{fmt(s)}, #{fmt(x)})"
+  defp fmt({:seq_head, s}), do: "head(#{fmt(s)})"
+  defp fmt({:seq_tail, s}), do: "tail(#{fmt(s)})"
+  defp fmt({:seq_sub_seq, s, m, n}), do: "sub_seq(#{fmt(s)}, #{fmt(m)}, #{fmt(n)})"
+
+  defp fmt({:record, pairs}),
+    do: "record(#{Enum.map_join(pairs, ", ", fn {k, v} -> "#{k}: #{fmt(v)}" end)})"
+
+  defp fmt({:except_many, f, pairs}),
+    do:
+      "except_many(#{fmt(f)}, [#{Enum.map_join(pairs, ", ", fn {k, v} -> "{#{fmt(k)}, #{fmt(v)}}" end)}])"
+
+  defp fmt(val), do: Format.format_expr(val, @symbols)
 
   defp fmt_temporal({:always, inner}), do: "always(#{fmt_temporal(inner)})"
   defp fmt_temporal({:eventually, inner}), do: "eventually(#{fmt_temporal(inner)})"
@@ -161,24 +196,23 @@ defmodule Tlx.Emitter.Elixir do
   defp fmt_temporal({:expr, ast}), do: "e(#{fmt_ast(ast)})"
   defp fmt_temporal(other), do: fmt(other)
 
+  # Elixir if — round-trips naturally
+  defp fmt_ast({:if, _, [cond, [do: then_expr, else: else_expr]]}),
+    do: "if #{fmt_ast(cond)}, do: #{fmt_ast(then_expr)}, else: #{fmt_ast(else_expr)}"
+
+  # Quantifiers — 3-tuple AST form from e(forall(...)) / e(exists(...))
+  defp fmt_ast({:forall, meta, [var, set, expr]}) when is_list(meta),
+    do: "forall(:#{var}, :#{set}, #{fmt_ast(expr)})"
+
+  defp fmt_ast({:exists, meta, [var, set, expr]}) when is_list(meta),
+    do: "exists(:#{var}, :#{set}, #{fmt_ast(expr)})"
+
+  # Elixir and/or/not need paren_if_compound on sub-expressions
   defp fmt_ast({:and, _, [l, r]}), do: "#{paren_if_compound(l)} and #{paren_if_compound(r)}"
   defp fmt_ast({:or, _, [l, r]}), do: "#{paren_if_compound(l)} or #{paren_if_compound(r)}"
   defp fmt_ast({:not, _, [inner]}), do: "not (#{fmt_ast(inner)})"
-  defp fmt_ast({:==, _, [l, r]}), do: "#{fmt_ast(l)} == #{fmt_ast(r)}"
-  defp fmt_ast({:!=, _, [l, r]}), do: "#{fmt_ast(l)} != #{fmt_ast(r)}"
-  defp fmt_ast({:>=, _, [l, r]}), do: "#{fmt_ast(l)} >= #{fmt_ast(r)}"
-  defp fmt_ast({:<=, _, [l, r]}), do: "#{fmt_ast(l)} <= #{fmt_ast(r)}"
-  defp fmt_ast({:>, _, [l, r]}), do: "#{fmt_ast(l)} > #{fmt_ast(r)}"
-  defp fmt_ast({:<, _, [l, r]}), do: "#{fmt_ast(l)} < #{fmt_ast(r)}"
-  defp fmt_ast({:+, _, [l, r]}), do: "#{fmt_ast(l)} + #{fmt_ast(r)}"
-  defp fmt_ast({:-, _, [l, r]}), do: "#{fmt_ast(l)} - #{fmt_ast(r)}"
-  defp fmt_ast({:*, _, [l, r]}), do: "#{fmt_ast(l)} * #{fmt_ast(r)}"
-  defp fmt_ast({name, _meta, ctx}) when is_atom(name) and is_atom(ctx), do: Atom.to_string(name)
-  defp fmt_ast(int) when is_integer(int), do: Integer.to_string(int)
-  defp fmt_ast(true), do: "true"
-  defp fmt_ast(false), do: "false"
-  defp fmt_ast(atom) when is_atom(atom), do: ":#{atom}"
-  defp fmt_ast(other), do: inspect(other)
+  # Delegate all other AST nodes to shared Format
+  defp fmt_ast(ast), do: Format.format_ast(ast, @symbols)
 
   # Wrap in e() only when the value is an expression tuple, not a bare literal
   defp fmt_val({:expr, _} = expr), do: "e(#{fmt(expr)})"

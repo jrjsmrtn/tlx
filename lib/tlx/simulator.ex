@@ -1,6 +1,9 @@
-defmodule Tlx.Simulator do
+# SPDX-FileCopyrightText: 2026 Georges Martin
+# SPDX-License-Identifier: MIT
+
+defmodule TLX.Simulator do
   @moduledoc """
-  Random walk state exploration for Tlx specs.
+  Random walk state exploration for TLX specs.
 
   Evaluates guards and transitions in Elixir without TLC,
   checking invariants at each state. Useful for fast development feedback.
@@ -195,6 +198,116 @@ defmodule Tlx.Simulator do
   defp eval_ast({:*, _, [left, right]}, state),
     do: eval_ast(left, state) * eval_ast(right, state)
 
+  # IF/THEN/ELSE — from ite/3 function call
+  defp eval_ast({:ite, cond, then_expr, else_expr}, state) do
+    if eval_ast(cond, state), do: eval_ast(then_expr, state), else: eval_ast(else_expr, state)
+  end
+
+  # IF/THEN/ELSE — from e(if cond, do: x, else: y) capture
+  defp eval_ast({:if, _meta, [cond, [do: then_expr, else: else_expr]]}, state) do
+    if eval_ast(cond, state), do: eval_ast(then_expr, state), else: eval_ast(else_expr, state)
+  end
+
+  # Set operations
+  defp eval_ast({:union, a, b}, state),
+    do: MapSet.union(to_mapset(eval_ast(a, state)), to_mapset(eval_ast(b, state)))
+
+  defp eval_ast({:intersect, a, b}, state),
+    do: MapSet.intersection(to_mapset(eval_ast(a, state)), to_mapset(eval_ast(b, state)))
+
+  defp eval_ast({:subset, a, b}, state),
+    do: MapSet.subset?(to_mapset(eval_ast(a, state)), to_mapset(eval_ast(b, state)))
+
+  defp eval_ast({:cardinality, set}, state), do: MapSet.size(to_mapset(eval_ast(set, state)))
+
+  defp eval_ast({:in_set, elem, set}, state),
+    do: MapSet.member?(to_mapset(eval_ast(set, state)), eval_ast(elem, state))
+
+  defp eval_ast({:set_of, elements}, state), do: MapSet.new(elements, &eval_ast(&1, state))
+
+  # Function application
+  defp eval_ast({:at, f, x}, state) do
+    func = eval_ast(f, state)
+    key = eval_ast(x, state)
+    if is_map(func), do: Map.fetch!(func, key), else: Enum.at(func, key)
+  end
+
+  # Functional update (EXCEPT)
+  defp eval_ast({:except, f, x, v}, state) do
+    func = eval_ast(f, state)
+    key = eval_ast(x, state)
+    val = eval_ast(v, state)
+    Map.put(func, key, val)
+  end
+
+  # CHOOSE — deterministic selection (picks first match)
+  defp eval_ast({:choose, var, set, expr}, state) do
+    set_val = eval_ast(set, state) |> to_mapset() |> MapSet.to_list()
+
+    Enum.find(set_val, fn elem ->
+      eval_ast(expr, Map.put(state, var, elem))
+    end)
+  end
+
+  # Set comprehension (filter)
+  defp eval_ast({:filter, var, set, expr}, state) do
+    set_val = eval_ast(set, state) |> to_mapset() |> MapSet.to_list()
+
+    set_val
+    |> Enum.filter(fn elem -> eval_ast(expr, Map.put(state, var, elem)) end)
+    |> MapSet.new()
+  end
+
+  # CASE expression
+  defp eval_ast({:case_of, clauses}, state) do
+    Enum.find_value(clauses, fn {cond, expr} ->
+      if eval_ast(cond, state), do: eval_ast(expr, state)
+    end)
+  end
+
+  # DOMAIN
+  defp eval_ast({:domain, f}, state), do: eval_ast(f, state) |> Map.keys() |> MapSet.new()
+
+  # Record construction
+  defp eval_ast({:record, pairs}, state) when is_list(pairs) do
+    Map.new(pairs, fn {k, v} -> {k, eval_ast(v, state)} end)
+  end
+
+  # Multi-key EXCEPT
+  defp eval_ast({:except_many, f, pairs}, state) when is_list(pairs) do
+    func = eval_ast(f, state)
+
+    Enum.reduce(pairs, func, fn {k, v}, acc ->
+      Map.put(acc, eval_ast(k, state), eval_ast(v, state))
+    end)
+  end
+
+  # Implication / Equivalence
+  defp eval_ast({:implies, p, q}, state),
+    do: not eval_ast(p, state) or eval_ast(q, state)
+
+  defp eval_ast({:equiv, p, q}, state),
+    do: eval_ast(p, state) == eval_ast(q, state)
+
+  # Range set
+  defp eval_ast({:range, a, b}, state),
+    do: MapSet.new(eval_ast(a, state)..eval_ast(b, state))
+
+  # Sequence operations
+  defp eval_ast({:seq_len, s}, state), do: length(eval_ast(s, state))
+  defp eval_ast({:seq_append, s, x}, state), do: eval_ast(s, state) ++ [eval_ast(x, state)]
+  defp eval_ast({:seq_head, s}, state), do: hd(eval_ast(s, state))
+  defp eval_ast({:seq_tail, s}, state), do: tl(eval_ast(s, state))
+
+  defp eval_ast({:seq_sub_seq, s, m, n}, state),
+    do: Enum.slice(eval_ast(s, state), (eval_ast(m, state) - 1)..(eval_ast(n, state) - 1)//1)
+
+  # LET/IN
+  defp eval_ast({:let_in, var, binding, body}, state) do
+    val = eval_ast(binding, state)
+    eval_ast(body, Map.put(state, var, val))
+  end
+
   # Variable reference
   defp eval_ast({name, _meta, context}, state) when is_atom(name) and is_atom(context),
     do: Map.fetch!(state, name)
@@ -203,4 +316,7 @@ defmodule Tlx.Simulator do
   defp eval_ast(literal, _state) when is_integer(literal), do: literal
   defp eval_ast(literal, _state) when is_atom(literal), do: literal
   defp eval_ast(literal, _state) when is_binary(literal), do: literal
+
+  defp to_mapset(%MapSet{} = s), do: s
+  defp to_mapset(list) when is_list(list), do: MapSet.new(list)
 end

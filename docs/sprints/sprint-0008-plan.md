@@ -8,7 +8,7 @@
 
 ## Goal
 
-Make the Tlx DSL competitive with PlusCal in conciseness while remaining more structured. Reduce boilerplate from every expression, every section wrapper, and every entity declaration.
+Make the TLX DSL competitive with PlusCal in conciseness while remaining more structured. Reduce boilerplate from every expression, every section wrapper, and every entity declaration.
 
 ## Context
 
@@ -31,7 +31,7 @@ After completing the roadmap (Phases 1-4), dogfooding the DSL against the mutex 
 ### 3. Temporal Operator Auto-Import
 
 - `always`, `eventually`, `leads_to`, `forall`, `exists` available directly
-- No `alias Tlx.Temporal` needed
+- No `alias TLX.Temporal` needed
 
 ### 4. Flattened Sections
 
@@ -42,7 +42,7 @@ After completing the roadmap (Phases 1-4), dogfooding the DSL against the mutex 
 ### 5. Syntax Shortcuts
 
 - `await` as alias for `guard`
-- `defspec` macro (shorthand for `defmodule` + `use Tlx.Spec`)
+- `defspec` macro (shorthand for `defmodule` + `use TLX.Spec`)
 - Positional default: `variable :x, 0`
 - Positional expr: `invariant :bounded, e(x >= 0)`
 - Batch `next`: `next flag1: true, turn: 2, pc1: :waiting`

@@ -1,10 +1,13 @@
-defmodule Tlx.ProcessTest do
+# SPDX-FileCopyrightText: 2026 Georges Martin
+# SPDX-License-Identifier: MIT
+
+defmodule TLX.ProcessTest do
   use ExUnit.Case
 
   alias Spark.Dsl.Extension
 
   defmodule MutualExclusion do
-    use Tlx.Spec
+    use TLX.Spec
 
     variable(:flag, [])
 

@@ -8,7 +8,7 @@ Accepted
 
 ## Context
 
-TLx needs to provide a declarative DSL for writing TLA+/PlusCal specifications. The DSL must support:
+TLX needs to provide a declarative DSL for writing TLA+/PlusCal specifications. The DSL must support:
 
 - Compile-time validation of spec structure
 - Introspection of defined specs (variables, actions, invariants)
@@ -31,7 +31,7 @@ We will use **Elixir** with the **Spark** DSL framework.
 
 **Rationale**:
 
-- Spark provides battle-tested DSL infrastructure: entity definitions, transformers, verifiers, introspection — all of which Tlx needs
+- Spark provides battle-tested DSL infrastructure: entity definitions, transformers, verifiers, introspection — all of which TLX needs
 - Elixir's macro system and quoted expressions are a natural fit for capturing predicates and transitions as AST nodes without executing them
 - The BEAM's actor model aligns conceptually with TLA+'s process/action semantics, making simulation straightforward
 - Spark is actively maintained (Ash ecosystem) with a large user base
@@ -65,7 +65,7 @@ We will use **Elixir** with the **Spark** DSL framework.
 **Risks**:
 
 - Spark API changes could require adaptation (mitigated by pinning `~> 2.6`)
-- The DSL must not leak Spark internals to users — the public API should feel like Tlx, not Spark
+- The DSL must not leak Spark internals to users — the public API should feel like TLX, not Spark
 
 ## References
 

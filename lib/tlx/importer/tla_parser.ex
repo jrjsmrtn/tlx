@@ -1,107 +1,253 @@
-defmodule Tlx.Importer.TlaParser do
-  @moduledoc """
-  Parses a subset of TLA+ syntax into a structured map, then emits Tlx DSL source.
+# SPDX-FileCopyrightText: 2026 Georges Martin
+# SPDX-License-Identifier: MIT
 
-  Best-effort for TLA+ output from Tlx's own emitter and simple hand-written specs.
+defmodule TLX.Importer.TlaParser do
+  @moduledoc """
+  Parses a subset of TLA+ syntax into a structured map using NimbleParsec,
+  then delegates to `TLX.Importer.Codegen` for TLX DSL emission.
+
+  Handles TLA+ output from TLX's own emitter and simple hand-written specs.
   """
+
+  import NimbleParsec
+
+  # --- Whitespace and basic tokens ---
+
+  ws = ascii_string([?\s, ?\t], min: 1)
+  optional_ws = ascii_string([?\s, ?\t], min: 0)
+  newline = choice([string("\r\n"), string("\n")])
+  blank_line = optional_ws |> concat(newline)
+
+  identifier =
+    ascii_string([?a..?z, ?A..?Z, ?_], 1)
+    |> ascii_string([?a..?z, ?A..?Z, ?0..?9, ?_], min: 0)
+    |> reduce({Enum, :join, [""]})
+
+  # --- Module header: ---- MODULE Name ---- ---
+
+  module_header =
+    ignore(ascii_string([?-], min: 4))
+    |> ignore(ws)
+    |> ignore(string("MODULE"))
+    |> ignore(ws)
+    |> concat(identifier)
+    |> ignore(ws)
+    |> ignore(ascii_string([?-], min: 4))
+    |> ignore(optional(newline))
+    |> tag(:module)
+
+  # --- EXTENDS clause ---
+
+  extends_list =
+    identifier
+    |> repeat(
+      ignore(optional_ws)
+      |> ignore(string(","))
+      |> ignore(optional_ws)
+      |> concat(identifier)
+    )
+
+  extends =
+    ignore(string("EXTENDS"))
+    |> ignore(ws)
+    |> concat(extends_list)
+    |> ignore(optional(newline))
+    |> tag(:extends)
+
+  # --- VARIABLES / CONSTANTS declaration ---
+
+  name_list =
+    identifier
+    |> repeat(
+      ignore(optional_ws)
+      |> ignore(string(","))
+      |> ignore(optional_ws)
+      |> concat(identifier)
+    )
+
+  variables_decl =
+    ignore(string("VARIABLES"))
+    |> ignore(ws)
+    |> concat(name_list)
+    |> ignore(optional(newline))
+    |> tag(:variables)
+
+  constants_decl =
+    ignore(string("CONSTANTS"))
+    |> ignore(ws)
+    |> concat(name_list)
+    |> ignore(optional(newline))
+    |> tag(:constants)
+
+  # --- Operator body: everything after "==" until next top-level definition or ==== ---
+
+  # An operator body line is an indented line (starts with whitespace) or
+  # a continuation of a parenthesized expression
+  operator_body_line =
+    ignore(optional_ws)
+    |> utf8_string([{:not, ?\n}, {:not, ?\r}], min: 1)
+    |> ignore(optional(newline))
+
+  operator_body =
+    times(
+      lookahead_not(
+        choice([
+          ascii_string([?a..?z, ?A..?Z], 1)
+          |> ascii_string([?a..?z, ?A..?Z, ?0..?9, ?_], min: 0)
+          |> ignore(optional_ws)
+          |> string("=="),
+          string("====")
+        ])
+      )
+      |> concat(operator_body_line),
+      min: 1
+    )
+    |> reduce({Enum, :join, ["\n"]})
+
+  # --- Operator definition: Name == body ---
+
+  operator_def =
+    concat(identifier, ignore(optional_ws))
+    |> ignore(string("=="))
+    |> ignore(optional(newline))
+    |> concat(operator_body)
+    |> tag(:operator)
+
+  # --- Module footer ---
+
+  footer =
+    ignore(string("===="))
+    |> ignore(optional(ascii_string([{:not, ?\n}, {:not, ?\r}], min: 0)))
+    |> tag(:footer)
+
+  # --- Top-level parser ---
+
+  tla_spec =
+    ignore(repeat(blank_line))
+    |> concat(module_header)
+    |> ignore(repeat(blank_line))
+    |> repeat(
+      choice([
+        extends,
+        variables_decl,
+        constants_decl,
+        operator_def,
+        footer,
+        # skip blank lines between definitions
+        ignore(blank_line)
+      ])
+    )
+
+  defparsec(:parse_tla, tla_spec)
 
   @doc """
   Parse a TLA+ string and return a map of extracted spec components.
   """
   def parse(tla_string) do
-    lines = String.split(tla_string, "\n")
+    case parse_tla(tla_string) do
+      {:ok, tokens, _, _, _, _} ->
+        build_parsed(tokens)
+
+      {:error, reason, _, _, _, _} ->
+        raise "TLA+ parse error: #{inspect(reason)}"
+    end
+  end
+
+  alias TLX.Importer.Codegen
+
+  @doc """
+  Convert parsed TLA+ into TLX DSL source code.
+
+  Delegates to `TLX.Importer.Codegen.to_tlx/1`.
+  """
+  def to_tlx(parsed) do
+    Codegen.to_tlx(parsed)
+  end
+
+  # --- Build the parsed map from tokens ---
+
+  defp build_parsed(tokens) do
+    operators = extract_operators(tokens)
 
     %{
-      module_name: extract_module_name(lines),
-      variables: extract_variables(lines),
-      constants: extract_constants(lines),
-      init: extract_init(lines),
-      actions: extract_actions(tla_string),
-      invariants: extract_invariants(tla_string),
-      next_actions: extract_next(tla_string)
+      module_name: extract_module_name(tokens),
+      variables: extract_tag(tokens, :variables),
+      constants: extract_tag(tokens, :constants),
+      init: extract_init(operators),
+      actions: extract_actions(operators),
+      invariants: extract_invariants(operators),
+      next_actions: extract_next(operators)
     }
   end
 
-  @doc """
-  Convert parsed TLA+ into Tlx DSL source code.
-  """
-  def to_tlx(parsed) do
-    module_name = parsed.module_name || "ImportedSpec"
-
-    [
-      "import Tlx\n",
-      "defspec #{module_name} do",
-      emit_variables(parsed),
-      emit_constants(parsed),
-      emit_actions(parsed),
-      emit_invariants(parsed),
-      "end"
-    ]
-    |> Enum.reject(&is_nil/1)
-    |> Enum.join("\n")
+  defp extract_module_name(tokens) do
+    case Enum.find(tokens, &match?({:module, _}, &1)) do
+      {:module, [name]} -> name
+      _ -> nil
+    end
   end
 
-  # --- Extraction ---
-
-  defp extract_module_name(lines) do
-    Enum.find_value(lines, fn line ->
-      case Regex.run(~r/^-+ MODULE (\w+) -+$/, String.trim(line)) do
-        [_, name] -> name
-        _ -> nil
-      end
-    end)
-  end
-
-  defp extract_variables(lines) do
-    Enum.find_value(lines, [], fn line ->
-      case Regex.run(~r/^VARIABLES (.+)$/, String.trim(line)) do
-        [_, vars_str] -> vars_str |> String.split(",") |> Enum.map(&String.trim/1)
-        _ -> nil
-      end
-    end)
-  end
-
-  defp extract_constants(lines) do
-    Enum.find_value(lines, [], fn line ->
-      case Regex.run(~r/^CONSTANTS (.+)$/, String.trim(line)) do
-        [_, str] -> str |> String.split(",") |> Enum.map(&String.trim/1)
-        _ -> nil
-      end
-    end)
-  end
-
-  defp extract_init(lines) do
-    lines
-    |> Enum.drop_while(&(String.trim(&1) != "Init =="))
-    |> Enum.drop(1)
-    |> Enum.take_while(&(String.trim(&1) != "" and String.starts_with?(String.trim(&1), "/\\")))
-    |> Enum.map(&(&1 |> String.trim() |> String.replace_leading("/\\ ", "")))
-  end
-
-  defp extract_next(tla_string) do
-    case Regex.run(~r/Next ==\n((?:\s+\\\/.*\n?)+)/m, tla_string) do
-      [_, body] -> Regex.scan(~r/\\\/\s+(\w+)/, body) |> Enum.map(fn [_, n] -> n end)
+  defp extract_tag(tokens, tag) do
+    case Enum.find(tokens, &match?({^tag, _}, &1)) do
+      {^tag, names} -> names
       _ -> []
     end
   end
 
-  defp extract_actions(tla_string) do
-    Regex.scan(~r/^(\w+) ==\n((?:\s+.*\n?)+?)(?=\n\w|\n====|\z)/m, tla_string)
-    |> Enum.filter(fn [_, name, body] ->
-      name not in ~w(Init Next Spec Fairness vars type_ok) and String.contains?(body, "'")
-    end)
-    |> Enum.map(fn [_, name, body] -> parse_action(name, body) end)
+  defp extract_operators(tokens) do
+    tokens
+    |> Enum.filter(&match?({:operator, _}, &1))
+    |> Enum.map(fn {:operator, [name, body]} -> {name, String.trim(body)} end)
   end
 
-  defp extract_invariants(tla_string) do
-    Regex.scan(~r/^(\w+) == (.+)$/m, tla_string)
-    |> Enum.filter(fn [_, name, body] ->
-      name not in ~w(Init Next Spec Fairness vars type_ok) and
+  defp extract_init(operators) do
+    case List.keyfind(operators, "Init", 0) do
+      {"Init", body} ->
+        body
+        |> String.split("\n")
+        |> Enum.map(&String.trim/1)
+        |> Enum.filter(&String.starts_with?(&1, "/\\"))
+        |> Enum.map(&String.replace_leading(&1, "/\\ ", ""))
+
+      _ ->
+        []
+    end
+  end
+
+  defp extract_next(operators) do
+    case List.keyfind(operators, "Next", 0) do
+      {"Next", body} ->
+        Regex.scan(~r/\\\/ (\w+)/, body)
+        |> Enum.map(fn [_, name] -> name end)
+
+      _ ->
+        []
+    end
+  end
+
+  defp extract_actions(operators) do
+    skip = ~w(Init Next Spec Fairness vars type_ok TypeOK)
+
+    operators
+    |> Enum.filter(fn {name, body} ->
+      name not in skip and String.contains?(body, "'")
+    end)
+    |> Enum.map(fn {name, body} -> parse_action(name, body) end)
+  end
+
+  defp extract_invariants(operators) do
+    skip = ~w(Init Next Spec Fairness vars type_ok TypeOK)
+
+    operators
+    |> Enum.filter(fn {name, body} ->
+      name not in skip and
         not String.contains?(body, "'") and
         not String.contains?(body, "[]") and
-        not String.contains?(body, "<>")
+        not String.contains?(body, "<>") and
+        not String.contains?(body, "WF_") and
+        not String.contains?(body, "SF_")
     end)
-    |> Enum.map(fn [_, name, body] -> %{name: name, expr: String.trim(body)} end)
+    |> Enum.map(fn {name, body} -> %{name: name, expr: body} end)
   end
 
   defp parse_action(name, body) do
@@ -140,89 +286,4 @@ defmodule Tlx.Importer.TlaParser do
 
     %{name: name, guard: guard, transitions: transitions}
   end
-
-  # --- Emission ---
-
-  defp emit_variables(%{variables: []}), do: nil
-
-  defp emit_variables(%{variables: vars, init: init_clauses}) do
-    defaults = parse_init_defaults(init_clauses)
-
-    Enum.map_join(vars, "\n", fn var ->
-      default = Map.get(defaults, var)
-      default_str = if default, do: ", #{format_default(default)}", else: ""
-      "  variable :#{var}#{default_str}"
-    end) <> "\n"
-  end
-
-  defp emit_constants(%{constants: []}), do: nil
-
-  defp emit_constants(%{constants: consts}) do
-    Enum.map_join(consts, "\n", &"  constant :#{&1}") <> "\n"
-  end
-
-  defp emit_actions(%{actions: []}), do: nil
-
-  defp emit_actions(%{actions: actions}) do
-    Enum.map_join(actions, "\n\n", &emit_action/1) <> "\n"
-  end
-
-  defp emit_action(%{name: name, guard: guard, transitions: transitions}) do
-    parts = ["  action :#{name} do"]
-
-    parts = if guard, do: parts ++ ["    await e(#{tla_to_elixir(guard)})"], else: parts
-
-    parts =
-      parts ++
-        Enum.map(transitions, fn %{variable: var, expr: expr} ->
-          elixir_expr = tla_to_elixir(expr)
-
-          if simple_literal?(elixir_expr),
-            do: "    next :#{var}, #{elixir_expr}",
-            else: "    next :#{var}, e(#{elixir_expr})"
-        end)
-
-    Enum.join(parts ++ ["  end"], "\n")
-  end
-
-  defp emit_invariants(%{invariants: []}), do: nil
-
-  defp emit_invariants(%{invariants: invariants}) do
-    Enum.map_join(invariants, "\n", fn %{name: name, expr: expr} ->
-      "  invariant :#{name}, e(#{tla_to_elixir(expr)})"
-    end) <> "\n"
-  end
-
-  # --- Helpers ---
-
-  defp tla_to_elixir(expr) do
-    expr
-    |> String.replace(" /\\ ", " and ")
-    |> String.replace(" \\/ ", " or ")
-    |> String.replace("~(", "not (")
-    |> String.replace("TRUE", "true")
-    |> String.replace("FALSE", "false")
-    |> String.replace(~r/(\w+) = (\w+)/, "\\1 == \\2")
-    |> String.replace(" # ", " != ")
-  end
-
-  defp parse_init_defaults(init_clauses) do
-    init_clauses
-    |> Enum.flat_map(fn clause ->
-      case Regex.run(~r/(\w+) = (.+)/, clause) do
-        [_, var, val] -> [{var, val}]
-        _ -> []
-      end
-    end)
-    |> Map.new()
-  end
-
-  defp format_default(val) when val in ["TRUE", "true"], do: "true"
-  defp format_default(val) when val in ["FALSE", "false"], do: "false"
-
-  defp format_default(val) do
-    if Regex.match?(~r/^\d+$/, val), do: val, else: ":#{val}"
-  end
-
-  defp simple_literal?(expr), do: Regex.match?(~r/^(\d+|true|false|:[a-z_]+)$/, expr)
 end

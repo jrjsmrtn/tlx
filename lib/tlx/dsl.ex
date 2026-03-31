@@ -1,9 +1,12 @@
-defmodule Tlx.Dsl do
+# SPDX-FileCopyrightText: 2026 Georges Martin
+# SPDX-License-Identifier: MIT
+
+defmodule TLX.Dsl do
   @moduledoc false
 
   @transition %Spark.Dsl.Entity{
     name: :next,
-    target: Tlx.Transition,
+    target: TLX.Transition,
     args: [:variable, :expr],
     schema: [
       variable: [
@@ -22,7 +25,7 @@ defmodule Tlx.Dsl do
 
   @variable %Spark.Dsl.Entity{
     name: :variable,
-    target: Tlx.Variable,
+    target: TLX.Variable,
     args: [:name, {:optional, :default}],
     identifier: :name,
     schema: [
@@ -45,7 +48,7 @@ defmodule Tlx.Dsl do
 
   @constant %Spark.Dsl.Entity{
     name: :constant,
-    target: Tlx.Constant,
+    target: TLX.Constant,
     args: [:name],
     identifier: :name,
     schema: [
@@ -58,9 +61,31 @@ defmodule Tlx.Dsl do
     describe: "Declare a model constant."
   }
 
+  @with_choice %Spark.Dsl.Entity{
+    name: :pick,
+    target: TLX.WithChoice,
+    args: [:variable, :set],
+    schema: [
+      variable: [
+        type: :atom,
+        required: true,
+        doc: "The bound variable name for the non-deterministic choice."
+      ],
+      set: [
+        type: :any,
+        required: true,
+        doc: "The set to pick from (constant name or expression)."
+      ]
+    ],
+    entities: [
+      transitions: [@transition]
+    ],
+    describe: "Non-deterministic choice from a set (PlusCal `with (x \\in S)`)."
+  }
+
   @branch %Spark.Dsl.Entity{
     name: :branch,
-    target: Tlx.Branch,
+    target: TLX.Branch,
     args: [:name],
     identifier: :name,
     schema: [
@@ -82,7 +107,7 @@ defmodule Tlx.Dsl do
 
   @action %Spark.Dsl.Entity{
     name: :action,
-    target: Tlx.Action,
+    target: TLX.Action,
     args: [:name],
     identifier: :name,
     schema: [
@@ -107,7 +132,8 @@ defmodule Tlx.Dsl do
     ],
     entities: [
       transitions: [@transition],
-      branches: [@branch]
+      branches: [@branch],
+      with_choices: [@with_choice]
     ],
     transform: {__MODULE__, :merge_await, []},
     describe: "Define a guarded state transition."
@@ -115,7 +141,7 @@ defmodule Tlx.Dsl do
 
   @invariant %Spark.Dsl.Entity{
     name: :invariant,
-    target: Tlx.Invariant,
+    target: TLX.Invariant,
     args: [:name, :expr],
     identifier: :name,
     schema: [
@@ -131,6 +157,41 @@ defmodule Tlx.Dsl do
       ]
     ],
     describe: "Declare a safety invariant."
+  }
+
+  @init_constraint %Spark.Dsl.Entity{
+    name: :constraint,
+    target: TLX.InitConstraint,
+    args: [:expr],
+    schema: [
+      expr: [
+        type: :any,
+        required: true,
+        doc: "A quoted boolean expression constraining the initial state."
+      ]
+    ],
+    describe: "An explicit constraint on the initial state."
+  }
+
+  @init %Spark.Dsl.Section{
+    name: :initial,
+    describe: "Custom initial state constraints (added to auto-generated Init).",
+    entities: [@init_constraint],
+    imports: [TLX.Expr, TLX.Temporal, TLX.Sets, TLX.Sequences]
+  }
+
+  @spec_config %Spark.Dsl.Section{
+    name: :spec_config,
+    describe: "Specification configuration options.",
+    top_level?: true,
+    schema: [
+      extends: [
+        type: {:list, :atom},
+        default: [],
+        doc:
+          "Additional TLA+ modules to extend (e.g., `[:Sequences, :Bags]`). Integers and FiniteSets are always included."
+      ]
+    ]
   }
 
   @variables %Spark.Dsl.Section{
@@ -152,7 +213,7 @@ defmodule Tlx.Dsl do
     describe: "Guarded state transitions.",
     top_level?: true,
     entities: [@action],
-    imports: [Tlx.Expr]
+    imports: [TLX.Expr, TLX.Temporal, TLX.Sets, TLX.Sequences]
   }
 
   @invariants %Spark.Dsl.Section{
@@ -160,12 +221,12 @@ defmodule Tlx.Dsl do
     describe: "Safety invariants checked at every reachable state.",
     top_level?: true,
     entities: [@invariant],
-    imports: [Tlx.Expr, Tlx.Temporal]
+    imports: [TLX.Expr, TLX.Temporal, TLX.Sets, TLX.Sequences]
   }
 
   @process %Spark.Dsl.Entity{
     name: :process,
-    target: Tlx.Process,
+    target: TLX.Process,
     args: [:name],
     identifier: :name,
     schema: [
@@ -196,12 +257,12 @@ defmodule Tlx.Dsl do
     describe: "Concurrent process declarations.",
     top_level?: true,
     entities: [@process],
-    imports: [Tlx.Expr]
+    imports: [TLX.Expr, TLX.Temporal, TLX.Sets, TLX.Sequences]
   }
 
   @property %Spark.Dsl.Entity{
     name: :property,
-    target: Tlx.Property,
+    target: TLX.Property,
     args: [:name, :expr],
     identifier: :name,
     schema: [
@@ -224,13 +285,68 @@ defmodule Tlx.Dsl do
     describe: "Temporal properties checked over infinite traces.",
     top_level?: true,
     entities: [@property],
-    imports: [Tlx.Expr, Tlx.Temporal]
+    imports: [TLX.Expr, TLX.Temporal, TLX.Sets, TLX.Sequences]
+  }
+
+  @refinement_mapping %Spark.Dsl.Entity{
+    name: :mapping,
+    target: TLX.RefinementMapping,
+    args: [:variable, :expr],
+    schema: [
+      variable: [
+        type: :atom,
+        required: true,
+        doc: "The abstract spec variable being mapped to."
+      ],
+      expr: [
+        type: :any,
+        required: true,
+        doc: "Expression over concrete variables that produces the abstract variable's value."
+      ]
+    ],
+    describe: "Map a concrete expression to an abstract variable."
+  }
+
+  @refines %Spark.Dsl.Entity{
+    name: :refines,
+    target: TLX.Refinement,
+    args: [:module],
+    identifier: :module,
+    schema: [
+      module: [
+        type: :atom,
+        required: true,
+        doc: "The abstract spec module that this spec refines."
+      ]
+    ],
+    entities: [
+      mappings: [@refinement_mapping]
+    ],
+    describe: "Declare that this spec refines an abstract spec via a variable mapping."
+  }
+
+  @refinements %Spark.Dsl.Section{
+    name: :refinements,
+    describe: "Refinement mappings to abstract specs.",
+    top_level?: true,
+    entities: [@refines],
+    imports: [TLX.Expr, TLX.Temporal, TLX.Sets, TLX.Sequences]
   }
 
   use Spark.Dsl.Extension,
-    sections: [@variables, @constants, @actions, @invariants, @processes, @properties],
-    transformers: [Tlx.Transformers.TypeOK],
-    verifiers: [Tlx.Verifiers.TransitionTargets, Tlx.Verifiers.EmptyAction]
+    sections: [
+      @spec_config,
+      @variables,
+      @constants,
+      @init,
+      @actions,
+      @invariants,
+      @processes,
+      @properties,
+      @refinements
+    ],
+    transformers: [TLX.Transformers.TypeOK],
+    verifiers: [TLX.Verifiers.TransitionTargets, TLX.Verifiers.EmptyAction]
 
   @doc false
   def merge_await(%{await: nil} = action), do: {:ok, action}

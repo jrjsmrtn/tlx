@@ -1,7 +1,10 @@
-defmodule Tlx.Emitter.ElixirTest do
+# SPDX-FileCopyrightText: 2026 Georges Martin
+# SPDX-License-Identifier: MIT
+
+defmodule TLX.Emitter.ElixirTest do
   use ExUnit.Case
 
-  alias Tlx.Emitter
+  alias TLX.Emitter
 
   Code.require_file("examples/mutex.ex", File.cwd!())
 
@@ -10,7 +13,7 @@ defmodule Tlx.Emitter.ElixirTest do
       output = Emitter.Elixir.emit(Examples.Mutex)
 
       assert output =~ "defmodule Examples.Mutex do"
-      assert output =~ "use Tlx.Spec"
+      assert output =~ "use TLX.Spec"
       assert output =~ "end"
     end
 

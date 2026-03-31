@@ -1,9 +1,12 @@
+# SPDX-FileCopyrightText: 2026 Georges Martin
+# SPDX-License-Identifier: MIT
+
 defmodule Examples.ProducerConsumerTest do
   use ExUnit.Case
 
-  alias Tlx.Emitter.Config
-  alias Tlx.Emitter.TLA
-  alias Tlx.Simulator
+  alias TLX.Emitter.Config
+  alias TLX.Emitter.TLA
+  alias TLX.Simulator
 
   Code.require_file("examples/producer_consumer.ex", File.cwd!())
 
@@ -50,7 +53,7 @@ end
 defmodule Examples.ProducerConsumerLiteral do
   @moduledoc false
   # Version with literal bound for simulator (no constants)
-  use Tlx.Spec
+  use TLX.Spec
 
   variable :buf_size, 0
   variable :produced, 0

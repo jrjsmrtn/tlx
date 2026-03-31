@@ -1,0 +1,206 @@
+# SPDX-FileCopyrightText: 2026 Georges Martin
+# SPDX-License-Identifier: MIT
+
+defmodule TLX.Emitter.PlusCalP do
+  @moduledoc """
+  Emits a PlusCal algorithm (P-syntax / begin-end) from a compiled `TLX.Spec` module,
+  wrapped in a valid `.tla` file compatible with `pcal.trans`.
+  """
+
+  alias Spark.Dsl.Extension
+  alias TLX.Emitter.Format
+
+  @symbols Format.pluscal_symbols()
+
+  @doc """
+  Generate a PlusCal P-syntax `.tla` string from a compiled spec module.
+  """
+  def emit(module) do
+    variables = Extension.get_entities(module, [:variables])
+    constants = Extension.get_entities(module, [:constants])
+    actions = Extension.get_entities(module, [:actions])
+    invariants = Extension.get_entities(module, [:invariants])
+    processes = Extension.get_entities(module, [:processes])
+
+    module_name = module_name(module)
+
+    [
+      emit_header(module_name),
+      emit_extends(constants),
+      emit_algorithm(module_name, variables, actions, processes),
+      "\\* BEGIN TRANSLATION",
+      "\\* END TRANSLATION\n",
+      emit_invariants(invariants),
+      emit_footer()
+    ]
+    |> List.flatten()
+    |> Enum.reject(&is_nil/1)
+    |> Enum.join("\n")
+  end
+
+  defp module_name(module) do
+    module |> Module.split() |> List.last()
+  end
+
+  defp emit_header(name) do
+    dashes = String.duplicate("-", 4)
+    "#{dashes} MODULE #{name} #{dashes}"
+  end
+
+  defp emit_extends([]), do: "EXTENDS Integers, FiniteSets\n"
+
+  defp emit_extends(constants) do
+    names = Enum.map_join(constants, ", ", &Atom.to_string(&1.name))
+    "EXTENDS Integers, FiniteSets\n\nCONSTANTS #{names}\n"
+  end
+
+  defp emit_algorithm(name, variables, actions, processes) do
+    all_vars = variables ++ Enum.flat_map(processes, & &1.variables)
+
+    body =
+      if actions != [] do
+        emit_p_body(actions)
+      else
+        Enum.map(processes, &emit_p_process/1)
+      end
+
+    [
+      "(* --algorithm #{name}",
+      emit_p_variables(all_vars),
+      "begin",
+      body,
+      "end algorithm; *)\n"
+    ]
+  end
+
+  defp emit_p_process(process) do
+    name = Atom.to_string(process.name)
+    set = format_set(process.set)
+    actions = emit_p_actions(process.actions)
+
+    [
+      "process #{name} \\in #{set}",
+      "begin",
+      actions,
+      "end process;"
+    ]
+  end
+
+  defp format_set(atom) when is_atom(atom), do: Atom.to_string(atom)
+  defp format_set(other), do: inspect(other)
+
+  defp emit_p_variables(variables) do
+    decls =
+      Enum.map_join(variables, ",\n", fn var ->
+        default = if var.default != nil, do: " = #{format_value(var.default)}", else: ""
+        "    #{Atom.to_string(var.name)}#{default}"
+      end)
+
+    "variables\n#{decls};"
+  end
+
+  defp emit_p_body([single_action]) do
+    emit_p_actions([single_action])
+  end
+
+  defp emit_p_body(actions) do
+    branches =
+      actions
+      |> Enum.with_index()
+      |> Enum.map_join("\n", fn {action, idx} ->
+        keyword = if idx == 0, do: "either", else: "or"
+        inner = emit_p_action(action)
+        "        #{keyword}\n#{inner}"
+      end)
+
+    "    main:\n    while TRUE do\n#{branches}\n        end either;\n    end while;"
+  end
+
+  defp emit_p_actions(actions) do
+    Enum.map_join(actions, "\n", &emit_p_action/1)
+  end
+
+  defp emit_p_action(action) do
+    label = "    #{Atom.to_string(action.name)}:"
+
+    cond do
+      action.branches != [] -> emit_p_branched(action, label)
+      action.with_choices != [] -> emit_p_with(action, label)
+      true -> emit_p_simple(action, label)
+    end
+  end
+
+  defp emit_p_simple(action, label) do
+    await =
+      if action.guard, do: "\n        await #{format_ast(unwrap_expr(action.guard))};", else: ""
+
+    assignments = format_p_assignments(action.transitions)
+    "#{label}#{await}\n#{assignments}"
+  end
+
+  defp emit_p_branched(action, label) do
+    await =
+      if action.guard, do: "\n        await #{format_ast(unwrap_expr(action.guard))};", else: ""
+
+    branches =
+      action.branches
+      |> Enum.with_index()
+      |> Enum.map_join("\n", fn {branch, idx} ->
+        keyword = if idx == 0, do: "either", else: "or"
+
+        branch_await =
+          if branch.guard,
+            do: "\n            await #{format_ast(unwrap_expr(branch.guard))};",
+            else: ""
+
+        assignments =
+          Enum.map_join(branch.transitions, "\n", fn t ->
+            "            #{Atom.to_string(t.variable)} := #{format_expr(t.expr)};"
+          end)
+
+        "        #{keyword}#{branch_await}\n#{assignments}"
+      end)
+
+    "#{label}#{await}\n#{branches}\n        end either;"
+  end
+
+  defp emit_p_with(action, label) do
+    await =
+      if action.guard, do: "\n        await #{format_ast(unwrap_expr(action.guard))};", else: ""
+
+    with_blocks =
+      Enum.map_join(action.with_choices, "\n", fn wc ->
+        var = Atom.to_string(wc.variable)
+        set = format_set_ref(wc.set)
+        assignments = format_p_assignments(wc.transitions)
+        "        with #{var} \\in #{set} do\n#{assignments}\n        end with;"
+      end)
+
+    "#{label}#{await}\n#{with_blocks}"
+  end
+
+  defp format_set_ref(set) when is_atom(set), do: Atom.to_string(set)
+  defp format_set_ref({:expr, ast}), do: format_ast(ast)
+  defp format_set_ref(other), do: inspect(other)
+
+  defp format_p_assignments(transitions) do
+    Enum.map_join(transitions, "\n", fn t ->
+      "        #{Atom.to_string(t.variable)} := #{format_expr(t.expr)};"
+    end)
+  end
+
+  defp emit_invariants([]), do: nil
+
+  defp emit_invariants(invariants) do
+    Enum.map_join(invariants, "\n", fn inv ->
+      "#{Atom.to_string(inv.name)} == #{format_expr(inv.expr)}"
+    end) <> "\n"
+  end
+
+  defp emit_footer, do: "===="
+
+  defp unwrap_expr(expr), do: Format.unwrap_expr(expr)
+  defp format_expr(expr), do: Format.format_expr(expr, @symbols)
+  defp format_ast(ast), do: Format.format_ast(ast, @symbols)
+  defp format_value(val), do: Format.format_value(val, @symbols)
+end

@@ -1,6 +1,9 @@
+# SPDX-FileCopyrightText: 2026 Georges Martin
+# SPDX-License-Identifier: MIT
+
 defmodule Examples.Mutex do
   @moduledoc """
-  Peterson's mutual exclusion algorithm in the Tlx DSL.
+  Peterson's mutual exclusion algorithm in the TLX DSL.
 
   Two processes compete to enter a critical section. The invariant
   guarantees mutual exclusion: both processes are never in the
@@ -24,13 +27,13 @@ defmodule Examples.Mutex do
   ## Bug found during development
 
   The initial version of this spec set `turn` in the **exit** phase
-  instead of the entry phase. The Elixir simulator (`Tlx.Simulator`)
+  instead of the entry phase. The Elixir simulator (`TLX.Simulator`)
   found a mutual exclusion violation within the first 500 random walks.
 
   The buggy version is preserved in `Examples.MutexBuggy` below for
   educational purposes. Run it to see the violation:
 
-      Tlx.Simulator.simulate(Examples.MutexBuggy, runs: 100, seed: 42)
+      TLX.Simulator.simulate(Examples.MutexBuggy, runs: 100, seed: 42)
       #=> {:error, {:invariant, :mutual_exclusion}, [%{pc1: :cs, pc2: :cs, ...}, ...]}
 
   ## References
@@ -39,7 +42,7 @@ defmodule Examples.Mutex do
   - https://en.wikipedia.org/wiki/Peterson%27s_algorithm
   """
 
-  use Tlx.Spec
+  use TLX.Spec
 
   variable :pc1, :idle
   variable :pc2, :idle
@@ -100,7 +103,7 @@ defmodule Examples.MutexBuggy do
 
   This violates mutual exclusion. The simulator finds the bug:
 
-      iex> Tlx.Simulator.simulate(Examples.MutexBuggy, runs: 100, seed: 42)
+      iex> TLX.Simulator.simulate(Examples.MutexBuggy, runs: 100, seed: 42)
       {:error, {:invariant, :mutual_exclusion}, [...]}
 
   The bug: when both processes have their flags set and are waiting,
@@ -111,7 +114,7 @@ defmodule Examples.MutexBuggy do
   Compare with `Examples.Mutex` for the correct version.
   """
 
-  use Tlx.Spec
+  use TLX.Spec
 
   variable :pc1, :idle
   variable :pc2, :idle

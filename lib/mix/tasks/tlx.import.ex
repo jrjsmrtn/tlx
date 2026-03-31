@@ -1,24 +1,31 @@
+# SPDX-FileCopyrightText: 2026 Georges Martin
+# SPDX-License-Identifier: MIT
+
 defmodule Mix.Tasks.Tlx.Import do
   @moduledoc """
-  Import a TLA+ specification file into Tlx DSL syntax.
+  Import a TLA+ or PlusCal specification file into TLX DSL syntax.
 
   ## Usage
 
       mix tlx.import path/to/spec.tla
+      mix tlx.import path/to/spec.tla --format pluscal
       mix tlx.import path/to/spec.tla --output my_spec.ex
 
-  Best-effort parser for TLA+ output from Tlx's own emitter
-  and simple hand-written specs. Complex TLA+ may need manual cleanup.
+  ## Options
+
+    * `--format` - Input format: `tla` (default) or `pluscal`
+    * `--output` - Write to file instead of stdout
   """
 
   use Mix.Task
 
-  alias Tlx.Importer.TlaParser
+  alias TLX.Importer.PlusCalParser
+  alias TLX.Importer.TlaParser
 
-  @shortdoc "Import a TLA+ file into Tlx DSL syntax"
+  @shortdoc "Import a TLA+ or PlusCal file into TLX DSL syntax"
 
-  @switches [output: :string]
-  @aliases [o: :output]
+  @switches [output: :string, format: :string]
+  @aliases [o: :output, f: :format]
 
   @impl Mix.Task
   def run(args) do
@@ -26,9 +33,9 @@ defmodule Mix.Tasks.Tlx.Import do
 
     case argv do
       [path] ->
-        tla_content = File.read!(path)
-        parsed = TlaParser.parse(tla_content)
-        tlx_source = TlaParser.to_tlx(parsed)
+        content = File.read!(path)
+        format = opts[:format] || "tla"
+        tlx_source = import_spec(content, format)
 
         case opts[:output] do
           nil ->
@@ -40,10 +47,24 @@ defmodule Mix.Tasks.Tlx.Import do
         end
 
       [] ->
-        Mix.raise("Usage: mix tlx.import path/to/spec.tla [--output file.ex]")
+        Mix.raise(
+          "Usage: mix tlx.import path/to/spec.tla [--format tla|pluscal] [--output file.ex]"
+        )
 
       _ ->
         Mix.raise("Expected exactly one file argument")
     end
+  end
+
+  defp import_spec(content, "tla") do
+    content |> TlaParser.parse() |> TlaParser.to_tlx()
+  end
+
+  defp import_spec(content, "pluscal") do
+    content |> PlusCalParser.parse() |> PlusCalParser.to_tlx()
+  end
+
+  defp import_spec(_content, format) do
+    Mix.raise("Unknown format: #{format}. Use 'tla' or 'pluscal'.")
   end
 end

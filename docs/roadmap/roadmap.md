@@ -1,4 +1,4 @@
-# TLx Roadmap
+# TLX Roadmap
 
 ## Vision
 
@@ -12,7 +12,7 @@ Enable Elixir developers to write formally verifiable TLA+/PlusCal specification
 **Focus**: Core DSL, internal IR, TLA+ emitter
 
 - [x] Spark DSL for variables, constants, init, actions (guard + next)
-- [x] Internal IR structs (`%Tlx.Spec{}`, `%Tlx.Action{}`, etc.)
+- [x] Internal IR structs (`%TLX.Spec{}`, `%TLX.Action{}`, etc.)
 - [x] TLA+ emitter (generate valid `.tla` files from IR)
 - [x] Invariant declarations
 - [x] First example spec: simple state machine
@@ -62,78 +62,122 @@ Enable Elixir developers to write formally verifiable TLA+/PlusCal specification
 - [x] Better error messages with source locations and suggestions
 - [x] Simulator constant injection
 
-### Phase 6: Expressiveness (proposed)
+### Phase 6: Expressiveness (complete)
 
 **Target**: v0.2.x
 **Focus**: Close the gap with full TLA+/PlusCal
 
-- [ ] IF/THEN/ELSE in expressions
-- [ ] Set operations (union, intersect, subset, cardinality)
-- [ ] Non-deterministic set pick (`with` / `pick`)
-- [ ] Custom Init expressions
-- [ ] LET/IN local definitions
+- [x] IF/THEN/ELSE in expressions (`ite/3`)
+- [x] Set operations (union, intersect, subset, cardinality, set_of, in_set)
+- [x] Non-deterministic set pick (`pick :var, :set`)
+- [x] Custom Init expressions (`initial` section with `constraint`)
+- [x] LET/IN local definitions (`let_in/3`)
 
-### Phase 7: Tooling (proposed)
+### Phase 7: Tooling (complete)
 
-**Target**: v0.2.x
+**Target**: v0.3.x
 **Focus**: Developer workflow
 
-- [ ] `mix tlx.watch` — auto-simulate on save
-- [ ] `mix tlx.list` — discover spec modules
-- [ ] Extract shared AST formatting into common module
-- [ ] CI integration template
+- [x] `mix tlx.watch` — auto-simulate on save
+- [x] `mix tlx.list` — discover spec modules
+- [x] Extract shared AST formatting into `TLX.Emitter.Format` (symbol-table-parameterized)
+- [x] CI integration (GitHub Actions workflow)
+- [x] Mix task naming: `Mix.Tasks.Tlx.*` (Mix convention)
 
-### Phase 8: Forge Integration (proposed)
+### Phase 8: Forge Integration (complete)
 
 **Target**: v0.3.x
 **Focus**: Bridge to the original motivation
 
-- [x] GenStateMachine → Tlx skeleton generator
-- [x] TLA+ → Tlx importer
-- [ ] Forge example specs (node lifecycle, concurrent operators)
+- [x] GenStateMachine → TLX skeleton generator
+- [x] TLA+ → TLX importer
+- [x] Forge example specs — 6 abstract (from ADRs) + 6 concrete (from code), all TLC-verified
+- [x] Refinement checking — concrete specs refine abstract specs via INSTANCE/WITH
 
-### Phase 9: Parser and Code Generation Hardening (proposed)
+### Phase 9: Robustness (complete)
 
-**Target**: v0.3.x
-**Focus**: Replace regex parsing and string templates with proper tools
+**Target**: v0.2.x
+**Focus**: Replace fragile string-based approaches with proper tools
 
-- [ ] Igniter-based code generation for `mix tlx.import` and `mix tlx.gen.from_state_machine`
-- [ ] Proper TLA+ parser (NimbleParsec or Yecc) replacing regex extraction
-- [ ] PlusCal parser for importing PlusCal specs
-- [ ] Round-trip fidelity: import → emit → import produces identical output
+Sprint 15 — TLC tool mode and PlusCal emitter compat:
 
-### Phase 10: Examples and Documentation (proposed)
+- [x] TLC `-tool` mode output parsing (replaces regex stdout scraping; JSON unavailable in TLC 2.19)
+- [x] PlusCal C-syntax emitter fixed for pcal.trans acceptance
+- [x] PlusCal P-syntax emitter (begin/end style)
+- [x] Integration tested: PlusCal → pcal.trans → TLC
 
-**Target**: v0.3.x
-**Focus**: Real-world validation and learning materials
+Sprint 16 — Proper parsers and AST-based code gen:
 
-- [x] Raft leader election spec
-- [x] Two-phase commit spec
-- [ ] How-to guides (model state machines, find race conditions, run TLC)
-- [ ] Explanation pages (why formal verification, Tlx vs PlusCal, TLA+ vs property testing)
+- [x] NimbleParsec TLA+ parser (replaces regex importer)
+- [x] PlusCal parser for importing PlusCal specs (C-syntax and P-syntax)
+- [x] AST-based code generation via `Code.format_string!/1` for `mix tlx.import` and `mix tlx.gen.from_state_machine`
+- [x] Round-trip fidelity tests: emit → parse → codegen preserves structure
+
+### Phase 11: Refinement and Verification (complete)
+
+**Target**: v0.2.8
+**Focus**: Spec-vs-spec comparison, emitter robustness
+
+- [x] `refines` DSL block with `mapping` entities
+- [x] TLA+ INSTANCE/WITH emission for refinement checking
+- [x] Auto-declare atom model values as CONSTANTS (TLA+ and .cfg)
+- [x] Fix branched action TLA+ emission (UNCHANGED inside disjunctions)
+- [x] Handle 3-tuple AST forms for ite/let_in/set ops inside `e()`
+- [x] Auto-include abstract spec atoms in INSTANCE identity mappings
+- [x] `formal-spec` skill — workflow from ADR to refinement-checked specs
+
+### Phase 10: Documentation (complete)
+
+**Target**: v0.2.9
+**Focus**: Diátaxis documentation and reference
+
+- [x] How-to guides (model GenServer, find race conditions, run TLC, verify with refinement)
+- [x] Explanation pages (why formal verification, TLX vs raw TLA+, formal specs vs testing)
+- [x] Getting-started tutorial rewrite (traffic light example)
+- [x] Reference docs (DSL, mix tasks, expressions)
+- [x] CONTRIBUTING.md with tone guidelines
+- [x] FAQ.md
+
+### Phase 12: Expressiveness II (complete)
+
+**Target**: v0.2.11
+**Focus**: Functions, maps, records, sequences
+
+- [x] Function application (`at/2`) and update (`except/3`)
+- [x] CHOOSE, set comprehension (`filter/3`), CASE (`case_of/1`)
+- [x] `if` syntax inside `e()`, `let_in` block style
+- [x] DOMAIN, range sets, implication/equivalence
+- [x] Sequence operations (`len`, `append`, `head`, `tail`, `sub_seq`)
+- [x] Configurable EXTENDS (`extends [:Sequences]`)
+- [x] Record construction (`record/1`), multi-key EXCEPT (`except_many/2`)
+- [x] Symbols emitter (TLX DSL with math notation)
 
 ## Sprint History
 
-| Sprint | Phase                 | Version | Summary                                            |
-| ------ | --------------------- | ------- | -------------------------------------------------- |
-| 12     | Integration           | v0.2.3  | TLA+ importer, GenStateMachine generator           |
-| 13     | Validation            | v0.2.2  | 2PC and Raft examples, simulator found Raft bugs   |
-| 9      | Semantic Intelligence | v0.2.1  | Auto TypeOK, empty action warning, better errors   |
-| 8      | DX Overhaul           | v0.2.0  | e() macro, flat sections, await, defspec, emitters |
-| 7      | Production Ready      | v0.1.7  | Examples, tutorial, Hex prep, edge case tests      |
-| 6      | Simulation/Tooling    | v0.1.6  | Trace formatting, Spark docs generation            |
-| 5      | Simulation/Tooling    | v0.1.5  | Mutex example, Elixir simulator                    |
-| 4      | PlusCal/Concurrency   | v0.1.4  | Temporal properties, fairness, quantifiers         |
-| 3      | PlusCal/Concurrency   | v0.1.3  | Processes, TLC integration, config generation      |
-| 2      | Foundation/PlusCal    | v0.1.2  | PlusCal emitter, either/or, mix tlx.emit task      |
-| 1      | Foundation            | v0.1.1  | Core DSL (Spark), TLA+ emitter, quality gates      |
+| Sprint | Phase                 | Version | Summary                                             |
+| ------ | --------------------- | ------- | --------------------------------------------------- |
+| 21     | Expressiveness II     | v0.2.11 | Records, multi-EXCEPT, Symbols emitter, FAQ         |
+| 20     | Expressiveness II     | v0.2.10 | Sequences, DOMAIN, range, implies/equiv, extends    |
+| 19     | Expressiveness II     | v0.2.9  | at/except, CHOOSE, filter, CASE, if-syntax DX       |
+| 18     | Documentation         | v0.2.9  | Reference docs: DSL, mix tasks, expressions         |
+| 17     | Documentation         | v0.2.9  | How-tos, explanations, getting-started rewrite      |
+| —      | Refinement            | v0.2.8  | Refinement DSL, emitter fixes, formal-spec skill    |
+| 10     | Expressiveness        | v0.2.7  | ite, sets, let_in, custom init, pick from sets      |
+| 16     | Robustness            | v0.2.6  | NimbleParsec parsers, AST codegen, round-trip tests |
+| 15     | Robustness            | v0.2.5  | TLC tool mode, PlusCal pcal.trans compat, P-syntax  |
+| 14     | Quality               | v0.2.4  | TLC integration testing against real subprocess     |
+| 12     | Integration           | v0.2.3  | TLA+ importer, GenStateMachine generator            |
+| 13     | Validation            | v0.2.2  | 2PC and Raft examples, simulator found Raft bugs    |
+| 9      | Semantic Intelligence | v0.2.1  | Auto TypeOK, empty action warning, better errors    |
+| 8      | DX Overhaul           | v0.2.0  | e() macro, flat sections, await, defspec, emitters  |
+| 7      | Production Ready      | v0.1.7  | Examples, tutorial, Hex prep, edge case tests       |
+| 6      | Simulation/Tooling    | v0.1.6  | Trace formatting, Spark docs generation             |
+| 5      | Simulation/Tooling    | v0.1.5  | Mutex example, Elixir simulator                     |
+| 4      | PlusCal/Concurrency   | v0.1.4  | Temporal properties, fairness, quantifiers          |
+| 3      | PlusCal/Concurrency   | v0.1.3  | Processes, TLC integration, config generation       |
+| 2      | Foundation/PlusCal    | v0.1.2  | PlusCal emitter, either/or, mix tlx.emit task       |
+| 1      | Foundation            | v0.1.1  | Core DSL (Spark), TLA+ emitter, quality gates       |
 
 ## Proposed Sprints
 
-| Sprint | Phase                 | Plan                                   |
-| ------ | --------------------- | -------------------------------------- |
-| 9      | Semantic Intelligence | [Plan](../sprints/sprint-0009-plan.md) |
-| 10     | Expressiveness        | [Plan](../sprints/sprint-0010-plan.md) |
-| 11     | Tooling               | [Plan](../sprints/sprint-0011-plan.md) |
-| 12     | Forge Integration     | [Plan](../sprints/sprint-0012-plan.md) |
-| 13     | Examples & Docs       | [Plan](../sprints/sprint-0013-plan.md) |
+None. All planned sprints are complete.

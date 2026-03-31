@@ -1,4 +1,7 @@
-defmodule Tlx.Trace do
+# SPDX-FileCopyrightText: 2026 Georges Martin
+# SPDX-License-Identifier: MIT
+
+defmodule TLX.Trace do
   @moduledoc """
   Formats counterexample traces from the simulator or TLC
   into human-readable output.
@@ -59,7 +62,7 @@ defmodule Tlx.Trace do
   end
 
   @doc """
-  Format a violation result from `Tlx.Simulator` into a readable string.
+  Format a violation result from `TLX.Simulator` into a readable string.
   """
   def format_violation({:invariant, name}, trace) do
     header = "Invariant #{name} violated after #{length(trace) - 1} steps.\n"

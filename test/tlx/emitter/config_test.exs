@@ -1,10 +1,13 @@
-defmodule Tlx.Emitter.ConfigTest do
+# SPDX-FileCopyrightText: 2026 Georges Martin
+# SPDX-License-Identifier: MIT
+
+defmodule TLX.Emitter.ConfigTest do
   use ExUnit.Case
 
-  alias Tlx.Emitter.Config
+  alias TLX.Emitter.Config
 
   defmodule CounterSpec do
-    use Tlx.Spec
+    use TLX.Spec
 
     variable(:x, 0)
 

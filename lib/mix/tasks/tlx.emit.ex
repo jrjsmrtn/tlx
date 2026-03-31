@@ -1,24 +1,27 @@
+# SPDX-FileCopyrightText: 2026 Georges Martin
+# SPDX-License-Identifier: MIT
+
 defmodule Mix.Tasks.Tlx.Emit do
   @moduledoc """
-  Emit a TLA+ or PlusCal specification from a compiled Tlx.Spec module.
+  Emit a TLA+ or PlusCal specification from a compiled TLX.Spec module.
 
   ## Usage
 
       mix tlx.emit MyApp.MySpec
-      mix tlx.emit MyApp.MySpec --format pluscal
+      mix tlx.emit MyApp.MySpec --format pluscal-c
       mix tlx.emit MyApp.MySpec --output path/to/file.tla
 
   ## Options
 
-    * `--format` - Output format: `tla` (default) or `pluscal`
+    * `--format` - Output format: `tla` (default), `pluscal-c`, `pluscal-p`, `elixir`
     * `--output` - Write to file instead of stdout
   """
 
   use Mix.Task
 
-  alias Tlx.Emitter
+  alias TLX.Emitter
 
-  @shortdoc "Emit TLA+ or PlusCal from a Tlx.Spec module"
+  @shortdoc "Emit TLA+ or PlusCal from a TLX.Spec module"
 
   @switches [format: :string, output: :string]
   @aliases [f: :format, o: :output]
@@ -49,12 +52,13 @@ defmodule Mix.Tasks.Tlx.Emit do
   end
 
   defp emit(module, "tla"), do: Emitter.TLA.emit(module)
-  defp emit(module, "pluscal"), do: Emitter.PlusCal.emit(module)
-  defp emit(module, "unicode"), do: Emitter.Unicode.emit(module)
+  defp emit(module, "pluscal-c"), do: Emitter.PlusCalC.emit(module)
+  defp emit(module, "pluscal-p"), do: Emitter.PlusCalP.emit(module)
   defp emit(module, "elixir"), do: Emitter.Elixir.emit(module)
+  defp emit(module, "symbols"), do: Emitter.Symbols.emit(module)
 
   defp emit(_module, format),
-    do: Mix.raise("Unknown format: #{format}. Use 'tla', 'pluscal', 'unicode', or 'elixir'.")
+    do: Mix.raise("Unknown format: #{format}. Use 'tla', 'pluscal-c', 'pluscal-p', or 'elixir'.")
 
   defp write_file(path, content) do
     File.write!(path, content <> "\n")

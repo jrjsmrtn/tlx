@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Georges Martin
+# SPDX-License-Identifier: MIT
+
 defmodule Mix.Tasks.Tlx.Check do
   @moduledoc """
   Emit a PlusCal spec, translate to TLA+, and run TLC model checker.
@@ -17,10 +20,10 @@ defmodule Mix.Tasks.Tlx.Check do
 
   use Mix.Task
 
-  alias Tlx.Emitter
-  alias Tlx.TLC
+  alias TLX.Emitter
+  alias TLX.TLC
 
-  @shortdoc "Run TLC model checker on a Tlx.Spec module"
+  @shortdoc "Run TLC model checker on a TLX.Spec module"
 
   @switches [tla2tools: :string, model_values: [:string, :keep], workers: :string]
   @aliases [t: :tla2tools, m: :model_values, w: :workers]
@@ -56,7 +59,7 @@ defmodule Mix.Tasks.Tlx.Check do
     cfg_path = Path.join(dir, "#{module_name}.cfg")
 
     # Emit PlusCal wrapped in .tla
-    pluscal = Emitter.PlusCal.emit(module)
+    pluscal = Emitter.PlusCalC.emit(module)
     File.write!(tla_path, pluscal <> "\n")
 
     # Translate PlusCal to TLA+
@@ -117,11 +120,14 @@ defmodule Mix.Tasks.Tlx.Check do
   end
 
   defp find_tla2tools do
-    candidates = [
-      "tla2tools.jar",
-      "docs/specs/tla2tools.jar",
-      Path.expand("~/.tla2tools/tla2tools.jar")
-    ]
+    candidates =
+      [
+        System.get_env("TLA2TOOLS"),
+        "tla2tools.jar",
+        "docs/specs/tla2tools.jar",
+        Path.expand("~/.tla2tools/tla2tools.jar")
+      ]
+      |> Enum.reject(&is_nil/1)
 
     Enum.find(candidates, &File.exists?/1)
   end

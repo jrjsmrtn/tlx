@@ -1,6 +1,6 @@
-# Getting Started with Tlx
+# Getting Started with TLX
 
-Tlx lets you write TLA+/PlusCal specifications in Elixir using a Spark DSL, then emit them for model checking with TLC or simulate them directly in Elixir.
+TLX lets you write formal specifications in Elixir and prove they're correct — no TLA+ syntax required. Define your state machine, declare what should always be true, and let TLC check every possible execution.
 
 ## Installation
 
@@ -9,7 +9,7 @@ Add `tlx` to your `mix.exs`:
 ```elixir
 def deps do
   [
-    {:tlx, "~> 0.1"}
+    {:tlx, "~> 0.2.8", only: [:dev, :test]}
   ]
 end
 ```
@@ -18,167 +18,206 @@ Then run `mix deps.get`.
 
 ## Your First Spec
 
-Create a file `lib/my_counter.ex`:
+A traffic light. Three colors, three transitions. You want to prove it only cycles through valid colors.
+
+Create `lib/traffic_light.ex`:
 
 ```elixir
-import Tlx
+import TLX
 
-defspec MyCounter do
-  variable :x, 0
+defspec TrafficLight do
+  variable :color, :red
 
-  action :increment do
-    await e(x < 5)
-    next :x, e(x + 1)
+  action :to_green do
+    guard(e(color == :red))
+    next :color, :green
   end
 
-  action :reset do
-    await e(x >= 5)
-    next :x, 0
+  action :to_yellow do
+    guard(e(color == :green))
+    next :color, :yellow
   end
 
-  invariant :bounded, e(x >= 0 and x <= 5)
+  action :to_red do
+    guard(e(color == :yellow))
+    next :color, :red
+  end
+
+  invariant :valid_color,
+            e(color == :red or color == :green or color == :yellow)
 end
 ```
 
-This defines a counter that increments from 0 to 5, then resets. The invariant asserts the counter is always within bounds.
+Four things are happening here:
 
-## Key Concepts
+- **`variable :color, :red`** — the light starts red
+- **`action :to_green`** — fires when the light is red, turns it green
+- **`guard(e(color == :red))`** — a condition that must be true for the action to fire
+- **`invariant :valid_color`** — a property that must hold in _every_ reachable state
 
-**Variables** are the state of your system. Each has a name and a default (initial) value.
+That last line is the key. You're not testing with specific inputs. You're declaring "this must always be true" and letting the machine prove it.
 
-**Actions** are guarded state transitions. The `guard` is a boolean expression that must be true for the action to fire. `next` sets a variable's value in the next state.
+## See What TLX Generates
 
-**Invariants** are safety properties: boolean expressions that must hold in every reachable state.
-
-**Expressions** that reference variables use the `e()` macro: `e(x + 1)`, `e(x < 5)`. Bare literals don't need wrapping: `0`, `true`, `:idle`. The `e()` macro is automatically available inside DSL blocks.
-
-## Emitting TLA+
-
-Generate a TLA+ file:
+TLX converts your spec to TLA+ — the formal language that TLC (the model checker) understands:
 
 ```bash
-mix tlx.emit MyCounter
+mix tlx.emit TrafficLight
 ```
 
-Output:
-
 ```tla
----- MODULE MyCounter ----
+---- MODULE TrafficLight ----
 EXTENDS Integers, FiniteSets
 
-VARIABLES x
+CONSTANTS green, red, yellow
 
-vars == << x >>
+VARIABLES color
+
+vars == << color >>
 
 Init ==
-    /\ x = 0
+    /\ color = red
 
-increment ==
-    /\ x < 5
-    /\ x' = x + 1
+to_green ==
+    /\ color = red
+    /\ color' = green
 
-reset ==
-    /\ x >= 5
-    /\ x' = 0
+to_yellow ==
+    /\ color = green
+    /\ color' = yellow
+
+to_red ==
+    /\ color = yellow
+    /\ color' = red
 
 Next ==
-    \/ increment
-    \/ reset
+    \/ to_green
+    \/ to_yellow
+    \/ to_red
 
 Spec == Init /\ [][Next]_vars
 
-bounded == (x >= 0 /\ x <= 5)
+valid_color == (color = red \/ color = green \/ color = yellow)
 
 ====
 ```
 
-For PlusCal output:
+You don't need to understand this syntax — TLX generates it for you. But if you're curious: `color'` means "color in the next state", `/\` means "and", `\/` means "or".
+
+## Try It: Simulate in Elixir
+
+Don't have TLC installed yet? No problem. Run random walk simulations directly in Elixir:
 
 ```bash
-mix tlx.emit MyCounter --format pluscal
+mix tlx.simulate TrafficLight --runs 1000 --steps 50
 ```
 
-Write to a file:
+The simulator picks random enabled actions at each step and checks invariants after every transition. If it finds a violation, it prints the exact sequence of states that led there.
+
+This is fast but not exhaustive — it samples random paths. For a proof, you need TLC.
+
+## Try It: Run TLC
+
+For exhaustive verification, [download tla2tools.jar](https://github.com/tlaplus/tlaplus/releases) and run:
 
 ```bash
-mix tlx.emit MyCounter --output my_counter.tla
+mix tlx.check TrafficLight --tla2tools path/to/tla2tools.jar
 ```
 
-## Simulating in Elixir
+TLC explores every reachable state and confirms that `valid_color` holds in all of them. For this spec, it checks 3 states in under a second. Every possible execution of this traffic light only visits `:red`, `:green`, and `:yellow`. Proven.
 
-Run random walk simulations without TLC:
+## The Bug
 
-```bash
-mix tlx.simulate MyCounter --runs 1000 --steps 50
-```
-
-The simulator picks random enabled actions at each step and checks invariants after every transition. If it finds a violation, it prints the counterexample trace.
-
-## Adding Fairness
-
-Fairness ensures an action eventually fires if it stays enabled. Add `fairness :weak` to an action:
+A colleague adds a "skip yellow" shortcut — green goes directly to red:
 
 ```elixir
-action :increment do
-  fairness :weak
-  guard e(x < 5)
-  next :x, e(x + 1)
+action :skip_yellow do
+  guard(e(color == :green))
+  next :color, :red
 end
 ```
 
-This emits `WF_vars(increment)` in the TLA+ `Spec` formula.
+Does `valid_color` still hold? Yes — TLC confirms it. The light is still always one of the three colors.
 
-## Temporal Properties
-
-Use `Tlx.Temporal` for liveness properties:
+But wait. Add a stricter property — green must always follow red (no skipping the sequence):
 
 ```elixir
-property :eventually_resets, always(eventually(e(x == 0)))
+invariant :green_follows_red,
+          e(if color == :green, do: true, else: true)
 ```
 
-This asserts the counter always eventually returns to 0.
-
-## Non-Deterministic Choice
-
-Use `branch` for either/or within an action:
+That invariant is too weak — it always passes. What you really want to check is whether the _transition_ is valid. Let's track the previous color:
 
 ```elixir
-action :provision do
-  guard e(state == :reachable)
+variable :prev_color, :none
 
-  branch :success do
-    next :state, :provisioned
-  end
-
-  branch :failure do
-    next :state, :degraded
-  end
+# Update each action to track previous color:
+action :to_green do
+  guard(e(color == :red))
+  next :prev_color, e(color)
+  next :color, :green
 end
+
+action :skip_yellow do
+  guard(e(color == :green))
+  next :prev_color, e(color)
+  next :color, :red
+end
+
+invariant :no_green_to_red,
+          e(not (prev_color == :green and color == :red))
 ```
 
-## Batch Transitions
+Now TLC finds the violation:
 
-When an action changes multiple variables, `next` accepts a keyword list:
+```
+State 1: color = red, prev_color = none
+State 2: color = green, prev_color = red
+State 3: color = red, prev_color = green  ← INVARIANT no_green_to_red VIOLATED
+```
+
+The `skip_yellow` action breaks the sequence. You found the design bug without writing a single test case.
+
+## Quick Reference
+
+Here's what you've learned:
+
+| Concept         | DSL                       | What it means                                     |
+| --------------- | ------------------------- | ------------------------------------------------- |
+| State           | `variable :color, :red`   | A named value that changes over time              |
+| Transition      | `action :name do ... end` | A guarded state change                            |
+| Guard           | `guard(e(color == :red))` | Condition that must be true to fire               |
+| Update          | `next :color, :green`     | Set a variable's next value                       |
+| Safety property | `invariant :name, e(...)` | Must hold in every reachable state                |
+| Expression      | `e(...)`                  | Wraps Elixir expressions that reference variables |
+
+Expressions support natural Elixir syntax inside `e()`, including `if`:
 
 ```elixir
-action :p1_try do
-  await e(pc1 == :idle)
-  next flag1: true, turn: 2, pc1: :waiting
-end
+invariant :bounded, e(if x > 0, do: x <= 5, else: x == 0)
 ```
 
-This expands to three individual `next` calls. Both forms work interchangeably.
+## What to Read Next
 
-## Running TLC
+**Start here** — these show you the real value of TLX:
 
-If you have `tla2tools.jar`, run full model checking:
+- [How to model a GenServer](../howto/model-a-genserver.md) — translate your existing code to a spec and find a bug
+- [How to find race conditions](../howto/find-race-conditions.md) — two processes, one bank account, TLC finds the interleaving
 
-```bash
-mix tlx.check MyCounter --tla2tools path/to/tla2tools.jar
-```
+**Understand the concepts:**
 
-## Next Steps
+- [Why formal verification matters](../explanation/why-formal-verification.md) — when to use TLX (and when not to)
+- [TLX vs writing TLA+ directly](../explanation/tlx-vs-raw-tla.md) — what TLX adds and when to graduate
+- [Formal specs vs property-based testing](../explanation/formal-spec-vs-testing.md) — complementary tools
 
-- See `examples/mutex.ex` for Peterson's mutual exclusion
-- See `examples/producer_consumer.ex` for a bounded buffer
-- Run `mix docs` for the full DSL reference
+**Go deeper:**
+
+- [How to run TLC](../howto/run-tlc.md) — full setup, output reading, troubleshooting
+- [How to verify with refinement](../howto/verify-with-refinement.md) — compare your design against your code
+
+**Examples** — see TLX on real problems:
+
+- `examples/mutex.ex` — Peterson's mutual exclusion (two processes, one critical section)
+- `examples/producer_consumer.ex` — bounded buffer (producer/consumer coordination)
+- `examples/raft_leader.ex` — Raft leader election (distributed consensus)
+- `examples/two_phase_commit.ex` — two-phase commit (distributed transactions)

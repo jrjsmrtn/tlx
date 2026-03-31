@@ -1,14 +1,17 @@
-defmodule Tlx do
+# SPDX-FileCopyrightText: 2026 Georges Martin
+# SPDX-License-Identifier: MIT
+
+defmodule TLX do
   @moduledoc """
   A Spark DSL for writing TLA+/PlusCal specifications.
 
-  Tlx lets you define TLA+ specifications using Elixir's declarative syntax,
+  TLX lets you define TLA+ specifications using Elixir's declarative syntax,
   powered by Spark. Specs can be emitted as TLA+ for model checking with TLC,
   or simulated directly in Elixir for fast development feedback.
 
   ## Usage
 
-      import Tlx
+      import TLX
 
       defspec MyCounter do
         variables do
@@ -31,12 +34,12 @@ defmodule Tlx do
   @doc """
   Define a TLA+ specification module.
 
-  Shorthand for `defmodule Name do use Tlx.Spec; ... end`.
+  Shorthand for `defmodule Name do use TLX.Spec; ... end`.
   """
   defmacro defspec(name, do: body) do
     quote do
       defmodule unquote(name) do
-        use Tlx.Spec
+        use TLX.Spec
         unquote(body)
       end
     end

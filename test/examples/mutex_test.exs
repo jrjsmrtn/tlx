@@ -1,9 +1,12 @@
+# SPDX-FileCopyrightText: 2026 Georges Martin
+# SPDX-License-Identifier: MIT
+
 defmodule Examples.MutexTest do
   use ExUnit.Case
 
-  alias Tlx.Emitter.PlusCal
-  alias Tlx.Emitter.TLA
-  alias Tlx.Simulator
+  alias TLX.Emitter.PlusCalC
+  alias TLX.Emitter.TLA
+  alias TLX.Simulator
 
   # Load both correct and buggy examples
   Code.require_file("examples/mutex.ex", File.cwd!())
@@ -22,7 +25,7 @@ defmodule Examples.MutexTest do
     end
 
     test "emits valid PlusCal" do
-      output = PlusCal.emit(Examples.Mutex)
+      output = PlusCalC.emit(Examples.Mutex)
 
       assert output =~ "(* --algorithm Mutex"
       assert output =~ "p1_try:"

@@ -1,6 +1,9 @@
+# SPDX-FileCopyrightText: 2026 Georges Martin
+# SPDX-License-Identifier: MIT
+
 defmodule Examples.TwoPhaseCommit do
   @moduledoc """
-  Two-Phase Commit protocol in the Tlx DSL.
+  Two-Phase Commit protocol in the TLX DSL.
 
   A coordinator asks participants to prepare a transaction.
   Each participant votes commit or abort. If all vote commit,
@@ -18,7 +21,7 @@ defmodule Examples.TwoPhaseCommit do
   participant independently votes, then the coordinator decides.
   """
 
-  use Tlx.Spec
+  use TLX.Spec
 
   # Coordinator state: :init, :waiting, :committed, :aborted
   variable :coord, :init

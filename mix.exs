@@ -1,21 +1,26 @@
-defmodule Tlx.MixProject do
+# SPDX-FileCopyrightText: 2026 Georges Martin
+# SPDX-License-Identifier: MIT
+
+defmodule TLX.MixProject do
   use Mix.Project
 
-  @version "0.2.4"
+  @version "0.3.1"
 
   def project do
     [
       app: :tlx,
       version: @version,
       elixir: "~> 1.19",
+      elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      name: "Tlx",
-      description: "A Spark DSL for writing TLA+/PlusCal specifications",
+      name: "TLX",
+      description:
+        "A Spark DSL for writing and verifying TLA+/PlusCal specifications, with TLC model checking, refinement, and an AI-assisted formal specification workflow",
       package: package(),
       docs: docs(),
       usage_rules: usage_rules(),
-      dialyzer: [plt_add_apps: [:mix]]
+      dialyzer: [plt_add_apps: [:mix, :file_system]]
     ]
   end
 
@@ -25,23 +30,30 @@ defmodule Tlx.MixProject do
     ]
   end
 
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(_), do: ["lib"]
+
   defp deps do
     [
       {:spark, "~> 2.6"},
+      {:nimble_parsec, "~> 1.4"},
       {:ex_doc, "~> 0.35", only: :dev, runtime: false},
+      {:file_system, "~> 1.0", only: [:dev, :test], runtime: false},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:mix_audit, "~> 2.1", only: [:dev, :test], runtime: false},
+      {:junit_formatter, "~> 3.4", only: :test, runtime: false},
       {:usage_rules, "~> 1.2", only: :dev, runtime: false}
     ]
   end
 
   defp usage_rules do
     [
-      file: "CLAUDE.md",
+      file: "AGENTS.md",
       usage_rules: ["usage_rules:all"],
       skills: [
         location: ".claude/skills",
+        package_skills: [:tlx],
         build: [
           spark: [
             description:
@@ -61,21 +73,35 @@ defmodule Tlx.MixProject do
         "GitHub" => "https://github.com/jrjsmrtn/tlx",
         "Changelog" => "https://github.com/jrjsmrtn/tlx/blob/main/CHANGELOG.md"
       },
-      files: ~w(lib examples .formatter.exs mix.exs README.md LICENSE CHANGELOG.md)
+      files:
+        ~w(lib examples .formatter.exs mix.exs README.md LICENSE CHANGELOG.md usage-rules.md usage-rules/)
     ]
   end
 
   defp docs do
     [
-      main: "TLx",
-      extras: [
-        "README.md",
-        "CHANGELOG.md",
-        "documentation/dsls/DSL-Tlx.md"
-      ],
+      main: "TLX",
+      extras:
+        [
+          "README.md",
+          "CHANGELOG.md",
+          "FAQ.md",
+          "documentation/dsls/DSL-TLX.md"
+        ] ++ docs_extras(),
       groups_for_extras: [
-        "DSL Reference": ~r/documentation\/dsls\//
+        "DSL Reference": ~r/documentation\/dsls\//,
+        Tutorials: ~r/docs\/tutorials\//,
+        "How-To Guides": ~r/docs\/howto\//,
+        Explanations: ~r/docs\/explanation\//,
+        Reference: ~r/docs\/reference\//,
+        ADRs: ~r/docs\/adr\//,
+        Roadmap: ~r/docs\/roadmap\//
       ]
     ]
+  end
+
+  defp docs_extras do
+    Path.wildcard("docs/{tutorials,howto,explanation,reference,adr,roadmap}/*.md")
+    |> Enum.sort()
   end
 end

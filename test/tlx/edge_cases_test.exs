@@ -1,17 +1,20 @@
-defmodule Tlx.EdgeCasesTest do
+# SPDX-FileCopyrightText: 2026 Georges Martin
+# SPDX-License-Identifier: MIT
+
+defmodule TLX.EdgeCasesTest do
   use ExUnit.Case
 
-  alias Tlx.Emitter.Config
-  alias Tlx.Emitter.PlusCal
-  alias Tlx.Emitter.TLA
-  alias Tlx.Trace
+  alias TLX.Emitter.Config
+  alias TLX.Emitter.PlusCalC
+  alias TLX.Emitter.TLA
+  alias TLX.Trace
 
   defmodule EmptySpec do
-    use Tlx.Spec
+    use TLX.Spec
   end
 
   defmodule InvariantOnly do
-    use Tlx.Spec
+    use TLX.Spec
 
     variable :x, 0
 
@@ -27,7 +30,7 @@ defmodule Tlx.EdgeCasesTest do
     end
 
     test "PlusCal emitter handles empty spec" do
-      output = PlusCal.emit(EmptySpec)
+      output = PlusCalC.emit(EmptySpec)
 
       assert output =~ "---- MODULE EmptySpec ----"
       assert output =~ "===="
@@ -52,7 +55,7 @@ defmodule Tlx.EdgeCasesTest do
     end
 
     test "simulator handles spec with no enabled actions" do
-      assert {:ok, stats} = Tlx.Simulator.simulate(InvariantOnly, runs: 10, steps: 10, seed: 1)
+      assert {:ok, stats} = TLX.Simulator.simulate(InvariantOnly, runs: 10, steps: 10, seed: 1)
       # All runs deadlock immediately (no enabled actions)
       assert stats.deadlocks == 10
     end

@@ -1,5 +1,14 @@
-defmodule Tlx.Integration.TLCTest do
+# SPDX-FileCopyrightText: 2026 Georges Martin
+# SPDX-License-Identifier: MIT
+
+defmodule TLX.Integration.TLCTest do
   use ExUnit.Case
+
+  alias TLX.Emitter.Config
+  alias TLX.Emitter.PlusCalC
+  alias TLX.Emitter.PlusCalP
+  alias TLX.Emitter.TLA
+  alias TLX.TLC
 
   @moduletag :integration
 
@@ -8,7 +17,7 @@ defmodule Tlx.Integration.TLCTest do
   # --- Test specs defined inline ---
 
   defmodule CorrectCounter do
-    use Tlx.Spec
+    use TLX.Spec
 
     variable :x, 0
 
@@ -26,7 +35,7 @@ defmodule Tlx.Integration.TLCTest do
   end
 
   defmodule BuggyCounter do
-    use Tlx.Spec
+    use TLX.Spec
 
     variable :x, 0
 
@@ -54,10 +63,10 @@ defmodule Tlx.Integration.TLCTest do
       tla_path = Path.join(dir, "CorrectCounter.tla")
       cfg_path = Path.join(dir, "CorrectCounter.cfg")
 
-      File.write!(tla_path, Tlx.Emitter.TLA.emit(CorrectCounter) <> "\n")
-      File.write!(cfg_path, Tlx.Emitter.Config.emit(CorrectCounter) <> "\n")
+      File.write!(tla_path, TLA.emit(CorrectCounter) <> "\n")
+      File.write!(cfg_path, Config.emit(CorrectCounter) <> "\n")
 
-      assert {:ok, result} = Tlx.TLC.check(tla_path, cfg_path, tla2tools: @tla2tools)
+      assert {:ok, result} = TLC.check(tla_path, cfg_path, tla2tools: @tla2tools)
       assert result.states != nil
       assert result.states > 0
       assert result.violation == nil
@@ -67,28 +76,73 @@ defmodule Tlx.Integration.TLCTest do
       tla_path = Path.join(dir, "BuggyCounter.tla")
       cfg_path = Path.join(dir, "BuggyCounter.cfg")
 
-      File.write!(tla_path, Tlx.Emitter.TLA.emit(BuggyCounter) <> "\n")
-      File.write!(cfg_path, Tlx.Emitter.Config.emit(BuggyCounter) <> "\n")
+      File.write!(tla_path, TLA.emit(BuggyCounter) <> "\n")
+      File.write!(cfg_path, Config.emit(BuggyCounter) <> "\n")
 
-      assert {:error, _kind, result} = Tlx.TLC.check(tla_path, cfg_path, tla2tools: @tla2tools)
+      assert {:error, _kind, result} = TLC.check(tla_path, cfg_path, tla2tools: @tla2tools)
       assert result.violation != nil
     end
   end
-
-  # PlusCal translation test deferred — emitter needs adjustments
-  # for pcal.trans compatibility (BEGIN/END TRANSLATION markers,
-  # algorithm body brace on same line). See Sprint 10 roadmap.
 
   describe "counterexample trace extraction" do
     test "extracts trace from real TLC violation", %{dir: dir} do
       tla_path = Path.join(dir, "BuggyCounter.tla")
       cfg_path = Path.join(dir, "BuggyCounter.cfg")
 
-      File.write!(tla_path, Tlx.Emitter.TLA.emit(BuggyCounter) <> "\n")
-      File.write!(cfg_path, Tlx.Emitter.Config.emit(BuggyCounter) <> "\n")
+      File.write!(tla_path, TLA.emit(BuggyCounter) <> "\n")
+      File.write!(cfg_path, Config.emit(BuggyCounter) <> "\n")
 
-      assert {:error, _kind, result} = Tlx.TLC.check(tla_path, cfg_path, tla2tools: @tla2tools)
+      assert {:error, _kind, result} = TLC.check(tla_path, cfg_path, tla2tools: @tla2tools)
       assert result.trace != []
+    end
+  end
+
+  describe "PlusCal C-syntax + pcal.trans + TLC" do
+    test "correct spec passes full pipeline", %{dir: dir} do
+      tla_path = Path.join(dir, "CorrectCounter.tla")
+      cfg_path = Path.join(dir, "CorrectCounter.cfg")
+
+      File.write!(tla_path, PlusCalC.emit(CorrectCounter) <> "\n")
+
+      # Translate PlusCal to TLA+
+      assert {_, 0} =
+               System.cmd("java", ["-cp", @tla2tools, "pcal.trans", tla_path],
+                 stderr_to_stdout: true
+               )
+
+      File.write!(cfg_path, Config.emit(CorrectCounter) <> "\n")
+
+      # deadlock: false — pcal.trans generates terminating algorithms with pc="Done"
+      assert {:ok, result} =
+               TLC.check(tla_path, cfg_path, tla2tools: @tla2tools, deadlock: false)
+
+      assert result.states != nil
+      assert result.states > 0
+      assert result.violation == nil
+    end
+  end
+
+  describe "PlusCal P-syntax + pcal.trans + TLC" do
+    test "correct spec passes full pipeline", %{dir: dir} do
+      tla_path = Path.join(dir, "CorrectCounter.tla")
+      cfg_path = Path.join(dir, "CorrectCounter.cfg")
+
+      File.write!(tla_path, PlusCalP.emit(CorrectCounter) <> "\n")
+
+      # Translate PlusCal to TLA+
+      assert {_, 0} =
+               System.cmd("java", ["-cp", @tla2tools, "pcal.trans", tla_path],
+                 stderr_to_stdout: true
+               )
+
+      File.write!(cfg_path, Config.emit(CorrectCounter) <> "\n")
+
+      assert {:ok, result} =
+               TLC.check(tla_path, cfg_path, tla2tools: @tla2tools, deadlock: false)
+
+      assert result.states != nil
+      assert result.states > 0
+      assert result.violation == nil
     end
   end
 end

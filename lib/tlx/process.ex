@@ -1,4 +1,7 @@
-defmodule Tlx.Process do
+# SPDX-FileCopyrightText: 2026 Georges Martin
+# SPDX-License-Identifier: MIT
+
+defmodule TLX.Process do
   @moduledoc false
   defstruct [
     :name,

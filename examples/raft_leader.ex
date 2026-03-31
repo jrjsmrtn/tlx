@@ -1,6 +1,9 @@
+# SPDX-FileCopyrightText: 2026 Georges Martin
+# SPDX-License-Identifier: MIT
+
 defmodule Examples.RaftLeader do
   @moduledoc """
-  Simplified Raft leader election in the Tlx DSL.
+  Simplified Raft leader election in the TLX DSL.
 
   Three nodes compete to become leader. A node can be a
   follower, candidate, or leader. To become leader, a
@@ -21,7 +24,7 @@ defmodule Examples.RaftLeader do
   double-voting in the same term).
   """
 
-  use Tlx.Spec
+  use TLX.Spec
 
   # Node roles: :follower, :candidate, :leader
   variable :role1, :follower

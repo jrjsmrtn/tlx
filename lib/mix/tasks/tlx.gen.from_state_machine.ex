@@ -1,6 +1,9 @@
+# SPDX-FileCopyrightText: 2026 Georges Martin
+# SPDX-License-Identifier: MIT
+
 defmodule Mix.Tasks.Tlx.Gen.FromStateMachine do
   @moduledoc """
-  Generate a Tlx spec skeleton from a GenStateMachine module.
+  Generate a TLX spec skeleton from a GenStateMachine module.
 
   ## Usage
 
@@ -13,7 +16,9 @@ defmodule Mix.Tasks.Tlx.Gen.FromStateMachine do
 
   use Mix.Task
 
-  @shortdoc "Generate a Tlx spec skeleton from a GenStateMachine module"
+  alias TLX.Importer.Codegen
+
+  @shortdoc "Generate a TLX spec skeleton from a GenStateMachine module"
 
   @switches [output: :string]
   @aliases [o: :output]
@@ -50,25 +55,7 @@ defmodule Mix.Tasks.Tlx.Gen.FromStateMachine do
   def generate(module) do
     spec_name = module |> Module.split() |> List.last()
     callbacks = extract_callbacks(module)
-    states = extract_states(callbacks)
-    _events = extract_events(callbacks)
-
-    parts =
-      [
-        "import Tlx\n",
-        "# Generated from #{inspect(module)}",
-        "# Review and complete invariants and properties.\n",
-        "defspec #{spec_name}Spec do",
-        emit_state_variable(states),
-        emit_event_actions(callbacks, states),
-        "  # TODO: Add invariants",
-        "  # invariant :my_invariant, e(...)\n",
-        "  # TODO: Add properties",
-        "  # property :my_property, always(eventually(e(...)))",
-        "end"
-      ]
-
-    Enum.join(parts, "\n")
+    Codegen.from_state_machine(spec_name, module, callbacks)
   end
 
   defp extract_callbacks(module) do
@@ -125,40 +112,5 @@ defmodule Mix.Tasks.Tlx.Gen.FromStateMachine do
       _ ->
         []
     end
-  end
-
-  defp extract_states(callbacks) do
-    callbacks
-    |> Enum.flat_map(fn cb -> [cb[:from_state]] end)
-    |> Enum.uniq()
-    |> Enum.reject(&is_nil/1)
-  end
-
-  defp extract_events(callbacks) do
-    callbacks
-    |> Enum.map(& &1[:event])
-    |> Enum.uniq()
-    |> Enum.reject(&is_nil/1)
-  end
-
-  defp emit_state_variable([]), do: "  variable :state, :initial\n"
-
-  defp emit_state_variable([first | _] = _states) do
-    "  variable :state, :#{first}\n"
-  end
-
-  defp emit_event_actions([], _states) do
-    "  # No callbacks detected — add actions manually\n"
-  end
-
-  defp emit_event_actions(callbacks, _states) do
-    Enum.map_join(callbacks, "\n", fn cb ->
-      """
-        action :#{cb.event} do
-          await e(state == :#{cb.from_state})
-          next :state, :#{cb.event}_done  # TODO: set correct target state
-        end
-      """
-    end)
   end
 end

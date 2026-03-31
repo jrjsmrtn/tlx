@@ -1,4 +1,7 @@
-defmodule Tlx.Action do
+# SPDX-FileCopyrightText: 2026 Georges Martin
+# SPDX-License-Identifier: MIT
+
+defmodule TLX.Action do
   @moduledoc false
   defstruct [
     :name,
@@ -8,6 +11,7 @@ defmodule Tlx.Action do
     :__identifier__,
     :__spark_metadata__,
     transitions: [],
-    branches: []
+    branches: [],
+    with_choices: []
   ]
 end

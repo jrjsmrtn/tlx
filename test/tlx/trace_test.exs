@@ -1,7 +1,10 @@
-defmodule Tlx.TraceTest do
+# SPDX-FileCopyrightText: 2026 Georges Martin
+# SPDX-License-Identifier: MIT
+
+defmodule TLX.TraceTest do
   use ExUnit.Case
 
-  alias Tlx.Trace
+  alias TLX.Trace
 
   @trace [
     %{x: 0, y: 0},

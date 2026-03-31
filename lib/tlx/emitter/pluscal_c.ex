@@ -1,10 +1,16 @@
-defmodule Tlx.Emitter.PlusCal do
+# SPDX-FileCopyrightText: 2026 Georges Martin
+# SPDX-License-Identifier: MIT
+
+defmodule TLX.Emitter.PlusCalC do
   @moduledoc """
-  Emits a PlusCal algorithm (C-syntax) from a compiled `Tlx.Spec` module,
+  Emits a PlusCal algorithm (C-syntax) from a compiled `TLX.Spec` module,
   wrapped in a valid `.tla` file.
   """
 
   alias Spark.Dsl.Extension
+  alias TLX.Emitter.Format
+
+  @symbols Format.pluscal_symbols()
 
   @doc """
   Generate a PlusCal `.tla` string from a compiled spec module.
@@ -22,6 +28,8 @@ defmodule Tlx.Emitter.PlusCal do
       emit_header(module_name),
       emit_extends(constants),
       emit_algorithm(module_name, variables, actions, processes),
+      "\\* BEGIN TRANSLATION",
+      "\\* END TRANSLATION\n",
       emit_invariants(invariants),
       emit_footer()
     ]
@@ -49,21 +57,18 @@ defmodule Tlx.Emitter.PlusCal do
   defp emit_algorithm(name, variables, actions, processes) do
     all_vars = variables ++ Enum.flat_map(processes, & &1.variables)
 
-    global_block =
+    body =
       if actions != [] do
-        ["{", emit_pluscal_actions(actions), "}"]
+        ["{", emit_pluscal_body(actions), "}"]
       else
-        []
+        Enum.map(processes, &emit_pluscal_process/1)
       end
 
-    process_blocks = Enum.map(processes, &emit_pluscal_process/1)
-
     [
-      "(* --algorithm #{name}",
+      "(* --algorithm #{name} {",
       emit_pluscal_variables(all_vars),
-      global_block,
-      process_blocks,
-      "*)\\* end algorithm\n"
+      body,
+      "} *)\n"
     ]
   end
 
@@ -93,6 +98,23 @@ defmodule Tlx.Emitter.PlusCal do
     "variables\n#{decls};\n"
   end
 
+  defp emit_pluscal_body([single_action]) do
+    emit_pluscal_actions([single_action])
+  end
+
+  defp emit_pluscal_body(actions) do
+    branches =
+      actions
+      |> Enum.with_index()
+      |> Enum.map_join("\n", fn {action, idx} ->
+        keyword = if idx == 0, do: "either", else: "or"
+        inner = emit_pluscal_action(action)
+        "        #{keyword} {\n#{inner}\n        }"
+      end)
+
+    "    main:\n    while (TRUE) {\n#{branches}\n    }"
+  end
+
   defp emit_pluscal_actions(actions) do
     Enum.map_join(actions, "\n", &emit_pluscal_action/1)
   end
@@ -100,10 +122,10 @@ defmodule Tlx.Emitter.PlusCal do
   defp emit_pluscal_action(action) do
     label = "    #{Atom.to_string(action.name)}:"
 
-    if action.branches != [] do
-      emit_pluscal_branched(action, label)
-    else
-      emit_pluscal_simple(action, label)
+    cond do
+      action.branches != [] -> emit_pluscal_branched(action, label)
+      action.with_choices != [] -> emit_pluscal_with(action, label)
+      true -> emit_pluscal_simple(action, label)
     end
   end
 
@@ -141,6 +163,25 @@ defmodule Tlx.Emitter.PlusCal do
     "#{label}#{await}\n#{branches}"
   end
 
+  defp emit_pluscal_with(action, label) do
+    await =
+      if action.guard, do: "\n        await #{format_ast(unwrap_expr(action.guard))};", else: ""
+
+    with_blocks =
+      Enum.map_join(action.with_choices, "\n", fn wc ->
+        var = Atom.to_string(wc.variable)
+        set = format_set_ref(wc.set)
+        assignments = format_pluscal_assignments(wc.transitions)
+        "        with (#{var} \\in #{set}) {\n#{assignments}\n        }"
+      end)
+
+    "#{label}#{await}\n#{with_blocks}"
+  end
+
+  defp format_set_ref(set) when is_atom(set), do: Atom.to_string(set)
+  defp format_set_ref({:expr, ast}), do: format_ast(ast)
+  defp format_set_ref(other), do: inspect(other)
+
   defp format_pluscal_assignments(transitions) do
     Enum.map_join(transitions, "\n", fn t ->
       "        #{Atom.to_string(t.variable)} := #{format_expr(t.expr)};"
@@ -157,58 +198,8 @@ defmodule Tlx.Emitter.PlusCal do
 
   defp emit_footer, do: "===="
 
-  defp unwrap_expr({:expr, ast}), do: ast
-  defp unwrap_expr(other), do: other
-
-  defp format_expr({:expr, ast}), do: format_ast(ast)
-  defp format_expr(val) when is_integer(val), do: Integer.to_string(val)
-  defp format_expr(true), do: "TRUE"
-  defp format_expr(false), do: "FALSE"
-  defp format_expr(val) when is_atom(val), do: "\"#{Atom.to_string(val)}\""
-  defp format_expr(other), do: inspect(other)
-
-  # Elixir AST → PlusCal expression (mostly same as TLA+ but uses := for assignment)
-
-  defp format_ast({:and, _, [left, right]}),
-    do: "(#{format_ast(left)} /\\ #{format_ast(right)})"
-
-  defp format_ast({:or, _, [left, right]}),
-    do: "(#{format_ast(left)} \\/ #{format_ast(right)})"
-
-  defp format_ast({:not, _, [inner]}), do: "~(#{format_ast(inner)})"
-  defp format_ast({:>=, _, [l, r]}), do: "#{format_ast(l)} >= #{format_ast(r)}"
-  defp format_ast({:<=, _, [l, r]}), do: "#{format_ast(l)} <= #{format_ast(r)}"
-  defp format_ast({:>, _, [l, r]}), do: "#{format_ast(l)} > #{format_ast(r)}"
-  defp format_ast({:<, _, [l, r]}), do: "#{format_ast(l)} < #{format_ast(r)}"
-  defp format_ast({:==, _, [l, r]}), do: "#{format_ast(l)} = #{format_ast(r)}"
-  defp format_ast({:!=, _, [l, r]}), do: "#{format_ast(l)} # #{format_ast(r)}"
-  defp format_ast({:+, _, [l, r]}), do: "#{format_ast(l)} + #{format_ast(r)}"
-  defp format_ast({:-, _, [l, r]}), do: "#{format_ast(l)} - #{format_ast(r)}"
-  defp format_ast({:*, _, [l, r]}), do: "#{format_ast(l)} * #{format_ast(r)}"
-
-  defp format_ast({name, _meta, context}) when is_atom(name) and is_atom(context),
-    do: Atom.to_string(name)
-
-  defp format_ast(int) when is_integer(int), do: Integer.to_string(int)
-  defp format_ast(true), do: "TRUE"
-  defp format_ast(false), do: "FALSE"
-
-  defp format_ast(atom) when is_atom(atom),
-    do: "\"#{Atom.to_string(atom)}\""
-
-  defp format_ast(other), do: inspect(other)
-
-  defp format_value(val) when is_integer(val), do: Integer.to_string(val)
-
-  defp format_value(val) when is_atom(val) and val not in [true, false, nil],
-    do: "\"#{Atom.to_string(val)}\""
-
-  defp format_value(true), do: "TRUE"
-  defp format_value(false), do: "FALSE"
-  defp format_value(val) when is_binary(val), do: inspect(val)
-
-  defp format_value(val) when is_list(val),
-    do: "<< #{Enum.map_join(val, ", ", &format_value/1)} >>"
-
-  defp format_value(val), do: inspect(val)
+  defp unwrap_expr(expr), do: Format.unwrap_expr(expr)
+  defp format_expr(expr), do: Format.format_expr(expr, @symbols)
+  defp format_ast(ast), do: Format.format_ast(ast, @symbols)
+  defp format_value(val), do: Format.format_value(val, @symbols)
 end

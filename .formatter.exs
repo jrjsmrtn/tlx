@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Georges Martin
+# SPDX-License-Identifier: MIT
+
 # Used by "mix format"
 spark_locals_without_parens = [
   action: 1,

@@ -1,10 +1,13 @@
-defmodule Tlx.Emitter.TLATest do
+# SPDX-FileCopyrightText: 2026 Georges Martin
+# SPDX-License-Identifier: MIT
+
+defmodule TLX.Emitter.TLATest do
   use ExUnit.Case
 
-  alias Tlx.Emitter.TLA
+  alias TLX.Emitter.TLA
 
   defmodule TwoVarSpec do
-    use Tlx.Spec
+    use TLX.Spec
 
     variable(:x, 0)
     variable(:y, 0)
@@ -22,7 +25,7 @@ defmodule Tlx.Emitter.TLATest do
   end
 
   defmodule Counter do
-    use Tlx.Spec
+    use TLX.Spec
 
     variable(:x, type: :integer, default: 0)
 
@@ -98,7 +101,7 @@ defmodule Tlx.Emitter.TLATest do
   end
 
   defmodule BranchedSpec do
-    use Tlx.Spec
+    use TLX.Spec
 
     variable(:state, :reachable)
 
