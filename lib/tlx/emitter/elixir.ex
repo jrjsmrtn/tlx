@@ -172,6 +172,13 @@ defmodule TLX.Emitter.Elixir do
   defp fmt_ast({:if, _, [cond, [do: then_expr, else: else_expr]]}),
     do: "if #{fmt_ast(cond)}, do: #{fmt_ast(then_expr)}, else: #{fmt_ast(else_expr)}"
 
+  # Quantifiers — 3-tuple AST form from e(forall(...)) / e(exists(...))
+  defp fmt_ast({:forall, meta, [var, set, expr]}) when is_list(meta),
+    do: "forall(:#{var}, :#{set}, #{fmt_ast(expr)})"
+
+  defp fmt_ast({:exists, meta, [var, set, expr]}) when is_list(meta),
+    do: "exists(:#{var}, :#{set}, #{fmt_ast(expr)})"
+
   # Elixir and/or/not need paren_if_compound on sub-expressions
   defp fmt_ast({:and, _, [l, r]}), do: "#{paren_if_compound(l)} and #{paren_if_compound(r)}"
   defp fmt_ast({:or, _, [l, r]}), do: "#{paren_if_compound(l)} or #{paren_if_compound(r)}"

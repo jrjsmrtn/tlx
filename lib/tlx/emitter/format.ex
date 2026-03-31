@@ -132,6 +132,15 @@ defmodule TLX.Emitter.Format do
     "#{s.exists} #{Atom.to_string(var)} #{s.member} #{format_ast(set, s)} : #{format_expr(inner, s)}"
   end
 
+  # Quantifiers — 3-tuple AST form from e(forall(...)) / e(exists(...)) capture
+  def format_ast({:forall, meta, [var, set, inner]}, s) when is_list(meta) do
+    "#{s.forall} #{Atom.to_string(var)} #{s.member} #{format_ast(set, s)} : #{format_ast(inner, s)}"
+  end
+
+  def format_ast({:exists, meta, [var, set, inner]}, s) when is_list(meta) do
+    "#{s.exists} #{Atom.to_string(var)} #{s.member} #{format_ast(set, s)} : #{format_ast(inner, s)}"
+  end
+
   # IF/THEN/ELSE — 4-tuple from ite/3 function call
   def format_ast({:ite, cond, then_expr, else_expr}, s) do
     "IF #{format_expr(cond, s)} THEN #{format_expr(then_expr, s)} ELSE #{format_expr(else_expr, s)}"
