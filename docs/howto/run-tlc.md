@@ -25,7 +25,12 @@ mkdir -p ~/.tla2tools
 curl -L -o ~/.tla2tools/tla2tools.jar https://github.com/tlaplus/tlaplus/releases/latest/download/tla2tools.jar
 ```
 
-TLX auto-detects `tla2tools.jar` in: `./tla2tools.jar`, `./docs/specs/tla2tools.jar`, or `~/.tla2tools/tla2tools.jar`.
+TLX auto-detects `tla2tools.jar` in this order: `$TLA2TOOLS` env var, `./tla2tools.jar`, `./docs/specs/tla2tools.jar`, `~/.tla2tools/tla2tools.jar`. The env var is useful for CI:
+
+```bash
+export TLA2TOOLS=/opt/tla2tools/tla2tools.jar
+mix tlx.check MySpec   # no --tla2tools flag needed
+```
 
 ## Running
 
