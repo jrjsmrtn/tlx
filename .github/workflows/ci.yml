@@ -34,7 +34,7 @@ jobs:
           elixir-version: ${{ matrix.elixir }}
 
       - name: Cache deps
-        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
           path: |
             deps
@@ -81,7 +81,7 @@ jobs:
           elixir-version: ${{ matrix.elixir }}
 
       - name: Cache deps
-        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
           path: |
             deps
@@ -116,7 +116,7 @@ jobs:
           elixir-version: ${{ matrix.elixir }}
 
       - name: Cache deps and PLT
-        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
           path: |
             deps
