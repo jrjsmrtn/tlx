@@ -125,20 +125,41 @@ Sprint 16 — Proper parsers and AST-based code gen:
 - [x] Auto-include abstract spec atoms in INSTANCE identity mappings
 - [x] `formal-spec` skill — workflow from ADR to refinement-checked specs
 
-### Phase 10: Examples and Documentation (proposed)
+### Phase 10: Documentation (complete)
 
-**Target**: v0.3.x
-**Focus**: Real-world validation and learning materials
+**Target**: v0.2.9
+**Focus**: Diátaxis documentation and reference
 
-- [x] Raft leader election spec
-- [x] Two-phase commit spec
-- [ ] How-to guides (model state machines, find race conditions, run TLC)
-- [ ] Explanation pages (why formal verification, TLX vs PlusCal, TLA+ vs property testing)
+- [x] How-to guides (model GenServer, find race conditions, run TLC, verify with refinement)
+- [x] Explanation pages (why formal verification, TLX vs raw TLA+, formal specs vs testing)
+- [x] Getting-started tutorial rewrite (traffic light example)
+- [x] Reference docs (DSL, mix tasks, expressions)
+- [x] CONTRIBUTING.md with tone guidelines
+- [x] FAQ.md
+
+### Phase 12: Expressiveness II (complete)
+
+**Target**: v0.2.11
+**Focus**: Functions, maps, records, sequences
+
+- [x] Function application (`at/2`) and update (`except/3`)
+- [x] CHOOSE, set comprehension (`filter/3`), CASE (`case_of/1`)
+- [x] `if` syntax inside `e()`, `let_in` block style
+- [x] DOMAIN, range sets, implication/equivalence
+- [x] Sequence operations (`len`, `append`, `head`, `tail`, `sub_seq`)
+- [x] Configurable EXTENDS (`extends [:Sequences]`)
+- [x] Record construction (`record/1`), multi-key EXCEPT (`except_many/2`)
+- [x] Symbols emitter (TLX DSL with math notation)
 
 ## Sprint History
 
 | Sprint | Phase                 | Version | Summary                                             |
 | ------ | --------------------- | ------- | --------------------------------------------------- |
+| 21     | Expressiveness II     | v0.2.11 | Records, multi-EXCEPT, Symbols emitter, FAQ         |
+| 20     | Expressiveness II     | v0.2.10 | Sequences, DOMAIN, range, implies/equiv, extends    |
+| 19     | Expressiveness II     | v0.2.9  | at/except, CHOOSE, filter, CASE, if-syntax DX       |
+| 18     | Documentation         | v0.2.9  | Reference docs: DSL, mix tasks, expressions         |
+| 17     | Documentation         | v0.2.9  | How-tos, explanations, getting-started rewrite      |
 | —      | Refinement            | v0.2.8  | Refinement DSL, emitter fixes, formal-spec skill    |
 | 10     | Expressiveness        | v0.2.7  | ite, sets, let_in, custom init, pick from sets      |
 | 16     | Robustness            | v0.2.6  | NimbleParsec parsers, AST codegen, round-trip tests |

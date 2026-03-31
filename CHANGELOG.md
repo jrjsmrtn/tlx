@@ -7,6 +7,90 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.11] - 2026-03-31
+
+### Added
+
+- Record construction: `record(a: 1, b: 2)` → `[a |-> 1, b |-> 2]`
+- Multi-key EXCEPT: `except_many(f, [{k1, v1}, ...])` → `[f EXCEPT ![k1] = v1, ...]`
+- Symbols emitter (`--format symbols`) — TLX DSL with math notation (□ ◇ ∧ ∨ ¬ ∀ ∃ ∈)
+- FAQ.md — pronunciation, Java requirements, Unicode symbols
+
+### Changed
+
+- Replaced Unicode emitter (TLA+ structure) with Symbols emitter (TLX DSL structure)
+- `PlusCal` emitter renamed to `PlusCalC`; added `PlusCalP` for P-syntax
+- Module naming standardized: `TLX` (all caps) throughout
+
+## [0.2.10] - 2026-03-31
+
+### Added
+
+- Sequence operations: `len/1`, `append/2`, `head/1`, `tail/1`, `sub_seq/3` (requires `extends [:Sequences]`)
+- DOMAIN: `domain(f)` → `DOMAIN f`
+- Range sets: `range(a, b)` → `a..b`
+- Implication: `implies(p, q)` → `p => q`
+- Equivalence: `equiv(p, q)` → `p <=> q`
+- Configurable EXTENDS: `extends [:Sequences]` DSL option
+
+## [0.2.9] - 2026-03-31
+
+### Added
+
+- Function application: `at(f, x)` → `f[x]`, `except(f, x, v)` → `[f EXCEPT ![x] = v]`
+- CHOOSE: `choose(:var, :set, expr)` → `CHOOSE var \in set : expr`
+- Set comprehension: `filter(:var, :set, expr)` → `{var \in set : expr}`
+- CASE: `case_of([{cond, val}, ...])` → `CASE cond -> val [] ...`
+- `if` syntax inside `e()` — `e(if cond, do: x, else: y)` emits `IF cond THEN x ELSE y`
+- `let_in` block style — `let_in :var, binding do body end`
+- Diátaxis documentation: 4 how-to guides, 3 explanation pages, getting-started rewrite
+- Reference documentation: DSL, mix tasks, expressions
+- CONTRIBUTING.md with documentation tone guidelines
+
+## [0.2.8] - 2026-03-31
+
+### Added
+
+- Refinement checking: `refines AbstractSpec do mapping :var, e(expr) end`
+- TLA+ INSTANCE/WITH emission for spec-vs-spec comparison
+- Auto-declare atom model values as CONSTANTS (TLA+ and .cfg)
+- `formal-spec` agent skill — workflow from ADR to refinement-checked specs
+- `usage-rules.md` — package-level AI guidance for consumers
+
+### Fixed
+
+- Branched action TLA+ emission: UNCHANGED inside disjunctions
+- Handle 3-tuple AST forms for ite/let_in/set ops inside `e()`
+- Abstract spec atoms auto-included in INSTANCE identity mappings
+
+## [0.2.7] - 2026-03-31
+
+### Added
+
+- IF/THEN/ELSE: `ite(cond, then, else)` → `IF cond THEN then ELSE else`
+- Set operations: `union/2`, `intersect/2`, `subset/2`, `cardinality/1`, `set_of/1`, `in_set/1`
+- Non-deterministic set pick: `pick :var, :set do ... end`
+- Custom Init: `initial do constraint(...) end`
+- LET/IN: `let_in(:var, binding, body)` → `LET var == binding IN body`
+
+## [0.2.6] - 2026-03-30
+
+### Added
+
+- NimbleParsec TLA+ parser (replaces regex importer)
+- PlusCal parser for C-syntax and P-syntax
+- AST-based code generation via `Code.format_string!/1`
+- Round-trip fidelity tests: emit → parse → codegen preserves structure
+
+## [0.2.5] - 2026-03-30
+
+### Added
+
+- TLC `-tool` mode output parsing (replaces regex stdout scraping)
+- PlusCal C-syntax emitter fixed for pcal.trans acceptance
+- PlusCal P-syntax emitter (begin/end style)
+- Integration tested: PlusCal → pcal.trans → TLC
+
 ## [0.2.4] - 2026-03-30
 
 ### Added
