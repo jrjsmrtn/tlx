@@ -6,7 +6,7 @@ Emit a specification in various formats.
 
 ```bash
 mix tlx.emit MySpec                        # TLA+ to stdout
-mix tlx.emit MySpec --format pluscal       # PlusCal C-syntax
+mix tlx.emit MySpec --format pluscal-c     # PlusCal C-syntax (braces)
 mix tlx.emit MySpec --format pluscal-p     # PlusCal P-syntax (begin/end)
 mix tlx.emit MySpec --format unicode       # Unicode math symbols (human-readable)
 mix tlx.emit MySpec --format elixir        # TLX DSL round-trip
@@ -15,10 +15,10 @@ mix tlx.emit MySpec --output spec.tla      # write to file
 
 **Flags:**
 
-| Flag             | Default | Description                                                       |
-| ---------------- | ------- | ----------------------------------------------------------------- |
-| `--format`, `-f` | `tla`   | Output format: `tla`, `pluscal`, `pluscal-p`, `unicode`, `elixir` |
-| `--output`, `-o` | stdout  | Write to file instead of stdout                                   |
+| Flag             | Default | Description                                                         |
+| ---------------- | ------- | ------------------------------------------------------------------- |
+| `--format`, `-f` | `tla`   | Output format: `tla`, `pluscal-c`, `pluscal-p`, `unicode`, `elixir` |
+| `--output`, `-o` | stdout  | Write to file instead of stdout                                     |
 
 ## mix tlx.check
 

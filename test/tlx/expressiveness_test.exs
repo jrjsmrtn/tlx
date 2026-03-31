@@ -1,7 +1,7 @@
 defmodule TLX.ExpressivenessTest do
   use ExUnit.Case
 
-  alias TLX.Emitter.PlusCal
+  alias TLX.Emitter.PlusCalC
   alias TLX.Emitter.PlusCalP
   alias TLX.Emitter.TLA
 
@@ -141,7 +141,7 @@ defmodule TLX.ExpressivenessTest do
     end
 
     test "PlusCal C-syntax emits with block" do
-      output = PlusCal.emit(PickSpec)
+      output = PlusCalC.emit(PickSpec)
       assert output =~ "with (req \\in requests)"
       assert output =~ "current := req;"
     end

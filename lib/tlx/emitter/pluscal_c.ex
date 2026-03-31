@@ -1,4 +1,4 @@
-defmodule TLX.Emitter.PlusCal do
+defmodule TLX.Emitter.PlusCalC do
   @moduledoc """
   Emits a PlusCal algorithm (C-syntax) from a compiled `TLX.Spec` module,
   wrapped in a valid `.tla` file.

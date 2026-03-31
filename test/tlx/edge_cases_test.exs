@@ -2,7 +2,7 @@ defmodule TLX.EdgeCasesTest do
   use ExUnit.Case
 
   alias TLX.Emitter.Config
-  alias TLX.Emitter.PlusCal
+  alias TLX.Emitter.PlusCalC
   alias TLX.Emitter.TLA
   alias TLX.Trace
 
@@ -27,7 +27,7 @@ defmodule TLX.EdgeCasesTest do
     end
 
     test "PlusCal emitter handles empty spec" do
-      output = PlusCal.emit(EmptySpec)
+      output = PlusCalC.emit(EmptySpec)
 
       assert output =~ "---- MODULE EmptySpec ----"
       assert output =~ "===="

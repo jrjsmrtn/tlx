@@ -1,7 +1,7 @@
-defmodule TLX.Emitter.PlusCalTest do
+defmodule TLX.Emitter.PlusCalCTest do
   use ExUnit.Case
 
-  alias TLX.Emitter.PlusCal
+  alias TLX.Emitter.PlusCalC
 
   defmodule Counter do
     use TLX.Spec
@@ -65,34 +65,34 @@ defmodule TLX.Emitter.PlusCalTest do
 
   describe "PlusCal process emission" do
     test "emits process block with set" do
-      output = PlusCal.emit(MutexSpec)
+      output = PlusCalC.emit(MutexSpec)
 
       assert output =~ "process (worker \\in procs)"
     end
 
     test "emits process actions as labeled blocks" do
-      output = PlusCal.emit(MutexSpec)
+      output = PlusCalC.emit(MutexSpec)
 
       assert output =~ "try_enter:"
       assert output =~ "enter_cs:"
     end
 
     test "emits await from process action guards" do
-      output = PlusCal.emit(MutexSpec)
+      output = PlusCalC.emit(MutexSpec)
 
       assert output =~ ~s(await local_state = "idle";)
       assert output =~ ~s(await local_state = "waiting";)
     end
 
     test "emits process-local variable assignments" do
-      output = PlusCal.emit(MutexSpec)
+      output = PlusCalC.emit(MutexSpec)
 
       assert output =~ ~s(local_state := "waiting";)
       assert output =~ ~s(local_state := "in_cs";)
     end
 
     test "includes process-local variables in global variables block" do
-      output = PlusCal.emit(MutexSpec)
+      output = PlusCalC.emit(MutexSpec)
 
       assert output =~ "local_state = \"idle\""
     end
@@ -100,7 +100,7 @@ defmodule TLX.Emitter.PlusCalTest do
 
   describe "PlusCal emission" do
     test "emits valid PlusCal structure" do
-      output = PlusCal.emit(Counter)
+      output = PlusCalC.emit(Counter)
 
       assert output =~ "---- MODULE Counter ----"
       assert output =~ "EXTENDS Integers, FiniteSets"
@@ -115,27 +115,27 @@ defmodule TLX.Emitter.PlusCalTest do
     end
 
     test "emits labels from action names" do
-      output = PlusCal.emit(Counter)
+      output = PlusCalC.emit(Counter)
 
       assert output =~ "increment:"
       assert output =~ "reset:"
     end
 
     test "emits await from guards" do
-      output = PlusCal.emit(Counter)
+      output = PlusCalC.emit(Counter)
 
       assert output =~ "await x < max;"
     end
 
     test "emits assignments with :=" do
-      output = PlusCal.emit(Counter)
+      output = PlusCalC.emit(Counter)
 
       assert output =~ "x := x + 1;"
       assert output =~ "x := 0;"
     end
 
     test "emits either/or for branched actions" do
-      output = PlusCal.emit(Provisioner)
+      output = PlusCalC.emit(Provisioner)
 
       assert output =~ "provision:"
       assert output =~ ~s(await state = "reachable";)
@@ -146,7 +146,7 @@ defmodule TLX.Emitter.PlusCalTest do
     end
 
     test "emits invariants after algorithm block" do
-      output = PlusCal.emit(Counter)
+      output = PlusCalC.emit(Counter)
 
       assert output =~ "non_negative == x >= 0"
     end

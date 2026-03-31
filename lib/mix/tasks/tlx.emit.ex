@@ -5,12 +5,12 @@ defmodule Mix.Tasks.TLX.Emit do
   ## Usage
 
       mix tlx.emit MyApp.MySpec
-      mix tlx.emit MyApp.MySpec --format pluscal
+      mix tlx.emit MyApp.MySpec --format pluscal-c
       mix tlx.emit MyApp.MySpec --output path/to/file.tla
 
   ## Options
 
-    * `--format` - Output format: `tla` (default) or `pluscal`
+    * `--format` - Output format: `tla` (default), `pluscal-c`, `pluscal-p`, `unicode`, `elixir`
     * `--output` - Write to file instead of stdout
   """
 
@@ -49,7 +49,7 @@ defmodule Mix.Tasks.TLX.Emit do
   end
 
   defp emit(module, "tla"), do: Emitter.TLA.emit(module)
-  defp emit(module, "pluscal"), do: Emitter.PlusCal.emit(module)
+  defp emit(module, "pluscal-c"), do: Emitter.PlusCalC.emit(module)
   defp emit(module, "pluscal-p"), do: Emitter.PlusCalP.emit(module)
   defp emit(module, "unicode"), do: Emitter.Unicode.emit(module)
   defp emit(module, "elixir"), do: Emitter.Elixir.emit(module)
@@ -57,7 +57,7 @@ defmodule Mix.Tasks.TLX.Emit do
   defp emit(_module, format),
     do:
       Mix.raise(
-        "Unknown format: #{format}. Use 'tla', 'pluscal', 'pluscal-p', 'unicode', or 'elixir'."
+        "Unknown format: #{format}. Use 'tla', 'pluscal-c', 'pluscal-p', 'unicode', or 'elixir'."
       )
 
   defp write_file(path, content) do

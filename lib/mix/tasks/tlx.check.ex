@@ -56,7 +56,7 @@ defmodule Mix.Tasks.TLX.Check do
     cfg_path = Path.join(dir, "#{module_name}.cfg")
 
     # Emit PlusCal wrapped in .tla
-    pluscal = Emitter.PlusCal.emit(module)
+    pluscal = Emitter.PlusCalC.emit(module)
     File.write!(tla_path, pluscal <> "\n")
 
     # Translate PlusCal to TLA+

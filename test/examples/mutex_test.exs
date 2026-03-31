@@ -1,7 +1,7 @@
 defmodule Examples.MutexTest do
   use ExUnit.Case
 
-  alias TLX.Emitter.PlusCal
+  alias TLX.Emitter.PlusCalC
   alias TLX.Emitter.TLA
   alias TLX.Simulator
 
@@ -22,7 +22,7 @@ defmodule Examples.MutexTest do
     end
 
     test "emits valid PlusCal" do
-      output = PlusCal.emit(Examples.Mutex)
+      output = PlusCalC.emit(Examples.Mutex)
 
       assert output =~ "(* --algorithm Mutex"
       assert output =~ "p1_try:"

@@ -2,7 +2,7 @@ defmodule TLX.Integration.TLCTest do
   use ExUnit.Case
 
   alias TLX.Emitter.Config
-  alias TLX.Emitter.PlusCal
+  alias TLX.Emitter.PlusCalC
   alias TLX.Emitter.PlusCalP
   alias TLX.Emitter.TLA
   alias TLX.TLC
@@ -99,7 +99,7 @@ defmodule TLX.Integration.TLCTest do
       tla_path = Path.join(dir, "CorrectCounter.tla")
       cfg_path = Path.join(dir, "CorrectCounter.cfg")
 
-      File.write!(tla_path, PlusCal.emit(CorrectCounter) <> "\n")
+      File.write!(tla_path, PlusCalC.emit(CorrectCounter) <> "\n")
 
       # Translate PlusCal to TLA+
       assert {_, 0} =

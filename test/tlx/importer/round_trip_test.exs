@@ -1,7 +1,7 @@
 defmodule TLX.Importer.RoundTripTest do
   use ExUnit.Case
 
-  alias TLX.Emitter.PlusCal
+  alias TLX.Emitter.PlusCalC
   alias TLX.Emitter.PlusCalP
   alias TLX.Emitter.TLA
   alias TLX.Importer.PlusCalParser
@@ -99,7 +99,7 @@ defmodule TLX.Importer.RoundTripTest do
 
   describe "PlusCal C-syntax round-trip" do
     test "Counter: emit → parse → preserves structure" do
-      pluscal = PlusCal.emit(Counter)
+      pluscal = PlusCalC.emit(Counter)
       parsed = PlusCalParser.parse(pluscal)
 
       assert parsed.module_name == "Counter"
@@ -114,7 +114,7 @@ defmodule TLX.Importer.RoundTripTest do
     end
 
     test "Counter: emit → parse → codegen produces valid source" do
-      pluscal = PlusCal.emit(Counter)
+      pluscal = PlusCalC.emit(Counter)
       parsed = PlusCalParser.parse(pluscal)
       source = PlusCalParser.to_tlx(parsed)
 
@@ -125,7 +125,7 @@ defmodule TLX.Importer.RoundTripTest do
     end
 
     test "Provisioner: emit → parse → preserves branches" do
-      pluscal = PlusCal.emit(Provisioner)
+      pluscal = PlusCalC.emit(Provisioner)
       parsed = PlusCalParser.parse(pluscal)
 
       action = Enum.find(parsed.actions, &(&1.name == "provision"))
