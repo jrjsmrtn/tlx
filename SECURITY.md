@@ -32,8 +32,8 @@ Include:
 
 ### What to expect
 
-- Acknowledgement within 48 hours
-- Assessment and fix timeline within 7 days
+- Acknowledgement within 7 days
+- Assessment and fix timeline within 30 days
 - Credit in the advisory (unless you prefer anonymity)
 
 ## Scope
