@@ -25,7 +25,11 @@ defmodule TLX.Integration.AllConstructsTest do
     variable :counter, 0
     variable :status, :idle
     variable :flags, MapSet.new()
-    variable :queue, [0]
+    # variable :queue, [] doesn't work — Elixir treats [] as empty keyword opts.
+    # Use block syntax for empty list/sequence defaults.
+    variable :queue do
+      default []
+    end
 
     initial do
       constraint(e(counter == 0))

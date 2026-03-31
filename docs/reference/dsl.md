@@ -75,8 +75,13 @@ end
 variable :x, 0                          # integer default
 variable :state, :idle                   # atom default
 variable :flag, false                    # boolean default
-variable :items, []                      # list default
+variable :items, [1, 2]                  # list (TLA+ sequence) default
 variable :x, type: :integer, default: 0  # explicit type (documentation only)
+
+# Empty list default requires block syntax (Elixir treats [] as empty keyword opts):
+variable :queue do
+  default []
+end
 ```
 
 Type annotations are for documentation — TLX doesn't enforce types. TLC uses the auto-generated `type_ok` invariant for type checking.
