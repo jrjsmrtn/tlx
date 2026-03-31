@@ -9,7 +9,7 @@ Add `tlx` to your `mix.exs`:
 ```elixir
 def deps do
   [
-    {:tlx, "~> 0.1"}
+    {:tlx, "~> 0.2.8", only: [:dev, :test]}
   ]
 end
 ```
@@ -177,8 +177,38 @@ If you have `tla2tools.jar`, run full model checking:
 mix tlx.check MyCounter --tla2tools path/to/tla2tools.jar
 ```
 
-## Next Steps
+## Conditional Expressions
 
-- See `examples/mutex.ex` for Peterson's mutual exclusion
-- See `examples/producer_consumer.ex` for a bounded buffer
-- Run `mix docs` for the full DSL reference
+Use Elixir's `if` inside `e()` for conditional values:
+
+```elixir
+invariant :bounded, e(if x > 0, do: x <= 5, else: x == 0)
+
+action :clamp do
+  next :x, e(if x > max, do: max, else: x)
+end
+```
+
+This emits `IF x > 0 THEN x <= 5 ELSE x = 0` in TLA+.
+
+## What to Read Next
+
+**How-to guides** (solve specific problems):
+
+- [How to model a GenServer](../howto/model-a-genserver.md) — translate your code to a spec
+- [How to find race conditions](../howto/find-race-conditions.md) — catch concurrency bugs
+- [How to run TLC](../howto/run-tlc.md) — full model checking setup
+- [How to verify with refinement](../howto/verify-with-refinement.md) — compare design vs code
+
+**Explanations** (understand the concepts):
+
+- [Why formal verification matters](../explanation/why-formal-verification.md) — when and why to use TLX
+- [TLX vs writing TLA+ directly](../explanation/tlx-vs-raw-tla.md) — what TLX adds
+- [Formal specs vs property-based testing](../explanation/formal-spec-vs-testing.md) — complementary tools
+
+**Examples:**
+
+- `examples/mutex.ex` — Peterson's mutual exclusion
+- `examples/producer_consumer.ex` — bounded buffer
+- `examples/raft_leader.ex` — Raft leader election
+- `examples/two_phase_commit.ex` — two-phase commit protocol
