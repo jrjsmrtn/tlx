@@ -56,6 +56,12 @@ Use the `formal-spec` skill to guide the process:
 
 The skill provides the workflow checklist, common TLX patterns, and working examples. Any coding assistant that supports agent skills can use it.
 
+### The ideal workflow
+
+1. **Design** — write an abstract TLX spec from your ADR, verify with TLC (catches design bugs before code exists)
+2. **Implement** — write the code, guided by the verified spec
+3. **Verify** — write a concrete TLX spec from the code, [refinement-check](docs/howto/verify-with-refinement.md) against the abstract spec (proves the code matches the design)
+
 ### Shared tooling
 
 Both workflows use the same mix tasks:
