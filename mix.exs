@@ -11,7 +11,8 @@ defmodule TLX.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       name: "TLX",
-      description: "A Spark DSL for writing TLA+/PlusCal specifications",
+      description:
+        "A Spark DSL for writing and verifying TLA+/PlusCal specifications, with TLC model checking, refinement, and an AI-assisted formal specification workflow",
       package: package(),
       docs: docs(),
       usage_rules: usage_rules(),
