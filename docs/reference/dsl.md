@@ -186,3 +186,7 @@ end
 ```
 
 Constraints are added to the auto-generated `Init` predicate alongside variable defaults.
+
+## Expression Functions
+
+For the complete list of operators, functions, and patterns valid inside `e()`, see the [Expression Reference](expressions.md).

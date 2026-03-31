@@ -75,6 +75,63 @@ e(subset(items, all_items))
 | `in_set(x, s)`      | `x \in s`          |
 | `set_of([a, b, c])` | `{a, b, c}`        |
 
+## Function Application and Update
+
+Access and update TLA+ functions (maps):
+
+```elixir
+e(at(flags, self))                     # read
+e(except(flags, self, true))           # update one key
+```
+
+| Elixir inside `e()` | TLA+ output           |
+| ------------------- | --------------------- |
+| `at(f, x)`          | `f[x]`                |
+| `except(f, x, v)`   | `[f EXCEPT ![x] = v]` |
+
+Also works outside `e()`:
+
+```elixir
+invariant :flag_set, at(e(flags), e(self))
+next :flags, except(e(flags), e(self), true)
+```
+
+## CHOOSE (Deterministic Selection)
+
+Pick one element from a set that satisfies a predicate:
+
+```elixir
+e(choose(:n, :nodes, n != :none))
+```
+
+| Elixir inside `e()`        | TLA+ output                 |
+| -------------------------- | --------------------------- |
+| `choose(:var, :set, expr)` | `CHOOSE var \in set : expr` |
+
+## Set Comprehension (Filter)
+
+Filter a set by a predicate:
+
+```elixir
+e(filter(:x, :items, x != :removed))
+```
+
+| Elixir inside `e()`        | TLA+ output            |
+| -------------------------- | ---------------------- |
+| `filter(:var, :set, expr)` | `{var \in set : expr}` |
+
+## CASE Expression
+
+Multi-way conditional:
+
+```elixir
+case_of([{e(status == :critical), 1}, {e(status == :warning), 2}, {e(true), 3}])
+```
+
+| Elixir                                    | TLA+ output                           |
+| ----------------------------------------- | ------------------------------------- |
+| `case_of([{cond1, val1}, {cond2, val2}])` | `CASE cond1 -> val1 [] cond2 -> val2` |
+
 ## Local Definitions
 
 ```elixir

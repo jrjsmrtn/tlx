@@ -17,14 +17,20 @@ TLX is a Spark DSL for writing TLA+/PlusCal specifications in Elixir with TLC mo
 
 ## Expression Helpers
 
-- `ite(cond, then, else)` — IF/THEN/ELSE
+- `e(if cond, do: x, else: y)` — IF/THEN/ELSE (natural Elixir syntax inside `e()`)
+- `ite(cond, then, else)` — IF/THEN/ELSE (outside `e()`)
 - `let_in(:var, binding, body)` — LET/IN local definitions
-- `forall(:var, :set, expr)` / `exists(:var, :set, expr)` — quantifiers
+- `forall(:var, :set, expr)` / `exists(:var, :set, expr)` — quantifiers (work inside `e()`)
+- `at(f, x)` — function application (`f[x]`)
+- `except(f, x, v)` — functional update (`[f EXCEPT ![x] = v]`)
+- `choose(:var, :set, expr)` — deterministic choice (`CHOOSE`)
+- `filter(:var, :set, expr)` — set comprehension (`{var \in set : expr}`)
+- `case_of([{cond, val}, ...])` — multi-way conditional (`CASE`)
 - `union/2`, `intersect/2`, `subset/2`, `cardinality/1`, `set_of/1`, `in_set/2` — set operations
 
 ## Mix Tasks
 
-- `mix tlx.emit MySpec --format tla|pluscal|pluscal-p|unicode|elixir` — emit specification
+- `mix tlx.emit MySpec --format tla|pluscal-c|pluscal-p|unicode|elixir` — emit specification
 - `mix tlx.check MySpec` — emit PlusCal, translate, run TLC
 - `mix tlx.simulate MySpec --runs 100` — Elixir random walk simulation
 - `mix tlx.import spec.tla --format tla|pluscal` — import TLA+/PlusCal to TLX DSL
