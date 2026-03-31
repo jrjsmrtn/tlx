@@ -7,7 +7,7 @@
     "textWrap": "maintain"
   },
   "includes": ["**/*.md"],
-  "excludes": ["_build/**", "deps/**", ".claude/skills/**", "documentation/**", "AGENTS.md", "usage-rules/**"],
+  "excludes": ["_build/**", "deps/**", ".claude/skills/**", "documentation/**", "AGENTS.md", "usage-rules/**", ".obsidian/**", "Review Docs.md"],
   "plugins": [
     "https://plugins.dprint.dev/markdown-0.21.1.wasm"
   ]

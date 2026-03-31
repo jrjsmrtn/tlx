@@ -131,11 +131,14 @@ defmodule TLX.TLC do
   end
 
   defp find_tla2tools do
-    candidates = [
-      "tla2tools.jar",
-      "docs/specs/tla2tools.jar",
-      Path.expand("~/.tla2tools/tla2tools.jar")
-    ]
+    candidates =
+      [
+        System.get_env("TLA2TOOLS"),
+        "tla2tools.jar",
+        "docs/specs/tla2tools.jar",
+        Path.expand("~/.tla2tools/tla2tools.jar")
+      ]
+      |> Enum.reject(&is_nil/1)
 
     Enum.find(candidates, &File.exists?/1)
   end

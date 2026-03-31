@@ -39,7 +39,7 @@ mix tlx.check MySpec --workers 4
 | `--model-values`, `-m` | none        | Constant bindings (repeatable) |
 | `--workers`, `-w`      | `auto`      | TLC worker threads             |
 
-**Auto-detect paths** for `tla2tools.jar`: `./tla2tools.jar`, `./docs/specs/tla2tools.jar`, `~/.tla2tools/tla2tools.jar`.
+**Auto-detect paths** for `tla2tools.jar` (checked in order): `$TLA2TOOLS` env var, `./tla2tools.jar`, `./docs/specs/tla2tools.jar`, `~/.tla2tools/tla2tools.jar`.
 
 ## mix tlx.simulate
 
