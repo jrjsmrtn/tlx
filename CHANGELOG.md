@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-03-31
+
+### Added
+
+- `mix tlx.list` — discover and list all TLX.Spec modules with entity counts
+- `mix tlx.watch` — file watcher with auto-recompile and re-simulate on changes
+- SANY and pcal.trans toolchain validation (87 integration tests)
+- AllConstructs comprehensive spec covering every DSL construct
+- SECURITY.md with vulnerability disclosure policy
+- GitHub Actions CI workflow with Dependabot
+- CONTRIBUTING.md background and collaboration invite
+- All docs as ex_doc extras grouped by Diátaxis category (52 HTML pages)
+
+### Fixed
+
+- Map defaults (`%{}`) now emit valid TLA+ (`[x \in {} |-> 0]`)
+- Atoms inside `e(if ...)` now collected by TLX.Emitter.Atoms
+- Multi-action PlusCal specs wrap in `while(TRUE) { either/or }` for pcal.trans
+- Mix task modules renamed to `Mix.Tasks.Tlx.*` (Mix discovery convention)
+- Empty list default documented: use `variable :q do default [] end`
+
 ## [0.3.0] - 2026-03-31
 
 ### Added
