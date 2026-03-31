@@ -59,7 +59,7 @@ defmodule TLX.Emitter.PlusCalP do
 
     body =
       if actions != [] do
-        emit_p_actions(actions)
+        emit_p_body(actions)
       else
         Enum.map(processes, &emit_p_process/1)
       end
@@ -97,6 +97,23 @@ defmodule TLX.Emitter.PlusCalP do
       end)
 
     "variables\n#{decls};"
+  end
+
+  defp emit_p_body([single_action]) do
+    emit_p_actions([single_action])
+  end
+
+  defp emit_p_body(actions) do
+    branches =
+      actions
+      |> Enum.with_index()
+      |> Enum.map_join("\n", fn {action, idx} ->
+        keyword = if idx == 0, do: "either", else: "or"
+        inner = emit_p_action(action)
+        "        #{keyword}\n#{inner}"
+      end)
+
+    "    main:\n    while TRUE do\n#{branches}\n        end either;\n    end while;"
   end
 
   defp emit_p_actions(actions) do

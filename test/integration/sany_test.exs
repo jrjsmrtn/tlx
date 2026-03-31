@@ -12,8 +12,6 @@ defmodule TLX.Integration.SANYTest do
   # All TLX.Spec modules whose TLA+ output should pass SANY validation.
   # Nested modules are fully qualified (parent.child).
   #
-  # Excluded (known limitations — emit %{} map literal, not valid TLA+):
-  #   FuncSpec, DomainSpec, RecordSpec, ExceptManySpec
   # Excluded (refinement INSTANCE references abstract module file):
   #   ConcreteCounter
   # Excluded (not a Spark DSL module):
@@ -26,13 +24,17 @@ defmodule TLX.Integration.SANYTest do
     TLX.ExpressivenessTest.LetInSpec,
     TLX.ExpressivenessTest.InitSpec,
     TLX.ExpressivenessTest.PickSpec,
+    TLX.ExpressivenessTest.FuncSpec,
     TLX.ExpressivenessTest.ChooseSpec,
     TLX.ExpressivenessTest.FilterSpec,
     TLX.ExpressivenessTest.CaseSpec,
     TLX.ExpressivenessTest.ImpliesSpec,
     TLX.ExpressivenessTest.RangeSpec,
     TLX.ExpressivenessTest.SeqSpec,
+    TLX.ExpressivenessTest.DomainSpec,
     TLX.ExpressivenessTest.ExtendsSpec,
+    TLX.ExpressivenessTest.RecordSpec,
+    TLX.ExpressivenessTest.ExceptManySpec,
     # Emitter test specs
     TLX.Emitter.TLATest.Counter,
     TLX.Emitter.TLATest.TwoVarSpec,

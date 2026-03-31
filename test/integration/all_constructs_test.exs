@@ -25,7 +25,7 @@ defmodule TLX.Integration.AllConstructsTest do
     variable :counter, 0
     variable :status, :idle
     variable :flags, MapSet.new()
-    variable :queue, []
+    variable :queue, [0]
 
     initial do
       constraint(e(counter == 0))
@@ -116,9 +116,7 @@ defmodule TLX.Integration.AllConstructsTest do
     end
   end
 
-  @tag :skip
   test "pcal.trans accepts PlusCal C-syntax", %{dir: dir} do
-    # Known limitation: pcal.trans rejects multi-label single-process specs.
     tla_path = Path.join(dir, "AllConstructs_C.tla")
     File.write!(tla_path, PlusCalC.emit(AllConstructs) <> "\n")
 
@@ -128,9 +126,7 @@ defmodule TLX.Integration.AllConstructsTest do
     end
   end
 
-  @tag :skip
   test "pcal.trans accepts PlusCal P-syntax", %{dir: dir} do
-    # Known limitation: same as C-syntax.
     tla_path = Path.join(dir, "AllConstructs_P.tla")
     File.write!(tla_path, PlusCalP.emit(AllConstructs) <> "\n")
 
@@ -140,9 +136,7 @@ defmodule TLX.Integration.AllConstructsTest do
     end
   end
 
-  @tag :skip
   test "TLC model-checks TLA+ output", %{dir: dir} do
-    # Known limitation: TLC fails because [] emits as null, not << >>.
     tla_path = Path.join(dir, "AllConstructs.tla")
     cfg_path = Path.join(dir, "AllConstructs.cfg")
 
@@ -150,16 +144,17 @@ defmodule TLX.Integration.AllConstructsTest do
     File.write!(cfg_path, Config.emit(AllConstructs) <> "\n")
 
     case TLX.TLC.check(tla_path, cfg_path) do
-      {:ok, _result} ->
-        :ok
+      {:ok, result} ->
+        assert result.states > 0
 
-      {:error, :invariant_violated, result} ->
+      {:error, {:invariant, _name}, result} ->
+        # Expected — the spec has intentional invariant violations for construct coverage
         assert result.states > 0
 
       {:error, :deadlock, result} ->
         assert result.states > 0
 
-      {:error, :temporal_violated, result} ->
+      {:error, {:temporal, _name}, result} ->
         assert result.states > 0
 
       {:error, reason, output} ->

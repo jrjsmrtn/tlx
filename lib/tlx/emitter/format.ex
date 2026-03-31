@@ -416,6 +416,17 @@ defmodule TLX.Emitter.Format do
   def format_value(%MapSet{} = val, s),
     do: "{#{val |> MapSet.to_list() |> Enum.map_join(", ", &format_value(&1, s))}}"
 
+  def format_value(%{} = val, _s) when map_size(val) == 0, do: "[x \\in {} |-> 0]"
+
+  def format_value(%{} = val, s) do
+    fields =
+      Enum.map_join(val, ", ", fn {k, v} ->
+        "#{format_value(k, s)} |-> #{format_value(v, s)}"
+      end)
+
+    "[#{fields}]"
+  end
+
   def format_value(val, _s), do: inspect(val)
 
   @doc "Unwrap an `{:expr, ast}` tuple, passing through other values."

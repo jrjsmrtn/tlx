@@ -144,7 +144,9 @@ defmodule TLX.Importer.RoundTripTest do
 
       assert parsed.module_name == "Counter"
       assert "x" in parsed.variables
-      assert length(parsed.actions) == 2
+      # main: is a synthetic label from while(TRUE)/either wrapping
+      real_actions = Enum.reject(parsed.actions, &(&1.name == "main"))
+      assert length(real_actions) == 2
     end
 
     test "Counter: emit → parse → codegen produces valid source" do

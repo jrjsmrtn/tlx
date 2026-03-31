@@ -89,5 +89,9 @@ defmodule TLX.Emitter.Atoms do
   defp collect_atom_from_ast(set, {_op, _, args}) when is_list(args),
     do: Enum.reduce(args, set, &collect_atom_from_ast(&2, &1))
 
+  # Keyword list entries from e(if ..., do: x, else: y) — recurse into values
+  defp collect_atom_from_ast(set, [{key, _} | _] = kw) when is_atom(key),
+    do: Enum.reduce(kw, set, fn {_k, v}, acc -> collect_atom_from_ast(acc, v) end)
+
   defp collect_atom_from_ast(set, _), do: set
 end
