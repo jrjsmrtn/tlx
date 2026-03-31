@@ -5,6 +5,7 @@ TLX is a Spark DSL for writing TLA+/PlusCal specifications in Elixir with TLC mo
 ## Core Concepts
 
 - Specs are defined with `defspec Name do ... end` after `import TLX`
+- `extends [:Sequences]` adds extra TLA+ modules (Integers + FiniteSets always included)
 - Use `e(expr)` to capture Elixir expressions as TLA+ AST
 - Variables: `variable :name, default_value`
 - Constants: `constant :name` (bound at model-checking time)
@@ -27,6 +28,8 @@ TLX is a Spark DSL for writing TLA+/PlusCal specifications in Elixir with TLC mo
 - `filter(:var, :set, expr)` — set comprehension (`{var \in set : expr}`)
 - `case_of([{cond, val}, ...])` — multi-way conditional (`CASE`)
 - `union/2`, `intersect/2`, `subset/2`, `cardinality/1`, `set_of/1`, `in_set/2` — set operations
+- `record(a: 1, b: 2)` — TLA+ record (`[a |-> 1, b |-> 2]`)
+- `except_many(f, [{k1, v1}, ...])` — multi-key EXCEPT
 - `domain(f)` — keys of a function (`DOMAIN f`)
 - `implies(p, q)` / `equiv(p, q)` — implication (`=>`) and equivalence (`<=>`)
 - `range(a, b)` — integer range set (`a..b`)

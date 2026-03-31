@@ -168,9 +168,40 @@ e(domain(flags))
 | ------------------- | ----------- |
 | `domain(f)`         | `DOMAIN f`  |
 
+## Record Construction
+
+Create TLA+ records (functions with known string keys):
+
+```elixir
+record(status: :idle, count: 0)
+```
+
+| Elixir               | TLA+ output |
+| -------------------- | ----------- |
+| `record(a: 1, b: 2)` | `[a         |
+
+## Multi-Key EXCEPT
+
+Update multiple keys in one expression:
+
+```elixir
+except_many(e(flags), [{e(:p1), true}, {e(:p2), false}])
+```
+
+| Elixir                            | TLA+ output                         |
+| --------------------------------- | ----------------------------------- |
+| `except_many(f, [{k1, v1}, ...])` | `[f EXCEPT ![k1] = v1, ![k2] = v2]` |
+
 ## Sequence Operations
 
-Require `EXTENDS Sequences` in the TLA+ module. Available from `TLX.Sequences`.
+Require `extends [:Sequences]` in your spec. Available from `TLX.Sequences`.
+
+```elixir
+defspec MySpec do
+  extends [:Sequences]
+  # ...
+end
+```
 
 ```elixir
 e(len(queue))

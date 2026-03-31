@@ -8,6 +8,9 @@ Complete reference for the `defspec` grammar. For the auto-generated entity list
 import TLX
 
 defspec MySpec do
+  # Additional TLA+ modules (optional)
+  extends [:Sequences]
+
   # Variables (state)
   variable :name, default_value
 
