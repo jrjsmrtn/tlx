@@ -73,15 +73,16 @@ Enable Elixir developers to write formally verifiable TLA+/PlusCal specification
 - [x] Custom Init expressions (`initial` section with `constraint`)
 - [x] LET/IN local definitions (`let_in/3`)
 
-### Phase 7: Tooling (partial)
+### Phase 7: Tooling (complete)
 
-**Target**: v0.2.x
+**Target**: v0.3.x
 **Focus**: Developer workflow
 
-- [ ] `mix tlx.watch` — auto-simulate on save
-- [ ] `mix tlx.list` — discover spec modules
+- [x] `mix tlx.watch` — auto-simulate on save
+- [x] `mix tlx.list` — discover spec modules
 - [x] Extract shared AST formatting into `TLX.Emitter.Format` (symbol-table-parameterized)
-- [ ] CI integration template
+- [x] CI integration (GitHub Actions workflow)
+- [x] Mix task naming: `Mix.Tasks.Tlx.*` (Mix convention)
 
 ### Phase 8: Forge Integration (complete)
 
@@ -179,6 +180,4 @@ Sprint 16 — Proper parsers and AST-based code gen:
 
 ## Proposed Sprints
 
-| Sprint | Phase   | Plan                                   |
-| ------ | ------- | -------------------------------------- |
-| 11     | Tooling | [Plan](../sprints/sprint-0011-plan.md) |
+None. All planned sprints are complete.

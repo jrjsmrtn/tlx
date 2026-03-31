@@ -69,6 +69,8 @@ Both workflows use the same mix tasks:
 - `mix tlx.emit` — emit to TLA+, PlusCal, or Elixir
 - `mix tlx.check` — full pipeline: emit, translate, run TLC
 - `mix tlx.simulate` — Elixir random walk simulation
+- `mix tlx.watch` — auto-simulate on file changes
+- `mix tlx.list` — discover spec modules in the project
 - `mix tlx.import` — import TLA+ or PlusCal back to TLX DSL
 - `mix tlx.gen.from_state_machine` — generate spec skeleton from GenStateMachine
 

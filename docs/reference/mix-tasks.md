@@ -94,3 +94,38 @@ mix tlx.gen.from_state_machine MyApp.MyStateMachine --output my_spec.ex
 | `--output`, `-o` | stdout  | Write to file instead of stdout |
 
 Produces a skeleton with `TODO` comments. Requires the module to be compiled. Complete the skeleton with guards, transitions, and invariants.
+
+## mix tlx.list
+
+Discover and list all TLX.Spec modules in the project.
+
+```bash
+mix tlx.list
+mix tlx.list --include examples
+```
+
+**Flags:**
+
+| Flag              | Default | Description                                              |
+| ----------------- | ------- | -------------------------------------------------------- |
+| `--include`, `-i` | none    | Load .ex files from an additional directory (repeatable) |
+
+## mix tlx.watch
+
+Watch for file changes and auto-simulate a spec.
+
+```bash
+mix tlx.watch MySpec
+mix tlx.watch MySpec --runs 500 --steps 200
+mix tlx.watch MySpec --include examples
+```
+
+**Flags:**
+
+| Flag              | Default | Description                                              |
+| ----------------- | ------- | -------------------------------------------------------- |
+| `--runs`, `-r`    | `100`   | Number of random walks per simulation                    |
+| `--steps`, `-s`   | `100`   | Maximum steps per walk                                   |
+| `--include`, `-i` | none    | Load .ex files from an additional directory (repeatable) |
+
+Re-compiles and re-simulates on every `.ex`/`.exs` file change. Press Ctrl-C to stop.

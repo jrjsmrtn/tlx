@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2026 Georges Martin
 # SPDX-License-Identifier: MIT
 
-defmodule Mix.Tasks.TLX.Check do
+defmodule Mix.Tasks.Tlx.Check do
   @moduledoc """
   Emit a PlusCal spec, translate to TLA+, and run TLC model checker.
 

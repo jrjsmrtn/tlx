@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2026 Georges Martin
 # SPDX-License-Identifier: MIT
 
-defmodule Mix.Tasks.TLX.Emit do
+defmodule Mix.Tasks.Tlx.Emit do
   @moduledoc """
   Emit a TLA+ or PlusCal specification from a compiled TLX.Spec module.
 

@@ -1,8 +1,8 @@
 # Sprint 11 — Tooling
 
-**Target Version**: v0.2.3
+**Target Version**: v0.3.1
 **Phase**: Tooling
-**Status**: Draft
+**Status**: Complete
 
 ## Goal
 

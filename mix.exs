@@ -20,7 +20,7 @@ defmodule TLX.MixProject do
       package: package(),
       docs: docs(),
       usage_rules: usage_rules(),
-      dialyzer: [plt_add_apps: [:mix]]
+      dialyzer: [plt_add_apps: [:mix, :file_system]]
     ]
   end
 
@@ -38,6 +38,7 @@ defmodule TLX.MixProject do
       {:spark, "~> 2.6"},
       {:nimble_parsec, "~> 1.4"},
       {:ex_doc, "~> 0.35", only: :dev, runtime: false},
+      {:file_system, "~> 1.0", only: [:dev, :test], runtime: false},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:mix_audit, "~> 2.1", only: [:dev, :test], runtime: false},

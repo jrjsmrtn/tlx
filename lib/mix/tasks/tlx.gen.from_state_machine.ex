@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2026 Georges Martin
 # SPDX-License-Identifier: MIT
 
-defmodule Mix.Tasks.TLX.Gen.FromStateMachine do
+defmodule Mix.Tasks.Tlx.Gen.FromStateMachine do
   @moduledoc """
   Generate a TLX spec skeleton from a GenStateMachine module.
 
