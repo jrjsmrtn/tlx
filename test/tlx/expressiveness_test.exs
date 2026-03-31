@@ -133,6 +133,92 @@ defmodule TLX.ExpressivenessTest do
     end
   end
 
+  defmodule FuncSpec do
+    use TLX.Spec
+
+    variable(:flags, %{})
+
+    constant(:procs)
+
+    action :set_flag do
+      pick :p, :procs do
+        next(:flags, except(e(flags), e(p), true))
+      end
+    end
+
+    invariant(:flag_check, e(at(flags, :p1) == true or at(flags, :p1) == false))
+  end
+
+  defmodule ChooseSpec do
+    use TLX.Spec
+
+    variable(:leader, :none)
+
+    constant(:nodes)
+
+    action :elect do
+      next(:leader, choose(:n, :nodes, e(n != :none)))
+    end
+  end
+
+  defmodule FilterSpec do
+    use TLX.Spec
+
+    variable(:items, [])
+
+    constant(:all_items)
+
+    invariant(:active_exist, e(cardinality(filter(:x, :all_items, x != :removed)) >= 0))
+  end
+
+  defmodule CaseSpec do
+    use TLX.Spec
+
+    variable(:priority, 0)
+    variable(:status, :ok)
+
+    action :assign_priority do
+      next(
+        :priority,
+        case_of([{e(status == :critical), 1}, {e(status == :warning), 2}, {e(true), 3}])
+      )
+    end
+  end
+
+  describe "function application and update" do
+    test "TLA+ emits f[x] for at" do
+      output = TLA.emit(FuncSpec)
+      assert output =~ "flags[p1]"
+    end
+
+    test "TLA+ emits EXCEPT for functional update" do
+      output = TLA.emit(FuncSpec)
+      assert output =~ "EXCEPT"
+    end
+  end
+
+  describe "CHOOSE" do
+    test "TLA+ emits CHOOSE" do
+      output = TLA.emit(ChooseSpec)
+      assert output =~ "CHOOSE n \\in nodes"
+    end
+  end
+
+  describe "set comprehension (filter)" do
+    test "TLA+ emits set comprehension" do
+      output = TLA.emit(FilterSpec)
+      assert output =~ "{x \\in all_items :"
+    end
+  end
+
+  describe "CASE expression" do
+    test "TLA+ emits CASE" do
+      output = TLA.emit(CaseSpec)
+      assert output =~ "CASE"
+      assert output =~ "->"
+    end
+  end
+
   describe "non-deterministic pick" do
     test "TLA+ emits existential quantifier for pick" do
       output = TLA.emit(PickSpec)

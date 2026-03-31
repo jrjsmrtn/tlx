@@ -34,4 +34,16 @@ defmodule TLX.Temporal do
 
   @doc "LET/IN local definition. `LET var == binding IN body`."
   def let_in(var, binding, body), do: {:let_in, var, binding, body}
+
+  @doc "Function application. `f[x]` in TLA+."
+  def at(f, x), do: {:at, f, x}
+
+  @doc "Functional update. `[f EXCEPT ![x] = v]` in TLA+."
+  def except(f, x, v), do: {:except, f, x, v}
+
+  @doc "Deterministic choice. `CHOOSE var \\in set : expr` in TLA+."
+  def choose(var, set, expr), do: {:choose, var, set, expr}
+
+  @doc "CASE expression. `CASE p1 -> e1 [] p2 -> e2` in TLA+."
+  def case_of(clauses) when is_list(clauses), do: {:case_of, clauses}
 end

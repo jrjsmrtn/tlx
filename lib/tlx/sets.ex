@@ -29,4 +29,7 @@ defmodule TLX.Sets do
 
   @doc "Set membership test: `elem \\in s`"
   def in_set(elem, s), do: {:in_set, elem, s}
+
+  @doc "Set comprehension (filter): `{var \\in set : expr}` in TLA+."
+  def filter(var, set, expr), do: {:filter, var, set, expr}
 end

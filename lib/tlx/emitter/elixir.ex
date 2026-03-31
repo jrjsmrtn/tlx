@@ -160,6 +160,14 @@ defmodule TLX.Emitter.Elixir do
   defp fmt({:cardinality, s}), do: "cardinality(#{fmt(s)})"
   defp fmt({:in_set, elem, s}), do: "in_set(#{fmt(elem)}, #{fmt(s)})"
   defp fmt({:set_of, elems}), do: "set_of([#{Enum.map_join(elems, ", ", &fmt/1)}])"
+  defp fmt({:at, f, x}), do: "at(#{fmt(f)}, #{fmt(x)})"
+  defp fmt({:except, f, x, v}), do: "except(#{fmt(f)}, #{fmt(x)}, #{fmt(v)})"
+  defp fmt({:choose, var, set, expr}), do: "choose(:#{var}, :#{set}, #{fmt(expr)})"
+  defp fmt({:filter, var, set, expr}), do: "filter(:#{var}, :#{set}, #{fmt(expr)})"
+
+  defp fmt({:case_of, clauses}),
+    do: "case_of([#{Enum.map_join(clauses, ", ", fn {c, e} -> "{#{fmt(c)}, #{fmt(e)}}" end)}])"
+
   defp fmt(val), do: Format.format_expr(val, @symbols)
 
   defp fmt_temporal({:always, inner}), do: "always(#{fmt_temporal(inner)})"

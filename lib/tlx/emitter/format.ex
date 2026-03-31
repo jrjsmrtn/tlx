@@ -166,6 +166,51 @@ defmodule TLX.Emitter.Format do
     "LET #{Atom.to_string(var)} == #{format_ast(binding, s)} IN #{format_ast(body, s)}"
   end
 
+  # Function application — 3-tuple AST form (from e(at(...))) must come first
+  def format_ast({:at, meta, [f, x]}, s) when is_list(meta),
+    do: "#{format_ast(f, s)}[#{format_ast(x, s)}]"
+
+  # Function application — from direct at/2 call
+  def format_ast({:at, f, x}, s), do: "#{format_expr(f, s)}[#{format_expr(x, s)}]"
+
+  # Functional update (EXCEPT)
+  def format_ast({:except, f, x, v}, s),
+    do: "[#{format_expr(f, s)} EXCEPT ![#{format_expr(x, s)}] = #{format_expr(v, s)}]"
+
+  def format_ast({:except, meta, [f, x, v]}, s) when is_list(meta),
+    do: "[#{format_ast(f, s)} EXCEPT ![#{format_ast(x, s)}] = #{format_ast(v, s)}]"
+
+  # CHOOSE
+  def format_ast({:choose, var, set, inner}, s),
+    do:
+      "CHOOSE #{Atom.to_string(var)} #{s.member} #{format_expr(set, s)} : #{format_expr(inner, s)}"
+
+  def format_ast({:choose, meta, [var, set, inner]}, s) when is_list(meta),
+    do:
+      "CHOOSE #{Atom.to_string(var)} #{s.member} #{format_ast(set, s)} : #{format_ast(inner, s)}"
+
+  # Set comprehension (filter)
+  def format_ast({:filter, var, set, inner}, s),
+    do: "{#{Atom.to_string(var)} #{s.member} #{format_expr(set, s)} : #{format_expr(inner, s)}}"
+
+  def format_ast({:filter, meta, [var, set, inner]}, s) when is_list(meta),
+    do: "{#{Atom.to_string(var)} #{s.member} #{format_ast(set, s)} : #{format_ast(inner, s)}}"
+
+  # CASE expression
+  def format_ast({:case_of, clauses}, s) when is_list(clauses) do
+    Enum.map_join(clauses, " [] ", fn {cond, expr} ->
+      "#{format_expr(cond, s)} -> #{format_expr(expr, s)}"
+    end)
+    |> then(&"CASE #{&1}")
+  end
+
+  def format_ast({:case_of, meta, [clauses]}, s) when is_list(meta) and is_list(clauses) do
+    Enum.map_join(clauses, " [] ", fn {cond, expr} ->
+      "#{format_ast(cond, s)} -> #{format_ast(expr, s)}"
+    end)
+    |> then(&"CASE #{&1}")
+  end
+
   # Set operations — AST capture form: {:op, metadata, [args...]}
   # Metadata is always a keyword list; must come before variable reference catch-all
   def format_ast({:union, meta, [a, b]}, s) when is_list(meta),
@@ -212,6 +257,11 @@ defmodule TLX.Emitter.Format do
   def format_expr({:exists, _, _, _} = q, s), do: format_ast(q, s)
   def format_expr({:ite, _, _, _} = q, s), do: format_ast(q, s)
   def format_expr({:let_in, _, _, _} = q, s), do: format_ast(q, s)
+  def format_expr({:at, _, _} = q, s), do: format_ast(q, s)
+  def format_expr({:except, _, _, _} = q, s), do: format_ast(q, s)
+  def format_expr({:choose, _, _, _} = q, s), do: format_ast(q, s)
+  def format_expr({:filter, _, _, _} = q, s), do: format_ast(q, s)
+  def format_expr({:case_of, _} = q, s), do: format_ast(q, s)
   def format_expr({:union, a, b}, s), do: "(#{format_expr(a, s)} \\union #{format_expr(b, s)})"
 
   def format_expr({:intersect, a, b}, s),

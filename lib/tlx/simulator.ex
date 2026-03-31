@@ -222,6 +222,46 @@ defmodule TLX.Simulator do
 
   defp eval_ast({:set_of, elements}, state), do: MapSet.new(elements, &eval_ast(&1, state))
 
+  # Function application
+  defp eval_ast({:at, f, x}, state) do
+    func = eval_ast(f, state)
+    key = eval_ast(x, state)
+    if is_map(func), do: Map.fetch!(func, key), else: Enum.at(func, key)
+  end
+
+  # Functional update (EXCEPT)
+  defp eval_ast({:except, f, x, v}, state) do
+    func = eval_ast(f, state)
+    key = eval_ast(x, state)
+    val = eval_ast(v, state)
+    Map.put(func, key, val)
+  end
+
+  # CHOOSE — deterministic selection (picks first match)
+  defp eval_ast({:choose, var, set, expr}, state) do
+    set_val = eval_ast(set, state) |> to_mapset() |> MapSet.to_list()
+
+    Enum.find(set_val, fn elem ->
+      eval_ast(expr, Map.put(state, var, elem))
+    end)
+  end
+
+  # Set comprehension (filter)
+  defp eval_ast({:filter, var, set, expr}, state) do
+    set_val = eval_ast(set, state) |> to_mapset() |> MapSet.to_list()
+
+    set_val
+    |> Enum.filter(fn elem -> eval_ast(expr, Map.put(state, var, elem)) end)
+    |> MapSet.new()
+  end
+
+  # CASE expression
+  defp eval_ast({:case_of, clauses}, state) do
+    Enum.find_value(clauses, fn {cond, expr} ->
+      if eval_ast(cond, state), do: eval_ast(expr, state)
+    end)
+  end
+
   # LET/IN
   defp eval_ast({:let_in, var, binding, body}, state) do
     val = eval_ast(binding, state)
