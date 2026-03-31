@@ -108,6 +108,10 @@ Key TLA+/PlusCal concepts mapped to DSL constructs:
 | Function access   | `at(f, x)`, `except(f, x, v)`                     | `f[x]`, `[f EXCEPT ![x]=v]`  |
 | CHOOSE            | `choose(:var, :set, expr)`                        | Deterministic selection      |
 | CASE              | `case_of([{cond, val}, ...])`                     | Multi-way conditional        |
+| Implication       | `implies(p, q)`, `equiv(p, q)`                    | `=>`, `<=>`                  |
+| Range set         | `range(a, b)`                                     | `a..b`                       |
+| DOMAIN            | `domain(f)`                                       | Keys of a function           |
+| Sequences         | `len`, `append`, `head`, `tail`, `sub_seq`        | Requires EXTENDS Sequences   |
 | Refinement        | `refines Mod do mapping :var, e(...) end`         | Spec comparison              |
 
 ## AI Collaboration Notes

@@ -132,6 +132,62 @@ case_of([{e(status == :critical), 1}, {e(status == :warning), 2}, {e(true), 3}])
 | ----------------------------------------- | ------------------------------------- |
 | `case_of([{cond1, val1}, {cond2, val2}])` | `CASE cond1 -> val1 [] cond2 -> val2` |
 
+## Implication and Equivalence
+
+```elixir
+e(implies(x > 0, y > 0))
+e(equiv(x > 0, y > 0))
+```
+
+| Elixir inside `e()` | TLA+ output |
+| ------------------- | ----------- |
+| `implies(p, q)`     | `p => q`    |
+| `equiv(p, q)`       | `p <=> q`   |
+
+Expressible with `not p or q` and `(p and q) or (not p and not q)`, but the named forms are clearer.
+
+## Range Sets
+
+```elixir
+e(range(1, 10))
+```
+
+| Elixir inside `e()` | TLA+ output |
+| ------------------- | ----------- |
+| `range(a, b)`       | `a..b`      |
+
+## DOMAIN
+
+Get the keys of a TLA+ function (map):
+
+```elixir
+e(domain(flags))
+```
+
+| Elixir inside `e()` | TLA+ output |
+| ------------------- | ----------- |
+| `domain(f)`         | `DOMAIN f`  |
+
+## Sequence Operations
+
+Require `EXTENDS Sequences` in the TLA+ module. Available from `TLX.Sequences`.
+
+```elixir
+e(len(queue))
+e(append(queue, item))
+e(head(queue))
+e(tail(queue))
+e(sub_seq(queue, 1, 3))
+```
+
+| Elixir inside `e()` | TLA+ output       |
+| ------------------- | ----------------- |
+| `len(s)`            | `Len(s)`          |
+| `append(s, x)`      | `Append(s, x)`    |
+| `head(s)`           | `Head(s)`         |
+| `tail(s)`           | `Tail(s)`         |
+| `sub_seq(s, m, n)`  | `SubSeq(s, m, n)` |
+
 ## Local Definitions
 
 ```elixir
