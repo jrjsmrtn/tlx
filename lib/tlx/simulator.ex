@@ -262,6 +262,29 @@ defmodule TLX.Simulator do
     end)
   end
 
+  # DOMAIN
+  defp eval_ast({:domain, f}, state), do: eval_ast(f, state) |> Map.keys() |> MapSet.new()
+
+  # Implication / Equivalence
+  defp eval_ast({:implies, p, q}, state),
+    do: not eval_ast(p, state) or eval_ast(q, state)
+
+  defp eval_ast({:equiv, p, q}, state),
+    do: eval_ast(p, state) == eval_ast(q, state)
+
+  # Range set
+  defp eval_ast({:range, a, b}, state),
+    do: MapSet.new(eval_ast(a, state)..eval_ast(b, state))
+
+  # Sequence operations
+  defp eval_ast({:seq_len, s}, state), do: length(eval_ast(s, state))
+  defp eval_ast({:seq_append, s, x}, state), do: eval_ast(s, state) ++ [eval_ast(x, state)]
+  defp eval_ast({:seq_head, s}, state), do: hd(eval_ast(s, state))
+  defp eval_ast({:seq_tail, s}, state), do: tl(eval_ast(s, state))
+
+  defp eval_ast({:seq_sub_seq, s, m, n}, state),
+    do: Enum.slice(eval_ast(s, state), (eval_ast(m, state) - 1)..(eval_ast(n, state) - 1)//1)
+
   # LET/IN
   defp eval_ast({:let_in, var, binding, body}, state) do
     val = eval_ast(binding, state)

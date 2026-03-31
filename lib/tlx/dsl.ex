@@ -174,7 +174,7 @@ defmodule TLX.Dsl do
     name: :initial,
     describe: "Custom initial state constraints (added to auto-generated Init).",
     entities: [@init_constraint],
-    imports: [TLX.Expr, TLX.Temporal, TLX.Sets]
+    imports: [TLX.Expr, TLX.Temporal, TLX.Sets, TLX.Sequences]
   }
 
   @variables %Spark.Dsl.Section{
@@ -196,7 +196,7 @@ defmodule TLX.Dsl do
     describe: "Guarded state transitions.",
     top_level?: true,
     entities: [@action],
-    imports: [TLX.Expr, TLX.Temporal, TLX.Sets]
+    imports: [TLX.Expr, TLX.Temporal, TLX.Sets, TLX.Sequences]
   }
 
   @invariants %Spark.Dsl.Section{
@@ -204,7 +204,7 @@ defmodule TLX.Dsl do
     describe: "Safety invariants checked at every reachable state.",
     top_level?: true,
     entities: [@invariant],
-    imports: [TLX.Expr, TLX.Temporal, TLX.Sets]
+    imports: [TLX.Expr, TLX.Temporal, TLX.Sets, TLX.Sequences]
   }
 
   @process %Spark.Dsl.Entity{
@@ -240,7 +240,7 @@ defmodule TLX.Dsl do
     describe: "Concurrent process declarations.",
     top_level?: true,
     entities: [@process],
-    imports: [TLX.Expr, TLX.Temporal, TLX.Sets]
+    imports: [TLX.Expr, TLX.Temporal, TLX.Sets, TLX.Sequences]
   }
 
   @property %Spark.Dsl.Entity{
@@ -268,7 +268,7 @@ defmodule TLX.Dsl do
     describe: "Temporal properties checked over infinite traces.",
     top_level?: true,
     entities: [@property],
-    imports: [TLX.Expr, TLX.Temporal, TLX.Sets]
+    imports: [TLX.Expr, TLX.Temporal, TLX.Sets, TLX.Sequences]
   }
 
   @refinement_mapping %Spark.Dsl.Entity{
@@ -313,7 +313,7 @@ defmodule TLX.Dsl do
     describe: "Refinement mappings to abstract specs.",
     top_level?: true,
     entities: [@refines],
-    imports: [TLX.Expr, TLX.Temporal, TLX.Sets]
+    imports: [TLX.Expr, TLX.Temporal, TLX.Sets, TLX.Sequences]
   }
 
   use Spark.Dsl.Extension,

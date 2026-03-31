@@ -211,6 +211,56 @@ defmodule TLX.Emitter.Format do
     |> then(&"CASE #{&1}")
   end
 
+  # DOMAIN
+  def format_ast({:domain, f}, s), do: "DOMAIN #{format_expr(f, s)}"
+  def format_ast({:domain, meta, [f]}, s) when is_list(meta), do: "DOMAIN #{format_ast(f, s)}"
+
+  # Implication / Equivalence — guarded AST form first
+  def format_ast({:implies, meta, [p, q]}, s) when is_list(meta),
+    do: "(#{format_ast(p, s)} => #{format_ast(q, s)})"
+
+  def format_ast({:implies, p, q}, s), do: "(#{format_expr(p, s)} => #{format_expr(q, s)})"
+
+  def format_ast({:equiv, meta, [p, q]}, s) when is_list(meta),
+    do: "(#{format_ast(p, s)} <=> #{format_ast(q, s)})"
+
+  def format_ast({:equiv, p, q}, s), do: "(#{format_expr(p, s)} <=> #{format_expr(q, s)})"
+
+  # Range set — guarded AST form first
+  def format_ast({:range, meta, [a, b]}, s) when is_list(meta),
+    do: "#{format_ast(a, s)}..#{format_ast(b, s)}"
+
+  def format_ast({:range, a, b}, s), do: "#{format_expr(a, s)}..#{format_expr(b, s)}"
+
+  # Sequence operations — AST capture forms (from e(len(...)) etc.)
+  # Function names in AST: :len, :append, :head, :tail, :sub_seq
+  def format_ast({:len, meta, [s_expr]}, s) when is_list(meta),
+    do: "Len(#{format_ast(s_expr, s)})"
+
+  def format_ast({:append, meta, [seq, x]}, s) when is_list(meta),
+    do: "Append(#{format_ast(seq, s)}, #{format_ast(x, s)})"
+
+  def format_ast({:head, meta, [s_expr]}, s) when is_list(meta),
+    do: "Head(#{format_ast(s_expr, s)})"
+
+  def format_ast({:tail, meta, [s_expr]}, s) when is_list(meta),
+    do: "Tail(#{format_ast(s_expr, s)})"
+
+  def format_ast({:sub_seq, meta, [seq, m, n]}, s) when is_list(meta),
+    do: "SubSeq(#{format_ast(seq, s)}, #{format_ast(m, s)}, #{format_ast(n, s)})"
+
+  # Sequence operations — direct function call forms ({:seq_*, ...})
+  def format_ast({:seq_len, s_expr}, s), do: "Len(#{format_expr(s_expr, s)})"
+
+  def format_ast({:seq_append, seq, x}, s),
+    do: "Append(#{format_expr(seq, s)}, #{format_expr(x, s)})"
+
+  def format_ast({:seq_head, s_expr}, s), do: "Head(#{format_expr(s_expr, s)})"
+  def format_ast({:seq_tail, s_expr}, s), do: "Tail(#{format_expr(s_expr, s)})"
+
+  def format_ast({:seq_sub_seq, seq, m, n}, s),
+    do: "SubSeq(#{format_expr(seq, s)}, #{format_expr(m, s)}, #{format_expr(n, s)})"
+
   # Set operations — AST capture form: {:op, metadata, [args...]}
   # Metadata is always a keyword list; must come before variable reference catch-all
   def format_ast({:union, meta, [a, b]}, s) when is_list(meta),
@@ -262,6 +312,15 @@ defmodule TLX.Emitter.Format do
   def format_expr({:choose, _, _, _} = q, s), do: format_ast(q, s)
   def format_expr({:filter, _, _, _} = q, s), do: format_ast(q, s)
   def format_expr({:case_of, _} = q, s), do: format_ast(q, s)
+  def format_expr({:domain, _} = q, s), do: format_ast(q, s)
+  def format_expr({:implies, _, _} = q, s), do: format_ast(q, s)
+  def format_expr({:equiv, _, _} = q, s), do: format_ast(q, s)
+  def format_expr({:range, _, _} = q, s), do: format_ast(q, s)
+  def format_expr({:seq_len, _} = q, s), do: format_ast(q, s)
+  def format_expr({:seq_append, _, _} = q, s), do: format_ast(q, s)
+  def format_expr({:seq_head, _} = q, s), do: format_ast(q, s)
+  def format_expr({:seq_tail, _} = q, s), do: format_ast(q, s)
+  def format_expr({:seq_sub_seq, _, _, _} = q, s), do: format_ast(q, s)
   def format_expr({:union, a, b}, s), do: "(#{format_expr(a, s)} \\union #{format_expr(b, s)})"
 
   def format_expr({:intersect, a, b}, s),

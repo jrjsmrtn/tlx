@@ -219,6 +219,82 @@ defmodule TLX.ExpressivenessTest do
     end
   end
 
+  defmodule ImpliesSpec do
+    use TLX.Spec
+
+    variable(:x, 0)
+    variable(:y, 0)
+
+    invariant(:impl, implies(e(x > 0), e(y > 0)))
+    invariant(:eq, equiv(e(x > 0), e(y > 0)))
+  end
+
+  defmodule RangeSpec do
+    use TLX.Spec
+
+    variable(:x, 0)
+
+    invariant(:in_range, e(in_set(x, range(1, 10))))
+  end
+
+  defmodule SeqSpec do
+    use TLX.Spec
+
+    variable(:queue, [])
+
+    action :enqueue do
+      next(:queue, e(append(queue, :item)))
+    end
+
+    invariant(:bounded, e(len(queue) <= 5))
+  end
+
+  defmodule DomainSpec do
+    use TLX.Spec
+
+    variable(:flags, %{})
+
+    invariant(:has_keys, e(cardinality(domain(flags)) >= 0))
+  end
+
+  describe "implication and equivalence" do
+    test "TLA+ emits =>" do
+      output = TLA.emit(ImpliesSpec)
+      assert output =~ "=>"
+    end
+
+    test "TLA+ emits <=>" do
+      output = TLA.emit(ImpliesSpec)
+      assert output =~ "<=>"
+    end
+  end
+
+  describe "range set" do
+    test "TLA+ emits a..b" do
+      output = TLA.emit(RangeSpec)
+      assert output =~ "1..10"
+    end
+  end
+
+  describe "sequence operations" do
+    test "TLA+ emits Append" do
+      output = TLA.emit(SeqSpec)
+      assert output =~ "Append"
+    end
+
+    test "TLA+ emits Len" do
+      output = TLA.emit(SeqSpec)
+      assert output =~ "Len"
+    end
+  end
+
+  describe "DOMAIN" do
+    test "TLA+ emits DOMAIN" do
+      output = TLA.emit(DomainSpec)
+      assert output =~ "DOMAIN"
+    end
+  end
+
   describe "non-deterministic pick" do
     test "TLA+ emits existential quantifier for pick" do
       output = TLA.emit(PickSpec)

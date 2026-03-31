@@ -46,4 +46,16 @@ defmodule TLX.Temporal do
 
   @doc "CASE expression. `CASE p1 -> e1 [] p2 -> e2` in TLA+."
   def case_of(clauses) when is_list(clauses), do: {:case_of, clauses}
+
+  @doc "Domain of a function. `DOMAIN f` in TLA+."
+  def domain(f), do: {:domain, f}
+
+  @doc "Implication. `p => q` in TLA+."
+  def implies(p, q), do: {:implies, p, q}
+
+  @doc "Equivalence. `p <=> q` in TLA+."
+  def equiv(p, q), do: {:equiv, p, q}
+
+  @doc "Integer range set. `a..b` in TLA+."
+  def range(a, b), do: {:range, a, b}
 end

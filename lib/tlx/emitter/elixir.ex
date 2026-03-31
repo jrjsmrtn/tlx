@@ -168,6 +168,16 @@ defmodule TLX.Emitter.Elixir do
   defp fmt({:case_of, clauses}),
     do: "case_of([#{Enum.map_join(clauses, ", ", fn {c, e} -> "{#{fmt(c)}, #{fmt(e)}}" end)}])"
 
+  defp fmt({:domain, f}), do: "domain(#{fmt(f)})"
+  defp fmt({:implies, p, q}), do: "implies(#{fmt(p)}, #{fmt(q)})"
+  defp fmt({:equiv, p, q}), do: "equiv(#{fmt(p)}, #{fmt(q)})"
+  defp fmt({:range, a, b}), do: "range(#{fmt(a)}, #{fmt(b)})"
+  defp fmt({:seq_len, s}), do: "len(#{fmt(s)})"
+  defp fmt({:seq_append, s, x}), do: "append(#{fmt(s)}, #{fmt(x)})"
+  defp fmt({:seq_head, s}), do: "head(#{fmt(s)})"
+  defp fmt({:seq_tail, s}), do: "tail(#{fmt(s)})"
+  defp fmt({:seq_sub_seq, s, m, n}), do: "sub_seq(#{fmt(s)}, #{fmt(m)}, #{fmt(n)})"
+
   defp fmt(val), do: Format.format_expr(val, @symbols)
 
   defp fmt_temporal({:always, inner}), do: "always(#{fmt_temporal(inner)})"
