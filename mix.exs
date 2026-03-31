@@ -81,14 +81,27 @@ defmodule TLX.MixProject do
   defp docs do
     [
       main: "TLX",
-      extras: [
-        "README.md",
-        "CHANGELOG.md",
-        "documentation/dsls/DSL-TLX.md"
-      ],
+      extras:
+        [
+          "README.md",
+          "CHANGELOG.md",
+          "FAQ.md",
+          "documentation/dsls/DSL-TLX.md"
+        ] ++ docs_extras(),
       groups_for_extras: [
-        "DSL Reference": ~r/documentation\/dsls\//
+        "DSL Reference": ~r/documentation\/dsls\//,
+        Tutorials: ~r/docs\/tutorials\//,
+        "How-To Guides": ~r/docs\/howto\//,
+        Explanations: ~r/docs\/explanation\//,
+        Reference: ~r/docs\/reference\//,
+        ADRs: ~r/docs\/adr\//,
+        Roadmap: ~r/docs\/roadmap\//
       ]
     ]
+  end
+
+  defp docs_extras do
+    Path.wildcard("docs/{tutorials,howto,explanation,reference,adr,roadmap}/*.md")
+    |> Enum.sort()
   end
 end

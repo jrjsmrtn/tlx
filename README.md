@@ -104,7 +104,7 @@ Active development. Not yet published on Hex.
 ## Documentation
 
 - [Roadmap](docs/roadmap/roadmap.md)
-- [Architecture Decision Records](docs/adr/)
+- [Architecture Decision Records](docs/adr/0001-record-architecture-decisions.md)
 - [Getting Started](docs/tutorials/getting-started.md)
 
 ## License
