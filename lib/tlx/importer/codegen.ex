@@ -153,6 +153,75 @@ defmodule TLX.Importer.Codegen do
   end
 
   @doc """
+  Generate a TLX spec skeleton from a Reactor workflow.
+
+  Accepts an extraction result map from `TLX.Extractor.Reactor` with
+  `:inputs`, `:steps`, `:return`, `:graph`.
+  """
+  def from_reactor(spec_name, source_module, result) do
+    steps = result[:steps] || []
+    inputs = result[:inputs] || []
+
+    variables =
+      ["  # Step status variables"] ++
+        Enum.map(steps, fn step ->
+          "  variable :#{step.name}_status, :pending"
+        end)
+
+    actions =
+      steps
+      |> Enum.map(fn step ->
+        step_deps =
+          step.depends_on
+          |> Enum.filter(fn {type, _} -> type == :step end)
+          |> Enum.map(fn {:step, name} -> name end)
+
+        guard =
+          case step_deps do
+            [] ->
+              ""
+
+            deps ->
+              conds = Enum.map_join(deps, " and ", &"#{&1}_status == :completed")
+              "    guard e(#{conds})\n"
+          end
+
+        """
+          action :#{step.name} do
+        #{guard}    branch :success do
+              next :#{step.name}_status, :completed
+            end
+
+            branch :failure do
+              next :#{step.name}_status, :failed
+            end
+          end\
+        """
+      end)
+
+    source = """
+    import TLX
+
+    # Generated from #{inspect(source_module)}
+    # Reactor workflow: #{length(steps)} steps, #{length(inputs)} inputs, return: #{result[:return]}
+
+    defspec #{spec_name}Spec do
+    #{Enum.join(variables, "\n")}
+
+    #{Enum.join(actions, "\n\n")}
+
+      # Invariant: steps execute in dependency order
+      # TODO: Add ordering invariants based on the dependency graph
+
+      # Liveness: reactor eventually completes
+      # property :eventually_completes, always(eventually(e(#{result[:return]}_status == :completed)))
+    end
+    """
+
+    format_source(source)
+  end
+
+  @doc """
   Generate a TLX spec skeleton from LiveView callback info.
 
   Accepts an extraction result map from `TLX.Extractor.LiveView` with

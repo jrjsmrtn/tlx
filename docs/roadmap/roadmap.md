@@ -170,6 +170,7 @@ Sprint 16 — Proper parsers and AST-based code gen:
 
 | Sprint | Phase                 | Version | Summary                                              |
 | ------ | --------------------- | ------- | ---------------------------------------------------- |
+| 41     | Extractors            | v0.3.16 | Reactor extractor — step DAG via Spark introspection |
 | 38-40  | Skills                | v0.3.15 | otp-audit, visualize, spec-drift skills              |
 | 37     | Skill                 | v0.3.14 | formal-spec skill enrichment workflow                |
 | 36     | Extractors            | v0.3.13 | Ash.StateMachine extractor via runtime introspection |
@@ -213,7 +214,6 @@ Sprint 16 — Proper parsers and AST-based code gen:
 
 ## Proposed Sprints
 
-| Sprint | Phase      | Plan                                                                        |
-| ------ | ---------- | --------------------------------------------------------------------------- |
-| 41     | Extractors | Reactor extractor — Spark introspection for step DAGs + compensation (saga) |
-| 42     | Extractors | Broadway extractor — Spark introspection for pipeline topology + batching   |
+| Sprint | Phase      | Plan                                                                      |
+| ------ | ---------- | ------------------------------------------------------------------------- |
+| 42     | Extractors | Broadway extractor — Spark introspection for pipeline topology + batching |
