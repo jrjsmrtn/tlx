@@ -170,6 +170,7 @@ Sprint 16 — Proper parsers and AST-based code gen:
 
 | Sprint | Phase                 | Version | Summary                                              |
 | ------ | --------------------- | ------- | ---------------------------------------------------- |
+| 37     | Skill                 | v0.3.14 | formal-spec skill enrichment workflow                |
 | 36     | Extractors            | v0.3.13 | Ash.StateMachine extractor via runtime introspection |
 | 35     | Extractors            | v0.3.12 | Erlang BEAM extractors — gen_server + gen_fsm        |
 | 34     | Extractors            | v0.3.11 | LiveView AST extractor + mix task + codegen          |
@@ -213,6 +214,5 @@ Sprint 16 — Proper parsers and AST-based code gen:
 
 | Sprint | Phase      | Plan                                                                        |
 | ------ | ---------- | --------------------------------------------------------------------------- |
-| 37     | Skill      | formal-spec skill enrichment — skeleton → complete spec workflow            |
 | 38     | Extractors | Reactor extractor — Spark introspection for step DAGs + compensation (saga) |
 | 39     | Extractors | Broadway extractor — Spark introspection for pipeline topology + batching   |
