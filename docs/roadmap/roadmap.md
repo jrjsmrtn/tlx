@@ -200,4 +200,8 @@ Sprint 16 — Proper parsers and AST-based code gen:
 
 ## Proposed Sprints
 
-None. All planned sprints are complete.
+| Sprint | Phase         | Plan                                                |
+| ------ | ------------- | --------------------------------------------------- |
+| 26     | Visualization | Mermaid emitter — diagrams render on GitHub/hexdocs |
+| 27     | Visualization | PlantUML emitter — enterprise diagram tooling       |
+| 28     | Visualization | D2 emitter — modern declarative diagrams            |
