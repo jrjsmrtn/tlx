@@ -2,13 +2,14 @@
 
 ## Current Status
 
-- **Latest Release**: v0.3.6
+- **Latest Release**: v0.3.7
 - **Status**: Active development
 
 ## Sprint Index
 
 | Sprint | Phase                 | Version | Status   | Plan                        | Retrospective                         |
 | ------ | --------------------- | ------- | -------- | --------------------------- | ------------------------------------- |
+| 31     | OTP Patterns          | v0.3.7  | Complete | [Plan](sprint-0031-plan.md) | [Retro](sprint-0031-retrospective.md) |
 | 29     | OTP Patterns          | v0.3.6  | Complete | [Plan](sprint-0029-plan.md) | [Retro](sprint-0029-retrospective.md) |
 | 28     | Extractors            | v0.3.5  | Complete | [Plan](sprint-0028-plan.md) | [Retro](sprint-0028-retrospective.md) |
 | 27     | OTP Patterns          | v0.3.4  | Complete | [Plan](sprint-0027-plan.md) | [Retro](sprint-0027-retrospective.md) |
