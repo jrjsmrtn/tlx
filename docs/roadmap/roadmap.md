@@ -214,5 +214,8 @@ Sprint 16 — Proper parsers and AST-based code gen:
 
 | Sprint | Phase      | Plan                                                                        |
 | ------ | ---------- | --------------------------------------------------------------------------- |
-| 38     | Extractors | Reactor extractor — Spark introspection for step DAGs + compensation (saga) |
-| 39     | Extractors | Broadway extractor — Spark introspection for pipeline topology + batching   |
+| 38     | Skills     | otp-audit — scan project for extractable modules, report spec coverage      |
+| 39     | Skills     | visualize — generate diagrams from specs in any format                      |
+| 40     | Skills     | spec-drift — detect code changes that invalidate existing specs             |
+| 41     | Extractors | Reactor extractor — Spark introspection for step DAGs + compensation (saga) |
+| 42     | Extractors | Broadway extractor — Spark introspection for pipeline topology + batching   |
