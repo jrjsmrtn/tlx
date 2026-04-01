@@ -2,13 +2,18 @@
 
 ## Current Status
 
-- **Latest Release**: v0.3.3 (published on Hex)
-- **Status**: All planned sprints complete
+- **Latest Release**: v0.3.7
+- **Status**: Active development
 
 ## Sprint Index
 
 | Sprint | Phase                 | Version | Status   | Plan                        | Retrospective                         |
 | ------ | --------------------- | ------- | -------- | --------------------------- | ------------------------------------- |
+| 31     | OTP Patterns          | v0.3.7  | Complete | [Plan](sprint-0031-plan.md) | [Retro](sprint-0031-retrospective.md) |
+| 29     | OTP Patterns          | v0.3.6  | Complete | [Plan](sprint-0029-plan.md) | [Retro](sprint-0029-retrospective.md) |
+| 28     | Extractors            | v0.3.5  | Complete | [Plan](sprint-0028-plan.md) | [Retro](sprint-0028-retrospective.md) |
+| 27     | OTP Patterns          | v0.3.4  | Complete | [Plan](sprint-0027-plan.md) | [Retro](sprint-0027-retrospective.md) |
+| 26     | Visualization         | v0.3.4  | Complete | [Plan](sprint-0026-plan.md) | [Retro](sprint-0026-retrospective.md) |
 | 25     | Visualization         | v0.3.3  | Complete | [Plan](sprint-0025-plan.md) |                                       |
 | 24     | Documentation         | v0.3.2  | Complete | [Plan](sprint-0024-plan.md) | [Retro](sprint-0024-retrospective.md) |
 | 23     | Documentation         | v0.3.1  | Complete | [Plan](sprint-0023-plan.md) | [Retro](sprint-0023-retrospective.md) |

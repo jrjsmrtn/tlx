@@ -53,11 +53,23 @@ The ideal workflow:
 2. Write the code (Elixir) — implement the verified design
 3. Write the tests (ExUnit) — verify the code matches the implementation
 
-## The Elixir Advantage
+## The BEAM Advantage
 
-Elixir developers already think in state machines. `GenServer`, `:gen_statem`, process mailboxes, supervisors — these are all state transition systems. TLX just gives you a way to _prove_ they work.
+Elixir and Erlang developers already think in state machines. `GenServer`, `gen_statem`, process mailboxes, supervisors — these are all state transition systems. TLX gives you a way to _prove_ they work.
 
 And because TLX is an Elixir DSL, you don't need to learn TLA+ syntax. You write specs in the language you already know. TLX emits the TLA+ for you.
+
+## What TLX Catches (and What It Doesn't)
+
+TLX won't find bugs in OTP itself. GenServer, Supervisor, gen_statem are battle-tested over 30+ years. What TLX catches is bugs in _how you use_ those patterns:
+
+- **Missing state transitions** — your GenServer handles `:start` from `:idle` but not from `:error`. In production, a retry after failure hangs forever. TLC finds this because it explores every state, including the ones you forgot.
+- **Race conditions between processes** — two GenServers both read a shared resource, both decide to act, both write. Your tests pass because they run sequentially. TLC explores every interleaving.
+- **Invariant violations under composition** — each GenServer is correct in isolation, but when three of them interact through a shared ETS table or database, the system reaches a state none of them expected.
+- **Deadlocks in supervision trees** — process A waits for process B, B is restarting, the supervisor hasn't noticed yet. The system is stuck but no single component is wrong.
+- **Protocol violations** — a saga should either commit all steps or rollback all steps. Under certain failure timings, step 3 commits but step 2's rollback message is lost. TLC finds the exact timing.
+
+What TLX doesn't catch: performance bugs, memory leaks, bugs in the BEAM VM, business logic errors that aren't about state or concurrency, network partition behavior (unless you model it explicitly).
 
 ## What to Read Next
 

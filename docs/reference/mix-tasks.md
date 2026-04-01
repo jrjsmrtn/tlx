@@ -10,18 +10,19 @@ mix tlx.emit MySpec --format pluscal-c     # PlusCal C-syntax (braces)
 mix tlx.emit MySpec --format pluscal-p     # PlusCal P-syntax (begin/end)
 mix tlx.emit MySpec --format elixir        # TLX DSL round-trip
 mix tlx.emit MySpec --format dot           # GraphViz state machine diagram
+mix tlx.emit MySpec --format mermaid       # Mermaid diagram (renders in GitHub markdown)
 mix tlx.emit MySpec --format symbols       # TLX DSL with math symbols
 mix tlx.emit MySpec --output spec.tla      # write to file
 ```
 
 **Flags:**
 
-| Flag             | Default | Description                                                                |
-| ---------------- | ------- | -------------------------------------------------------------------------- |
-| `--format`, `-f` | `tla`   | Output format: `tla`, `pluscal-c`, `pluscal-p`, `elixir`, `dot`, `symbols` |
-| `--output`, `-o` | stdout  | Write to file instead of stdout                                            |
+| Flag             | Default | Description                                                                           |
+| ---------------- | ------- | ------------------------------------------------------------------------------------- |
+| `--format`, `-f` | `tla`   | Output format: `tla`, `pluscal-c`, `pluscal-p`, `elixir`, `dot`, `mermaid`, `symbols` |
+| `--output`, `-o` | stdout  | Write to file instead of stdout                                                       |
 
-The `dot` format generates a GraphViz digraph. States are nodes (initial state has a double circle), actions are labeled edges. Render with `dot -Tpng spec.dot -o spec.png`. Works best for specs with atom-valued state variables.
+The `dot` format generates a GraphViz digraph. The `mermaid` format generates a Mermaid `stateDiagram-v2` that renders natively in GitHub, hexdocs, GitLab, and Obsidian markdown. Both work best for specs with atom-valued state variables.
 
 ## mix tlx.check
 
