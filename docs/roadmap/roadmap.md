@@ -170,6 +170,7 @@ Sprint 16 — Proper parsers and AST-based code gen:
 
 | Sprint | Phase                 | Version | Summary                                              |
 | ------ | --------------------- | ------- | ---------------------------------------------------- |
+| 35     | Extractors            | v0.3.12 | Erlang BEAM extractors — gen_server + gen_fsm        |
 | 34     | Extractors            | v0.3.11 | LiveView AST extractor + mix task + codegen          |
 | 33     | Visualization         | v0.3.10 | D2 state diagram emitter                             |
 | 32     | Visualization         | v0.3.9  | PlantUML state diagram emitter                       |
@@ -211,6 +212,5 @@ Sprint 16 — Proper parsers and AST-based code gen:
 
 Ordered by Forge project priority (gen_statem, GenServer, Ash/Phoenix).
 
-| Sprint | Phase      | Plan                                                                 |
-| ------ | ---------- | -------------------------------------------------------------------- |
-| 35     | Extractors | Erlang adapters: gen_server, gen_fsm (legacy, via :beam_lib) → specs |
+| Sprint | Phase | Plan |
+| ------ | ----- | ---- |
