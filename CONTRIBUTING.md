@@ -6,6 +6,18 @@ I'm not a TLA+ or formal specification expert. I'm an Elixir developer who had a
 
 If you're a TLA+, formal methods, Elixir, Ash, or Spark expert in the BEAM community and find TLX useful, I'd welcome collaborators. Open an issue or reach out.
 
+## Call for Contributors
+
+In general, if you want to help and are experienced in the BEAM ecosystem, email me with references ;-)
+
+There are specific areas where contributors would have outsized impact:
+
+**BEAM language coverage** — Elixir extraction is well covered (GenServer, gen_statem, LiveView, Ash.StateMachine, Reactor, Broadway). Erlang has basic support (gen_server, gen_fsm via BEAM abstract_code) but could use a more experienced maintainer. Gleam and LFE are not covered at all — extractors for their OTP modules would open TLX to the wider BEAM ecosystem.
+
+**TLA+ expertise** — Some advanced TLA+ concepts are not yet implemented in the DSL or the importer: `RECURSIVE` operators, `LAMBDA` expressions, `ASSUME`/`THEOREM`/`PROOF`, nested module definitions, and module-level `LET`/`IN`. See the "Not Supported" section in the [`TLX.Importer.TlaParser` moduledoc](lib/tlx/importer/tla_parser.ex) for the full list. A more experienced TLA+ practitioner could advise us on expanding our support and ensuring the DSL correctly maps to TLA+ semantics.
+
+**Ash, Reactor, and Broadway reviewers** — TLX has extractors for Ash.StateMachine (runtime introspection via `AshStateMachine.Info`), Reactor (Spark DAG introspection for step ordering and compensation), and Broadway (source AST for pipeline topology). These were built from documentation and basic test fixtures, not production use. Contributors experienced with these libraries could review the extractors for correctness, identify edge cases we're missing, and suggest verification properties that matter in real-world deployments.
+
 ## Development Process
 
 This project was built using [AI-Assisted Project Orchestration](https://github.com/jrjsmrtn/ai-assisted-project-orchestration) patterns. The patterns are distilled into reusable agent skills:
