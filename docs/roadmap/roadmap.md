@@ -172,7 +172,7 @@ Sprint 16 — Proper parsers and AST-based code gen:
 | ------ | --------------------- | ------- | ---------------------------------------------------- |
 | 42     | Extractors            | v0.3.17 | Broadway extractor — pipeline topology via AST       |
 | 41     | Extractors            | v0.3.16 | Reactor extractor — step DAG via Spark introspection |
-| 38-40  | Skills                | v0.3.15 | otp-audit, visualize, spec-drift skills              |
+| 38-40  | Skills                | v0.3.15 | spec-audit, visualize, spec-drift skills             |
 | 37     | Skill                 | v0.3.14 | formal-spec skill enrichment workflow                |
 | 36     | Extractors            | v0.3.13 | Ash.StateMachine extractor via runtime introspection |
 | 35     | Extractors            | v0.3.12 | Erlang BEAM extractors — gen_server + gen_fsm        |
