@@ -152,6 +152,102 @@ defmodule TLX.Importer.Codegen do
     """
   end
 
+  @doc """
+  Generate a TLX spec skeleton from GenServer callback info.
+
+  Accepts an extraction result map from `TLX.Extractor.GenServer` with
+  `:fields`, `:calls`, `:casts`, `:infos`.
+  """
+  def from_gen_server(spec_name, source_module, result) do
+    fields = result[:fields] || []
+    all_handlers = (result[:calls] || []) ++ (result[:casts] || []) ++ (result[:infos] || [])
+
+    variables =
+      case fields do
+        [] ->
+          "  # No fields detected from init/1 — add variables manually\n"
+
+        _ ->
+          fields
+          |> Enum.map_join("\n", fn {name, default} ->
+            "  variable :#{name}, #{inspect(default)}"
+          end)
+      end
+
+    actions =
+      case all_handlers do
+        [] ->
+          "  # No callbacks detected — add actions manually\n"
+
+        _ ->
+          all_handlers
+          |> Enum.map_join("\n\n", fn handler ->
+            emit_gen_server_action(handler, fields)
+          end)
+      end
+
+    source = """
+    import TLX
+
+    # Generated from #{inspect(source_module)}
+    # Review and complete invariants and properties.
+
+    defspec #{spec_name}Spec do
+    #{variables}
+
+    #{actions}
+
+      # TODO: Add invariants
+      # invariant :my_invariant, e(...)
+
+      # TODO: Add properties
+      # property :my_property, always(eventually(e(...)))
+    end
+    """
+
+    format_source(source)
+  end
+
+  defp emit_gen_server_action(handler, _fields) do
+    confidence_comment =
+      if handler[:confidence] && handler.confidence != :high,
+        do: "  # confidence: #{handler.confidence}\n",
+        else: ""
+
+    next_lines =
+      case handler.next do
+        [] ->
+          "    # TODO: no field changes detected\n    next :state, :state"
+
+        pairs ->
+          pairs
+          |> Enum.map_join("\n", fn {field, value} ->
+            "    next :#{field}, #{inspect(value)}"
+          end)
+      end
+
+    guard_line =
+      case handler.guard do
+        [] ->
+          ""
+
+        pairs ->
+          conds =
+            pairs
+            |> Enum.map_join(" and ", fn {field, value} ->
+              "#{field} == #{inspect(value)}"
+            end)
+
+          "    guard e(#{conds})\n"
+      end
+
+    """
+    #{confidence_comment}  action :#{handler.name} do
+    #{guard_line}#{next_lines}
+      end\
+    """
+  end
+
   # --- Variable emission ---
 
   defp emit_variables([], _defaults), do: nil
