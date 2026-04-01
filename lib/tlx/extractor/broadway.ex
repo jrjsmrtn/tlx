@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: MIT
 
 defmodule TLX.Extractor.Broadway do
+  @dialyzer {:nowarn_function, extract_from_source: 1}
   @moduledoc """
   Extracts pipeline topology from Broadway modules via source AST.
 

@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: MIT
 
 defmodule TLX.Extractor.LiveView do
+  @dialyzer {:nowarn_function, extract_from_source: 1}
   @moduledoc """
   Extracts LiveView structure from Elixir source code.
 

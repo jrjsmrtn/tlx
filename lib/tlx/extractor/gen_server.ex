@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: MIT
 
 defmodule TLX.Extractor.GenServer do
+  @dialyzer {:nowarn_function, extract_from_source: 1}
   @moduledoc """
   Extracts GenServer structure from Elixir source code.
 

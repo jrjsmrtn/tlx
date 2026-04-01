@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: MIT
 
 defmodule TLX.Extractor.GenStatem do
+  @dialyzer {:nowarn_function, extract_from_source: 1}
   @moduledoc """
   Extracts state machine structure from gen_statem/GenStateMachine source code.
 
