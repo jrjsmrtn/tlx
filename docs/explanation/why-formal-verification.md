@@ -64,3 +64,4 @@ And because TLX is an Elixir DSL, you don't need to learn TLA+ syntax. You write
 - [How to model a GenServer](../howto/model-a-genserver.md) — your first spec in 5 minutes
 - [How to find race conditions](../howto/find-race-conditions.md) — the "wow" moment
 - [TLX vs writing TLA+ directly](tlx-vs-raw-tla.md) — when TLX is enough and when it isn't
+- [How TLX works](internals.md) — architecture and internals for contributors

@@ -17,7 +17,7 @@ This project was built using [AI-Assisted Project Orchestration](https://github.
 
 These skills are based on software engineering best practices and are useful with or without coding assistants.
 
-For development practices (testing, versioning, git workflow, quality gates, agent skills, formal spec workflow), see [ADR-0002](docs/adr/0002-adopt-development-best-practices.md).
+For development practices (testing, versioning, git workflow, quality gates, agent skills, formal spec workflow), see [ADR-0002](docs/adr/0002-adopt-development-best-practices.md). For how TLX works internally (pipeline, IR, Spark DSL, emitters, simulator), see [Internals](docs/explanation/internals.md).
 
 ## Documentation Tone
 

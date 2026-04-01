@@ -103,3 +103,4 @@ When that happens, you already know the concepts — TLX taught you states, acti
 - [How to model a GenServer](../howto/model-a-genserver.md) — practical first spec
 - [TLA+ Home Page](https://lamport.azurewebsites.net/tla/tla.html) — Leslie Lamport's reference
 - [Learn TLA+](https://learntla.com/) — Hillel Wayne's community learning resource
+- [How TLX works](internals.md) — architecture and internals for contributors

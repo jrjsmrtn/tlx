@@ -110,3 +110,4 @@ Each layer catches a different class of bugs. Together, they're comprehensive.
 - [Why formal verification matters](why-formal-verification.md) — the bigger picture
 - [How to find race conditions](../howto/find-race-conditions.md) — see TLX catch a real bug
 - [How to model a GenServer](../howto/model-a-genserver.md) — your first spec
+- [How TLX works](internals.md) — architecture and internals for contributors
