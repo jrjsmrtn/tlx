@@ -34,6 +34,9 @@ tla2tools.jar
 credentials.json
 secrets.yaml
 
+# Generated images
+examples/*.png
+
 # Claude Code local files
 CLAUDE.local.md
 
