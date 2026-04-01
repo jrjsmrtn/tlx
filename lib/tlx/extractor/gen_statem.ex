@@ -197,14 +197,7 @@ defmodule TLX.Extractor.GenStatem do
         {transitions, warnings ++ ["Catch-all state clause skipped (line #{line})"]}
 
       true ->
-        new_transitions =
-          for event <- events,
-              from <- from_states,
-              {to, confidence} <- to_states do
-            resolved_to = if to == :__keep_state__, do: from, else: to
-            %{event: event, from: from, to: resolved_to, guard: nil, confidence: confidence}
-          end
-
+        new_transitions = build_transitions(events, from_states, to_states)
         {transitions ++ new_transitions, warnings ++ body_warnings}
     end
   end
@@ -228,27 +221,36 @@ defmodule TLX.Extractor.GenStatem do
       |> Enum.uniq()
 
     defs
-    |> Enum.reduce({[], []}, fn def_node, {transitions, warnings} ->
-      case def_node do
-        {:def, meta, [{:when, _, [{name, _, [_type, event_ast, _data]}, guard]}, [do: body]]} ->
-          if name in state_fn_names do
-            extract_sf_clause(name, event_ast, guard, body, meta, transitions, warnings)
-          else
-            {transitions, warnings}
-          end
-
-        {:def, meta, [{name, _, [_type, event_ast, _data]}, [do: body]]} ->
-          if name in state_fn_names do
-            extract_sf_clause(name, event_ast, nil, body, meta, transitions, warnings)
-          else
-            {transitions, warnings}
-          end
-
-        _ ->
-          {transitions, warnings}
-      end
+    |> Enum.reduce({[], []}, fn def_node, acc ->
+      reduce_state_fn(def_node, state_fn_names, acc)
     end)
   end
+
+  defp reduce_state_fn(
+         {:def, meta, [{:when, _, [{name, _, [_type, event_ast, _data]}, guard]}, [do: body]]},
+         state_fn_names,
+         {transitions, warnings}
+       ) do
+    if name in state_fn_names do
+      extract_sf_clause(name, event_ast, guard, body, meta, transitions, warnings)
+    else
+      {transitions, warnings}
+    end
+  end
+
+  defp reduce_state_fn(
+         {:def, meta, [{name, _, [_type, event_ast, _data]}, [do: body]]},
+         state_fn_names,
+         {transitions, warnings}
+       ) do
+    if name in state_fn_names do
+      extract_sf_clause(name, event_ast, nil, body, meta, transitions, warnings)
+    else
+      {transitions, warnings}
+    end
+  end
+
+  defp reduce_state_fn(_, _, acc), do: acc
 
   defp extract_sf_clause(state_name, event_ast, guard, body, meta, transitions, warnings) do
     line = meta[:line] || "?"
@@ -260,14 +262,17 @@ defmodule TLX.Extractor.GenStatem do
         {transitions, warnings ++ ["Catch-all event clause skipped (line #{line})"]}
 
       events ->
-        new_transitions =
-          for event <- events,
-              {to, confidence} <- to_states do
-            resolved_to = if to == :__keep_state__, do: state_name, else: to
-            %{event: event, from: state_name, to: resolved_to, guard: nil, confidence: confidence}
-          end
-
+        new_transitions = build_transitions(events, [state_name], to_states)
         {transitions ++ new_transitions, warnings ++ body_warnings}
+    end
+  end
+
+  defp build_transitions(events, from_states, to_states) do
+    for event <- events,
+        from <- from_states,
+        {to, confidence} <- to_states do
+      resolved_to = if to == :__keep_state__, do: from, else: to
+      %{event: event, from: from, to: resolved_to, guard: nil, confidence: confidence}
     end
   end
 
@@ -431,11 +436,11 @@ defmodule TLX.Extractor.GenStatem do
   # Tuple event like {:create, params} — extract the first element
   defp extract_atom_from_ast({name, _}) when is_atom(name) and name != :__block__ do
     # 2-element tuple: {atom, _} — use the atom as the event name
-    if is_event_tuple?(name), do: {:ok, name}, else: :not_atom
+    if event_tuple?(name), do: {:ok, name}, else: :not_atom
   end
 
   defp extract_atom_from_ast({:{}, _, [name | _]}) when is_atom(name) do
-    if is_event_tuple?(name), do: {:ok, name}, else: :not_atom
+    if event_tuple?(name), do: {:ok, name}, else: :not_atom
   end
 
   # Variable reference — not an atom
@@ -444,7 +449,7 @@ defmodule TLX.Extractor.GenStatem do
   defp extract_atom_from_ast(_), do: :not_atom
 
   # Event tuples start with lowercase atoms (not AST node types)
-  defp is_event_tuple?(name) do
+  defp event_tuple?(name) do
     name_str = Atom.to_string(name)
     first_char = String.first(name_str)
     first_char == String.downcase(first_char) and first_char != "_"

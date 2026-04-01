@@ -100,38 +100,35 @@ defmodule TLX.Patterns.OTP.GenServer do
   end
 
   defp validate_actions!(actions, field_names, kind) do
-    Enum.each(actions, fn {name, opts} ->
-      unless is_atom(name) do
+    Enum.each(actions, &validate_single_action!(&1, field_names, kind))
+  end
+
+  defp validate_single_action!({name, opts}, field_names, kind) do
+    unless is_atom(name) do
+      raise CompileError,
+        description:
+          "TLX.Patterns.OTP.GenServer: #{kind} name must be an atom, got: #{inspect(name)}"
+    end
+
+    next = Keyword.get(opts, :next)
+
+    unless next && is_list(next) && next != [] do
+      raise CompileError,
+        description:
+          "TLX.Patterns.OTP.GenServer: #{kind} #{inspect(name)} must have a non-empty next: keyword list"
+    end
+
+    validate_field_refs!(next, field_names, kind, name, "next:")
+    validate_field_refs!(Keyword.get(opts, :guard, []), field_names, kind, name, "guard:")
+  end
+
+  defp validate_field_refs!(pairs, field_names, kind, action_name, context) do
+    Enum.each(pairs, fn {field, _val} ->
+      unless field in field_names do
         raise CompileError,
           description:
-            "TLX.Patterns.OTP.GenServer: #{kind} name must be an atom, got: #{inspect(name)}"
+            "TLX.Patterns.OTP.GenServer: #{kind} #{inspect(action_name)} references unknown field #{inspect(field)} in #{context}"
       end
-
-      next = Keyword.get(opts, :next)
-
-      unless next && is_list(next) && next != [] do
-        raise CompileError,
-          description:
-            "TLX.Patterns.OTP.GenServer: #{kind} #{inspect(name)} must have a non-empty next: keyword list"
-      end
-
-      Enum.each(next, fn {field, _val} ->
-        unless field in field_names do
-          raise CompileError,
-            description:
-              "TLX.Patterns.OTP.GenServer: #{kind} #{inspect(name)} references unknown field #{inspect(field)} in next:"
-        end
-      end)
-
-      guard = Keyword.get(opts, :guard, [])
-
-      Enum.each(guard, fn {field, _val} ->
-        unless field in field_names do
-          raise CompileError,
-            description:
-              "TLX.Patterns.OTP.GenServer: #{kind} #{inspect(name)} references unknown field #{inspect(field)} in guard:"
-        end
-      end)
     end)
   end
 
@@ -193,34 +190,35 @@ defmodule TLX.Patterns.OTP.GenServer do
     |> Enum.filter(fn {_name, default} ->
       is_atom(default) and not is_boolean(default)
     end)
-    |> Enum.map(fn {name, default} ->
-      # Collect all observed values for this field
-      values =
-        all_actions
-        |> Enum.flat_map(fn {_action_name, opts} ->
-          next = Keyword.get(opts, :next, [])
+    |> Enum.map(&gen_field_invariant(&1, all_actions))
+  end
 
-          case Keyword.get(next, name) do
-            nil -> []
-            val when is_atom(val) and not is_boolean(val) -> [val]
-            _ -> []
-          end
-        end)
-        |> Kernel.++([default])
-        |> Enum.uniq()
-        |> Enum.sort()
+  defp gen_field_invariant({name, default}, all_actions) do
+    values = collect_field_values(name, default, all_actions)
+    invariant_name = :"valid_#{name}"
+    var = Macro.var(name, nil)
 
-      invariant_name = :"valid_#{name}"
-      var = Macro.var(name, nil)
+    expr =
+      values
+      |> Enum.map(fn v -> quote(do: unquote(var) == unquote(v)) end)
+      |> Enum.reduce(fn right, left -> quote(do: unquote(left) or unquote(right)) end)
 
-      expr =
-        values
-        |> Enum.map(fn v -> quote(do: unquote(var) == unquote(v)) end)
-        |> Enum.reduce(fn right, left -> quote(do: unquote(left) or unquote(right)) end)
+    quote do
+      invariant(unquote(invariant_name), e(unquote(expr)))
+    end
+  end
 
-      quote do
-        invariant(unquote(invariant_name), e(unquote(expr)))
+  defp collect_field_values(name, default, all_actions) do
+    all_actions
+    |> Enum.flat_map(fn {_action_name, opts} ->
+      case opts |> Keyword.get(:next, []) |> Keyword.get(name) do
+        nil -> []
+        val when is_atom(val) and not is_boolean(val) -> [val]
+        _ -> []
       end
     end)
+    |> Kernel.++([default])
+    |> Enum.uniq()
+    |> Enum.sort()
   end
 end

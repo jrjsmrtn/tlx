@@ -5,6 +5,7 @@ defmodule TLX.Patterns.OTP.StateMachineTest do
   use ExUnit.Case, async: true
 
   alias Spark.Dsl.Extension
+  alias TLX.Emitter.TLA
 
   # --- Test specs defined at module level ---
 
@@ -132,7 +133,7 @@ defmodule TLX.Patterns.OTP.StateMachineTest do
 
   describe "TLA+ emission" do
     test "emits valid TLA+ for simple spec" do
-      output = TLX.Emitter.TLA.emit(SimpleSwitch)
+      output = TLA.emit(SimpleSwitch)
 
       assert output =~ "VARIABLES state"
       assert output =~ "toggle_on"
@@ -141,7 +142,7 @@ defmodule TLX.Patterns.OTP.StateMachineTest do
     end
 
     test "emits valid TLA+ for multi-source spec" do
-      output = TLX.Emitter.TLA.emit(MultiSource)
+      output = TLA.emit(MultiSource)
 
       assert output =~ "VARIABLES state"
       assert output =~ "reset"

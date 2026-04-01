@@ -5,6 +5,7 @@ defmodule TLX.Patterns.OTP.GenServerTest do
   use ExUnit.Case, async: true
 
   alias Spark.Dsl.Extension
+  alias TLX.Emitter.TLA
 
   # --- Test specs ---
 
@@ -161,7 +162,7 @@ defmodule TLX.Patterns.OTP.GenServerTest do
 
   describe "TLA+ emission" do
     test "emits valid TLA+ for multi-field spec" do
-      output = TLX.Emitter.TLA.emit(MultiField)
+      output = TLA.emit(MultiField)
       assert output =~ "VARIABLES"
       assert output =~ "status"
       assert output =~ "deps_met"

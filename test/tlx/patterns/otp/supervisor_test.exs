@@ -5,6 +5,7 @@ defmodule TLX.Patterns.OTP.SupervisorTest do
   use ExUnit.Case, async: true
 
   alias Spark.Dsl.Extension
+  alias TLX.Emitter.TLA
 
   # --- Test specs ---
 
@@ -176,7 +177,7 @@ defmodule TLX.Patterns.OTP.SupervisorTest do
 
   describe "TLA+ emission" do
     test "emits valid TLA+ for one_for_one" do
-      output = TLX.Emitter.TLA.emit(OneForOne)
+      output = TLA.emit(OneForOne)
       assert output =~ "VARIABLES"
       assert output =~ "db_status"
       assert output =~ "cache_status"

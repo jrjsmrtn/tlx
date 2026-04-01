@@ -142,7 +142,7 @@ defmodule TLX.Extractor.GenStatemTest do
       # Only the specific clause is extracted, catch-all is skipped
       assert length(result.transitions) == 1
       assert result.transitions |> hd() |> Map.get(:event) == :start
-      assert length(result.warnings) >= 1
+      assert result.warnings != []
       assert Enum.any?(result.warnings, &String.contains?(&1, "Catch-all"))
     end
 
