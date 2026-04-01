@@ -200,11 +200,13 @@ Sprint 16 — Proper parsers and AST-based code gen:
 
 ## Proposed Sprints
 
-| Sprint | Phase         | Plan                                                        |
-| ------ | ------------- | ----------------------------------------------------------- |
-| 26     | Visualization | Mermaid emitter — diagrams render on GitHub/hexdocs         |
-| 27     | Visualization | PlantUML emitter — enterprise diagram tooling               |
-| 28     | Visualization | D2 emitter — modern declarative diagrams                    |
-| 29     | Integration   | `mix tlx.gen.from_ash` — extract spec from Ash.StateMachine |
-| 30     | Integration   | `mix tlx.gen.from_genserver` — extract spec from GenServer  |
-| 31     | Integration   | `mix tlx.gen.from_live_view` — extract spec from LiveView   |
+| Sprint | Phase         | Plan                                                                             |
+| ------ | ------------- | -------------------------------------------------------------------------------- |
+| 26     | Visualization | Mermaid emitter — diagrams render on GitHub/hexdocs                              |
+| 27     | Visualization | PlantUML emitter — enterprise diagram tooling                                    |
+| 28     | Visualization | D2 emitter — modern declarative diagrams                                         |
+| 29     | Integration   | `mix tlx.gen.from_ash` — extract spec from Ash.StateMachine                      |
+| 30     | Integration   | `mix tlx.gen.from_genserver` — extract spec from GenServer                       |
+| 31     | Integration   | `mix tlx.gen.from_live_view` — extract spec from LiveView                        |
+| 32     | Integration   | `mix tlx.gen.from_gen_statem` — extract from Erlang gen_statem (via :beam_lib)   |
+| 33     | Integration   | `mix tlx.gen.from_gen_fsm` — extract from Erlang gen_fsm (legacy, via :beam_lib) |
