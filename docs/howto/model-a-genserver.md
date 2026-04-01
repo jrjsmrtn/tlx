@@ -2,6 +2,8 @@
 
 You have a GenServer with states and transitions. You think it's correct. But is it? Can an order be shipped before it's paid? Can a job be dispatched twice? TLX lets you prove it — or find the bug.
 
+> **Shortcut**: If you already have a GenServer implementation, try `mix tlx.gen.from_gen_server MyApp.MyServer` to auto-generate a skeleton. See [How to Extract from OTP Modules](extract-from-otp.md). This guide shows how to write specs by hand.
+
 ## The GenServer
 
 Here's a typical order processing GenServer:
