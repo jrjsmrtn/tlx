@@ -170,6 +170,7 @@ Sprint 16 — Proper parsers and AST-based code gen:
 
 | Sprint | Phase                 | Version | Summary                                              |
 | ------ | --------------------- | ------- | ---------------------------------------------------- |
+| 42     | Extractors            | v0.3.17 | Broadway extractor — pipeline topology via AST       |
 | 41     | Extractors            | v0.3.16 | Reactor extractor — step DAG via Spark introspection |
 | 38-40  | Skills                | v0.3.15 | otp-audit, visualize, spec-drift skills              |
 | 37     | Skill                 | v0.3.14 | formal-spec skill enrichment workflow                |
@@ -214,6 +215,4 @@ Sprint 16 — Proper parsers and AST-based code gen:
 
 ## Proposed Sprints
 
-| Sprint | Phase      | Plan                                                                      |
-| ------ | ---------- | ------------------------------------------------------------------------- |
-| 42     | Extractors | Broadway extractor — Spark introspection for pipeline topology + batching |
+No proposed sprints. All planned work is complete.

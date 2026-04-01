@@ -4,7 +4,7 @@
 defmodule TLX.MixProject do
   use Mix.Project
 
-  @version "0.3.16"
+  @version "0.3.17"
 
   def project do
     [
@@ -45,7 +45,8 @@ defmodule TLX.MixProject do
       {:junit_formatter, "~> 3.4", only: :test, runtime: false},
       {:usage_rules, "~> 1.2", only: :dev, runtime: false},
       {:ash, "~> 3.0", only: [:dev, :test], runtime: false},
-      {:ash_state_machine, "~> 0.2", only: [:dev, :test], runtime: false}
+      {:ash_state_machine, "~> 0.2", only: [:dev, :test], runtime: false},
+      {:broadway, "~> 1.0", only: [:dev, :test], runtime: false}
     ]
   end
 

@@ -222,6 +222,81 @@ defmodule TLX.Importer.Codegen do
   end
 
   @doc """
+  Generate a TLX spec skeleton from a Broadway pipeline.
+
+  Accepts an extraction result map from `TLX.Extractor.Broadway` with
+  `:producers`, `:processors`, `:batchers`.
+  """
+  def from_broadway(spec_name, source_module, result) do
+    processors = result[:processors] || []
+    batchers = result[:batchers] || []
+
+    variables =
+      ["  # Pipeline stage variables"] ++
+        Enum.map(processors, fn p ->
+          "  variable :#{p.name}_in_flight, 0"
+        end) ++
+        Enum.map(batchers, fn b ->
+          "  variable :#{b.name}_batch_count, 0"
+        end)
+
+    processor_actions =
+      Enum.map(processors, fn p ->
+        """
+          action :#{p.name}_process do
+            guard e(#{p.name}_in_flight < #{p.concurrency})
+            next :#{p.name}_in_flight, e(#{p.name}_in_flight + 1)
+          end
+
+          action :#{p.name}_complete do
+            guard e(#{p.name}_in_flight > 0)
+            next :#{p.name}_in_flight, e(#{p.name}_in_flight - 1)
+          end\
+        """
+      end)
+
+    batcher_actions =
+      Enum.map(batchers, fn b ->
+        """
+          action :#{b.name}_accumulate do
+            guard e(#{b.name}_batch_count < #{b.batch_size})
+            next :#{b.name}_batch_count, e(#{b.name}_batch_count + 1)
+          end
+
+          action :#{b.name}_flush do
+            guard e(#{b.name}_batch_count > 0)
+            next :#{b.name}_batch_count, 0
+          end\
+        """
+      end)
+
+    invariants =
+      Enum.map(processors, fn p ->
+        "  invariant :#{p.name}_bounded, e(#{p.name}_in_flight >= 0 and #{p.name}_in_flight <= #{p.concurrency})"
+      end) ++
+        Enum.map(batchers, fn b ->
+          "  invariant :#{b.name}_bounded, e(#{b.name}_batch_count >= 0 and #{b.name}_batch_count <= #{b.batch_size})"
+        end)
+
+    source = """
+    import TLX
+
+    # Generated from #{inspect(source_module)}
+    # Broadway pipeline: #{length(processors)} processors, #{length(batchers)} batchers
+
+    defspec #{spec_name}Spec do
+    #{Enum.join(variables, "\n")}
+
+    #{Enum.join(processor_actions ++ batcher_actions, "\n\n")}
+
+    #{Enum.join(invariants, "\n")}
+    end
+    """
+
+    format_source(source)
+  end
+
+  @doc """
   Generate a TLX spec skeleton from LiveView callback info.
 
   Accepts an extraction result map from `TLX.Extractor.LiveView` with
