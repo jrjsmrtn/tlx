@@ -215,4 +215,6 @@ Sprint 16 — Proper parsers and AST-based code gen:
 
 ## Proposed Sprints
 
-No proposed sprints. All planned work is complete.
+| Sprint | Phase         | Plan                                                                    |
+| ------ | ------------- | ----------------------------------------------------------------------- |
+| 43     | Documentation | Diátaxis docs for v0.4.0 — tutorials, how-tos, explanations, references |
