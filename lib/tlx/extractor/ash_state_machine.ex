@@ -58,8 +58,12 @@ defmodule TLX.Extractor.AshStateMachine do
     end
   end
 
+  # Use apply/3 for all AshStateMachine.Info calls to avoid dialyzer
+  # warnings — ash_state_machine is an optional dev/test dependency.
+  @info_mod AshStateMachine.Info
+
   defp get_initial_states(module) do
-    case AshStateMachine.Info.state_machine_initial_states(module) do
+    case apply(@info_mod, :state_machine_initial_states, [module]) do
       {:ok, states} when is_list(states) and states != [] -> {:ok, states}
       _ -> {:error, "Module #{inspect(module)} does not use AshStateMachine"}
     end
@@ -68,11 +72,11 @@ defmodule TLX.Extractor.AshStateMachine do
   end
 
   defp get_all_states(module) do
-    AshStateMachine.Info.state_machine_all_states(module)
+    apply(@info_mod, :state_machine_all_states, [module])
   end
 
   defp get_default_initial(module, initial_states) do
-    case AshStateMachine.Info.state_machine_default_initial_state(module) do
+    case apply(@info_mod, :state_machine_default_initial_state, [module]) do
       {:ok, state} when is_atom(state) -> state
       _ -> hd(initial_states)
     end
@@ -82,12 +86,12 @@ defmodule TLX.Extractor.AshStateMachine do
     deprecated = get_deprecated_states(module)
 
     module
-    |> AshStateMachine.Info.state_machine_transitions()
+    |> then(&apply(@info_mod, :state_machine_transitions, [&1]))
     |> Enum.flat_map(&expand_transition(&1, all_states, deprecated))
   end
 
   defp get_deprecated_states(module) do
-    case AshStateMachine.Info.state_machine_deprecated_states(module) do
+    case apply(@info_mod, :state_machine_deprecated_states, [module]) do
       {:ok, states} -> states
       _ -> []
     end

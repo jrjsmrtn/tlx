@@ -59,8 +59,9 @@ defmodule TLX.Extractor.Reactor do
     end
   end
 
+  # Use apply/3 to avoid dialyzer warnings — reactor is an optional dev/test dependency.
   defp get_reactor_struct(module) do
-    {:ok, Reactor.Info.to_struct!(module)}
+    {:ok, apply(Reactor.Info, :to_struct!, [module])}
   rescue
     e -> {:error, "Module #{inspect(module)} is not a Reactor: #{Exception.message(e)}"}
   end
