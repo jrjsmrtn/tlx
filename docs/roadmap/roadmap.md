@@ -49,7 +49,7 @@ Enable Elixir developers to write formally verifiable TLA+/PlusCal specification
 
 - [x] Comprehensive test suite
 - [x] Diátaxis documentation (tutorials, how-to, reference, explanation)
-- [ ] Hex.pm publication (package metadata ready, publish when public)
+- [x] Hex.pm publication (package metadata ready, publish when public)
 - [x] Real-world example specs (mutex, producer-consumer)
 
 ### Phase 5: Semantic Intelligence (proposed)
@@ -199,4 +199,6 @@ Sprint 16 — Proper parsers and AST-based code gen:
 
 ## Proposed Sprints
 
-None. All planned sprints are complete.
+| Sprint | Phase         | Plan                                                 |
+| ------ | ------------- | ---------------------------------------------------- |
+| 25     | Visualization | GraphViz emitter — state machine diagrams from specs |
