@@ -47,33 +47,30 @@ defmodule TLX.Importer.Codegen do
   @doc """
   Generate a TLX spec skeleton from GenStateMachine callback info.
 
-  Accepts:
+  Accepts either:
+    * An extraction result map from `TLX.Extractor.GenStatem` (with `:transitions`, `:initial`, etc.)
+    * A legacy list of `%{event, from_state}` maps (backward compatibility)
+
+  Additional parameters:
     * `spec_name` — string module name
     * `source_module` — the inspected module name (for comments)
-    * `callbacks` — list of `%{event, from_state}` maps
   """
-  def from_state_machine(spec_name, source_module, callbacks) do
-    states = callbacks |> Enum.map(& &1[:from_state]) |> Enum.uniq() |> Enum.reject(&is_nil/1)
+  def from_state_machine(spec_name, source_module, %{transitions: transitions} = result) do
+    state_default = if result[:initial], do: ":#{result.initial}", else: ":initial"
 
-    state_default =
-      case states do
-        [first | _] -> ":#{first}"
-        [] -> ":initial"
-      end
+    grouped =
+      transitions
+      |> Enum.group_by(& &1.event)
 
     actions =
-      case callbacks do
+      case Map.keys(grouped) do
         [] ->
           "  # No callbacks detected — add actions manually\n"
 
-        cbs ->
-          Enum.map_join(cbs, "\n\n", fn cb ->
-            """
-              action :#{cb.event} do
-                await e(state == :#{cb.from_state})
-                next :state, :#{cb.event}_done
-              end\
-            """
+        _ ->
+          grouped
+          |> Enum.map_join("\n\n", fn {event, transitions_for_event} ->
+            emit_action_from_transitions(event, transitions_for_event)
           end)
       end
 
@@ -97,6 +94,62 @@ defmodule TLX.Importer.Codegen do
     """
 
     format_source(source)
+  end
+
+  # Legacy format: list of %{event, from_state} maps
+  def from_state_machine(spec_name, source_module, callbacks) when is_list(callbacks) do
+    transitions =
+      Enum.map(callbacks, fn cb ->
+        %{
+          event: String.to_atom("#{cb.event}"),
+          from: String.to_atom("#{cb.from_state}"),
+          to: String.to_atom("#{cb.event}_done"),
+          confidence: :low
+        }
+      end)
+
+    from_state_machine(spec_name, source_module, %{
+      transitions: transitions,
+      initial: nil
+    })
+  end
+
+  defp emit_action_from_transitions(event, [single]) do
+    confidence_comment =
+      if single[:confidence] && single.confidence != :high,
+        do: "  # confidence: #{single.confidence}\n",
+        else: ""
+
+    """
+    #{confidence_comment}  action :#{event} do
+        guard e(state == :#{single.from})
+        next :state, :#{single.to}
+      end\
+    """
+  end
+
+  defp emit_action_from_transitions(event, transitions) do
+    branches =
+      transitions
+      |> Enum.map_join("\n\n", fn t ->
+        confidence_comment =
+          if t[:confidence] && t.confidence != :high,
+            do: "    # confidence: #{t.confidence}\n",
+            else: ""
+
+        """
+        #{confidence_comment}    branch :from_#{t.from} do
+              guard e(state == :#{t.from})
+              next :state, :#{t.to}
+            end\
+        """
+      end)
+
+    """
+      action :#{event} do
+    #{branches}
+      end\
+    """
   end
 
   # --- Variable emission ---

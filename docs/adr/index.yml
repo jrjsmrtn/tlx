@@ -52,8 +52,7 @@ architectural:
     title: OTP Patterns as Reusable Verification Templates
     status: Accepted
 
-proposed:
   - id: 12
     file: 0012-otp-extraction-strategy.md
     title: OTP Extraction Strategy
-    status: Proposed
+    status: Accepted

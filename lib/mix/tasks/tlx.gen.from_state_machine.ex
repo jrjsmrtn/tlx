@@ -9,19 +9,27 @@ defmodule Mix.Tasks.Tlx.Gen.FromStateMachine do
 
       mix tlx.gen.from_state_machine MyApp.MyStateMachine
       mix tlx.gen.from_state_machine MyApp.MyStateMachine --output my_spec.ex
+      mix tlx.gen.from_state_machine MyApp.MyStateMachine --format codegen
 
-  Introspects the module's callbacks to extract states, events, and
-  transitions. Generates a skeleton — human completes invariants and properties.
+  Parses the module's source code to extract states, events, and
+  transitions via AST analysis. Generates either a `TLX.Patterns.OTP.StateMachine`
+  module (default) or a `defspec` skeleton via codegen.
+
+  ## Options
+
+    * `--output`, `-o` — write to a file instead of stdout
+    * `--format`, `-f` — output format: `pattern` (default) or `codegen`
   """
 
   use Mix.Task
 
+  alias TLX.Extractor.GenStatem
   alias TLX.Importer.Codegen
 
   @shortdoc "Generate a TLX spec skeleton from a GenStateMachine module"
 
-  @switches [output: :string]
-  @aliases [o: :output]
+  @switches [output: :string, format: :string]
+  @aliases [o: :output, f: :format]
 
   @impl Mix.Task
   def run(args) do
@@ -32,7 +40,8 @@ defmodule Mix.Tasks.Tlx.Gen.FromStateMachine do
     case argv do
       [module_string] ->
         module = Module.concat([module_string])
-        skeleton = generate(module)
+        format = opts[:format] || "pattern"
+        skeleton = generate(module, format)
 
         case opts[:output] do
           nil ->
@@ -44,7 +53,9 @@ defmodule Mix.Tasks.Tlx.Gen.FromStateMachine do
         end
 
       [] ->
-        Mix.raise("Usage: mix tlx.gen.from_state_machine MyApp.MyStateMachine [--output file.ex]")
+        Mix.raise(
+          "Usage: mix tlx.gen.from_state_machine MyApp.MyStateMachine [--output file.ex] [--format pattern|codegen]"
+        )
 
       _ ->
         Mix.raise("Expected exactly one module argument")
@@ -52,65 +63,96 @@ defmodule Mix.Tasks.Tlx.Gen.FromStateMachine do
   end
 
   @doc false
-  def generate(module) do
+  def generate(module, format \\ "pattern") do
     spec_name = module |> Module.split() |> List.last()
-    callbacks = extract_callbacks(module)
-    Codegen.from_state_machine(spec_name, module, callbacks)
-  end
 
-  defp extract_callbacks(module) do
-    if function_exported?(module, :__info__, 1) do
-      module.__info__(:functions)
-      |> Enum.filter(fn {name, _arity} ->
-        name_str = Atom.to_string(name)
-        String.starts_with?(name_str, "handle_event")
-      end)
-      |> case do
-        [] -> extract_from_source(module)
-        fns -> extract_from_beam(module, fns)
-      end
-    else
-      Mix.raise("Module #{inspect(module)} is not available. Did you compile it?")
-    end
-  end
-
-  defp extract_from_beam(_module, _fns) do
-    # GenStateMachine uses handle_event/4 callbacks
-    # We can't easily introspect pattern-match clauses from beam
-    # Fall back to source analysis
-    []
-  end
-
-  defp extract_from_source(module) do
     case find_source(module) do
-      nil -> []
-      path -> parse_source(path)
+      nil ->
+        Mix.raise("Cannot find source for #{inspect(module)}. Is it compiled?")
+
+      path ->
+        case GenStatem.extract_from_file(path) do
+          {:ok, result} ->
+            print_warnings(result.warnings)
+            format_output(spec_name, module, result, format)
+
+          {:error, reason} ->
+            Mix.raise("Extraction failed: #{reason}")
+        end
     end
+  end
+
+  defp format_output(spec_name, module, result, "pattern") do
+    all_high? = Enum.all?(result.transitions, &(&1.confidence == :high))
+
+    if all_high? and result.initial != nil and result.transitions != [] do
+      generate_pattern_module(spec_name, result)
+    else
+      Mix.shell().info(
+        "Note: some transitions have low confidence — falling back to codegen format"
+      )
+
+      Codegen.from_state_machine(spec_name, module, result)
+    end
+  end
+
+  defp format_output(spec_name, module, result, "codegen") do
+    Codegen.from_state_machine(spec_name, module, result)
+  end
+
+  defp format_output(_, _, _, format) do
+    Mix.raise("Unknown format: #{format}. Use 'pattern' or 'codegen'.")
+  end
+
+  defp generate_pattern_module(spec_name, result) do
+    events_kw =
+      result.transitions
+      |> Enum.map_join(",\n      ", fn t ->
+        "#{t.event}: [from: :#{t.from}, to: :#{t.to}]"
+      end)
+
+    source = """
+    defmodule #{spec_name}Spec do
+      use TLX.Patterns.OTP.StateMachine,
+        states: #{inspect(result.states)},
+        initial: :#{result.initial},
+        events: [
+          #{events_kw}
+        ]
+
+      # TODO: Add temporal properties
+      # property :my_property, always(eventually(e(state == :some_state)))
+    end
+    """
+
+    format_source(source)
   end
 
   defp find_source(module) do
-    case module.module_info(:compile)[:source] do
-      nil -> nil
-      source -> List.to_string(source)
+    if function_exported?(module, :module_info, 1) do
+      case module.module_info(:compile)[:source] do
+        nil -> nil
+        source -> List.to_string(source)
+      end
+    else
+      Mix.raise("Module #{inspect(module)} is not available. Did you compile it?")
     end
   rescue
     _ -> nil
   end
 
-  defp parse_source(path) do
-    case File.read(path) do
-      {:ok, content} ->
-        # Extract handle_event clauses with pattern matching
-        Regex.scan(
-          ~r/def handle_event\(:(?:cast|call|info|internal),\s*:(\w+),\s*:(\w+)/,
-          content
-        )
-        |> Enum.map_join("\n", fn
-          [_, event, state] -> %{event: event, from_state: state}
-        end)
+  defp print_warnings([]), do: :ok
 
-      _ ->
-        []
-    end
+  defp print_warnings(warnings) do
+    Enum.each(warnings, fn w ->
+      Mix.shell().info("  warning: #{w}")
+    end)
+  end
+
+  defp format_source(source) do
+    Code.format_string!(source, line_length: 98)
+    |> IO.iodata_to_binary()
+  rescue
+    _ -> source
   end
 end
