@@ -1,0 +1,10 @@
+digraph Mutex {
+  rankdir=LR
+  node [shape=circle]
+  cs [shape=circle]
+  idle [shape=doublecircle]
+  waiting [shape=circle]
+  idle -> waiting [label="p1_try"]
+  waiting -> cs [label="p1_enter"]
+  cs -> idle [label="p1_exit"]
+}

@@ -1,0 +1,20 @@
+digraph RaftLeader {
+  rankdir=LR
+  node [shape=circle]
+  candidate [shape=circle]
+  follower [shape=doublecircle]
+  leader [shape=circle]
+  candidate -> leader [label="n1_become_leader"]
+  follower -> candidate [label="n1_start_election", style=dashed]
+  candidate -> candidate [label="n1_start_election", style=dashed]
+  leader -> candidate [label="n1_start_election", style=dashed]
+  follower -> follower [label="n2_get_vote1", style=dashed]
+  candidate -> follower [label="n2_get_vote1", style=dashed]
+  leader -> follower [label="n2_get_vote1", style=dashed]
+  follower -> follower [label="n3_get_vote1", style=dashed]
+  candidate -> follower [label="n3_get_vote1", style=dashed]
+  leader -> follower [label="n3_get_vote1", style=dashed]
+  follower -> follower [label="n1_step_down", style=dashed]
+  candidate -> follower [label="n1_step_down", style=dashed]
+  leader -> follower [label="n1_step_down", style=dashed]
+}

@@ -1,0 +1,15 @@
+digraph TwoPhaseCommit {
+  rankdir=LR
+  node [shape=circle]
+  aborted [shape=circle]
+  committed [shape=circle]
+  prepared [shape=circle]
+  working [shape=doublecircle]
+  working -> prepared [label="p1_vote_commit"]
+  working -> aborted [label="p1_vote_abort"]
+  prepared -> committed [label="p1_commit"]
+  prepared -> aborted [label="p1_abort", style=dashed]
+  working -> aborted [label="p1_abort", style=dashed]
+  aborted -> aborted [label="p1_abort", style=dashed]
+  committed -> aborted [label="p1_abort", style=dashed]
+}
