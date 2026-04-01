@@ -46,3 +46,9 @@ architectural:
     file: 0010-agent-skills-via-usage-rules.md
     title: Distribute Agent Skills via usage_rules
     status: Accepted
+
+proposed:
+  - id: 11
+    file: 0011-otp-patterns-as-verification-templates.md
+    title: OTP Patterns as Reusable Verification Templates
+    status: Proposed
