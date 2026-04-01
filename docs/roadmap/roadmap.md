@@ -170,6 +170,7 @@ Sprint 16 — Proper parsers and AST-based code gen:
 
 | Sprint | Phase                 | Version | Summary                                             |
 | ------ | --------------------- | ------- | --------------------------------------------------- |
+| 26     | Visualization         | v0.3.4  | Mermaid emitter — diagrams in GitHub markdown       |
 | 25     | Visualization         | v0.3.3  | GraphViz DOT emitter, example diagrams              |
 | 24     | Documentation         | v0.3.2  | Internals docs for contributors                     |
 | 23     | Documentation         | v0.3.1  | Sprint index, missing retros, TlaParser subset doc  |
@@ -204,7 +205,6 @@ Ordered by Forge project priority (gen_statem, GenServer, Ash/Phoenix).
 
 | Sprint | Phase         | Plan                                                                           |
 | ------ | ------------- | ------------------------------------------------------------------------------ |
-| 26     | Visualization | Mermaid emitter — diagrams render in GitHub/hexdocs markdown                   |
 | 27     | OTP Patterns  | `TLX.Patterns.OTP.StateMachine` — reusable gen_statem/GenStateMachine template |
 | 28     | Extractors    | gen_statem extractor (via :beam_lib) — Forge: Orchestrator, VMCoordinator      |
 | 29     | OTP Patterns  | `TLX.Patterns.OTP.GenServer` — reusable gen_server verification template       |

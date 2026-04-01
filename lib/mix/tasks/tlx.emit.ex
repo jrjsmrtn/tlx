@@ -13,7 +13,7 @@ defmodule Mix.Tasks.Tlx.Emit do
 
   ## Options
 
-    * `--format` - Output format: `tla` (default), `pluscal-c`, `pluscal-p`, `elixir`, `dot`
+    * `--format` - Output format: `tla` (default), `pluscal-c`, `pluscal-p`, `elixir`, `dot`, `mermaid`
     * `--output` - Write to file instead of stdout
   """
 
@@ -57,11 +57,12 @@ defmodule Mix.Tasks.Tlx.Emit do
   defp emit(module, "elixir"), do: Emitter.Elixir.emit(module)
   defp emit(module, "symbols"), do: Emitter.Symbols.emit(module)
   defp emit(module, "dot"), do: Emitter.Dot.emit(module)
+  defp emit(module, "mermaid"), do: Emitter.Mermaid.emit(module)
 
   defp emit(_module, format),
     do:
       Mix.raise(
-        "Unknown format: #{format}. Use 'tla', 'pluscal-c', 'pluscal-p', 'elixir', or 'dot'."
+        "Unknown format: #{format}. Use 'tla', 'pluscal-c', 'pluscal-p', 'elixir', 'dot', or 'mermaid'."
       )
 
   defp write_file(path, content) do
