@@ -170,6 +170,7 @@ Sprint 16 — Proper parsers and AST-based code gen:
 
 | Sprint | Phase                 | Version | Summary                                             |
 | ------ | --------------------- | ------- | --------------------------------------------------- |
+| 29     | OTP Patterns          | v0.3.6  | GenServer pattern — request/response handler model  |
 | 28     | Extractors            | v0.3.5  | gen_statem AST extractor, ADR-0012 accepted         |
 | 27     | OTP Patterns          | v0.3.4  | StateMachine pattern — reusable gen_statem template |
 | 26     | Visualization         | v0.3.4  | Mermaid emitter — diagrams in GitHub markdown       |
@@ -205,12 +206,11 @@ Sprint 16 — Proper parsers and AST-based code gen:
 
 Ordered by Forge project priority (gen_statem, GenServer, Ash/Phoenix).
 
-| Sprint | Phase         | Plan                                                                     |
-| ------ | ------------- | ------------------------------------------------------------------------ |
-| 29     | OTP Patterns  | `TLX.Patterns.OTP.GenServer` — reusable gen_server verification template |
-| 30     | Extractors    | Elixir GenServer extractor — Forge: 10+ reconcilers, registries          |
-| 31     | OTP Patterns  | `TLX.Patterns.OTP.Supervisor` — restart strategy verification template   |
-| 32     | Visualization | PlantUML emitter — enterprise diagram tooling                            |
-| 33     | Visualization | D2 emitter — modern declarative diagrams                                 |
-| 34     | Extractors    | Elixir adapters: LiveView, Ash.StateMachine → specs                      |
-| 35     | Extractors    | Erlang adapters: gen_server, gen_fsm (legacy, via :beam_lib) → specs     |
+| Sprint | Phase         | Plan                                                                   |
+| ------ | ------------- | ---------------------------------------------------------------------- |
+| 30     | Extractors    | Elixir GenServer extractor — Forge: 10+ reconcilers, registries        |
+| 31     | OTP Patterns  | `TLX.Patterns.OTP.Supervisor` — restart strategy verification template |
+| 32     | Visualization | PlantUML emitter — enterprise diagram tooling                          |
+| 33     | Visualization | D2 emitter — modern declarative diagrams                               |
+| 34     | Extractors    | Elixir adapters: LiveView, Ash.StateMachine → specs                    |
+| 35     | Extractors    | Erlang adapters: gen_server, gen_fsm (legacy, via :beam_lib) → specs   |
