@@ -170,6 +170,7 @@ Sprint 16 — Proper parsers and AST-based code gen:
 
 | Sprint | Phase                 | Version | Summary                                              |
 | ------ | --------------------- | ------- | ---------------------------------------------------- |
+| 43     | Documentation         | v0.4.1  | Diátaxis docs for v0.4.0 features                    |
 | 42     | Extractors            | v0.3.17 | Broadway extractor — pipeline topology via AST       |
 | 41     | Extractors            | v0.3.16 | Reactor extractor — step DAG via Spark introspection |
 | 38-40  | Skills                | v0.3.15 | spec-audit, visualize, spec-drift skills             |
@@ -215,6 +216,5 @@ Sprint 16 — Proper parsers and AST-based code gen:
 
 ## Proposed Sprints
 
-| Sprint | Phase         | Plan                                                                    |
-| ------ | ------------- | ----------------------------------------------------------------------- |
-| 43     | Documentation | Diátaxis docs for v0.4.0 — tutorials, how-tos, explanations, references |
+| Sprint | Phase | Plan |
+| ------ | ----- | ---- |
