@@ -153,6 +153,25 @@ defmodule TLX.Importer.Codegen do
   end
 
   @doc """
+  Generate a TLX spec skeleton from LiveView callback info.
+
+  Accepts an extraction result map from `TLX.Extractor.LiveView` with
+  `:fields`, `:events`, `:infos`. Delegates to `from_gen_server/3`
+  since both share the multi-field state model.
+  """
+  def from_live_view(spec_name, source_module, result) do
+    # LiveView events map to GenServer calls for codegen purposes
+    adapted = %{
+      fields: result[:fields] || [],
+      calls: result[:events] || [],
+      casts: result[:infos] || [],
+      infos: []
+    }
+
+    from_gen_server(spec_name, source_module, adapted)
+  end
+
+  @doc """
   Generate a TLX spec skeleton from GenServer callback info.
 
   Accepts an extraction result map from `TLX.Extractor.GenServer` with
