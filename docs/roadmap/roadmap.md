@@ -170,6 +170,7 @@ Sprint 16 — Proper parsers and AST-based code gen:
 
 | Sprint | Phase                 | Version | Summary                                              |
 | ------ | --------------------- | ------- | ---------------------------------------------------- |
+| 32     | Visualization         | v0.3.9  | PlantUML state diagram emitter                       |
 | 30     | Extractors            | v0.3.8  | GenServer AST extractor + mix task + codegen         |
 | 31     | OTP Patterns          | v0.3.7  | Supervisor pattern — restart strategies + escalation |
 | 29     | OTP Patterns          | v0.3.6  | GenServer pattern — request/response handler model   |
@@ -210,7 +211,6 @@ Ordered by Forge project priority (gen_statem, GenServer, Ash/Phoenix).
 
 | Sprint | Phase         | Plan                                                                 |
 | ------ | ------------- | -------------------------------------------------------------------- |
-| 32     | Visualization | PlantUML emitter — enterprise diagram tooling                        |
 | 33     | Visualization | D2 emitter — modern declarative diagrams                             |
 | 34     | Extractors    | Elixir adapters: LiveView, Ash.StateMachine → specs                  |
 | 35     | Extractors    | Erlang adapters: gen_server, gen_fsm (legacy, via :beam_lib) → specs |
