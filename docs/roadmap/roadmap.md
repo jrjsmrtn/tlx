@@ -170,6 +170,7 @@ Sprint 16 — Proper parsers and AST-based code gen:
 
 | Sprint | Phase                 | Version | Summary                                              |
 | ------ | --------------------- | ------- | ---------------------------------------------------- |
+| 36     | Extractors            | v0.3.13 | Ash.StateMachine extractor via runtime introspection |
 | 35     | Extractors            | v0.3.12 | Erlang BEAM extractors — gen_server + gen_fsm        |
 | 34     | Extractors            | v0.3.11 | LiveView AST extractor + mix task + codegen          |
 | 33     | Visualization         | v0.3.10 | D2 state diagram emitter                             |
