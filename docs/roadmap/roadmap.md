@@ -211,7 +211,8 @@ Sprint 16 — Proper parsers and AST-based code gen:
 
 ## Proposed Sprints
 
-Ordered by Forge project priority (gen_statem, GenServer, Ash/Phoenix).
-
-| Sprint | Phase | Plan |
-| ------ | ----- | ---- |
+| Sprint | Phase      | Plan                                                                        |
+| ------ | ---------- | --------------------------------------------------------------------------- |
+| 37     | Skill      | formal-spec skill enrichment — skeleton → complete spec workflow            |
+| 38     | Extractors | Reactor extractor — Spark introspection for step DAGs + compensation (saga) |
+| 39     | Extractors | Broadway extractor — Spark introspection for pipeline topology + batching   |
