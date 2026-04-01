@@ -14,20 +14,14 @@ defmodule TLX do
       import TLX
 
       defspec MyCounter do
-        variables do
-          variable :x, default: 0
+        variable :x, 0
+
+        action :increment do
+          guard(e(x < 5))
+          next :x, e(x + 1)
         end
 
-        actions do
-          action :increment do
-            await e(x < 5)
-            next :x, e(x + 1)
-          end
-        end
-
-        invariants do
-          invariant :bounded, e(x >= 0 and x <= 5)
-        end
+        invariant :bounded, e(x >= 0 and x <= 5)
       end
   """
 

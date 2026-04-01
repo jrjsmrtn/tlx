@@ -7,6 +7,34 @@ defmodule TLX.Importer.TlaParser do
   then delegates to `TLX.Importer.Codegen` for TLX DSL emission.
 
   Handles TLA+ output from TLX's own emitter and simple hand-written specs.
+
+  ## Supported TLA+ Subset
+
+  - `---- MODULE Name ----` header and `====` footer
+  - `EXTENDS` clause (comma-separated module list)
+  - `VARIABLES` and `CONSTANTS` declarations (comma-separated)
+  - Operator definitions: `Name == body` (captures body as a raw string)
+  - Multi-line operator bodies (stops at next top-level definition or footer)
+
+  ## Not Supported
+
+  - `RECURSIVE` operator declarations
+  - `LAMBDA` expressions
+  - `INSTANCE` / `WITH` (module composition)
+  - `ASSUME` / `THEOREM` / `PROOF`
+  - `LET`/`IN` at the module level (works inside operator bodies as raw text)
+  - Nested module definitions
+  - Operator parameters: `Op(x, y) == ...` (parsed as a raw body, not decomposed)
+
+  ## How It Works
+
+  The parser extracts structural elements (module name, variables, constants,
+  operator names and bodies) without deeply parsing TLA+ expressions. Operator
+  bodies are captured as raw strings. The `build_map/1` function then uses
+  heuristics to identify Init predicates, actions (by looking for primed
+  variables `x'`), and invariants (operators without primed variables).
+
+  For full expression parsing, use TLC directly via `mix tlx.check`.
   """
 
   import NimbleParsec

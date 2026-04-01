@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.2] - 2026-04-01
+
+### Added
+
+- ADRs 4-10: architectural decisions (emit not reimplement, expr wrapper, Format module, auto atoms, Mix task naming, PlusCal wrapping, usage_rules)
+- Internals documentation for contributors (`docs/explanation/internals.md`)
+- C4 model updated with importers, emitter components, formal-spec skill, Hex.pm
+- Sprint 23/24 plans and retrospectives
+
+### Fixed
+
+- Moduledoc examples updated to flat DSL syntax (removed obsolete section wrappers)
+- Sprint index README updated (was stuck at Sprint 12)
+- TlaParser supported TLA+ subset documented
+- README status updated: published on Hex
+
 ## [0.3.1] - 2026-03-31
 
 ### Added

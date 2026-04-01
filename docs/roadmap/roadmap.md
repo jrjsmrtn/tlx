@@ -152,10 +152,29 @@ Sprint 16 — Proper parsers and AST-based code gen:
 - [x] Record construction (`record/1`), multi-key EXCEPT (`except_many/2`)
 - [x] Symbols emitter (TLX DSL with math notation)
 
+### Phase 13: Quality and Supply Chain (complete)
+
+**Target**: v0.3.1
+**Focus**: Toolchain validation, supply chain security, emitter fixes
+
+- [x] SANY and pcal.trans toolchain validation (87 integration tests)
+- [x] AllConstructs comprehensive spec covering every DSL construct
+- [x] Emitter fixes: map defaults, atom collection, multi-action PlusCal
+- [x] SPDX copyright and license headers on all source files
+- [x] SECURITY.md, GitHub Actions CI, Dependabot
+- [x] ADRs 4-10 documenting architectural decisions
+- [x] `mix tlx.list` and `mix tlx.watch`
+- [x] Published on Hex.pm
+
 ## Sprint History
 
 | Sprint | Phase                 | Version | Summary                                             |
 | ------ | --------------------- | ------- | --------------------------------------------------- |
+| 24     | Documentation         | v0.3.2  | Internals docs for contributors                     |
+| 23     | Documentation         | v0.3.1  | Sprint index, missing retros, TlaParser subset doc  |
+| 22     | Quality               | v0.3.1  | SANY/pcal.trans validation, emitter bug fixes       |
+| 11     | Tooling               | v0.3.1  | mix tlx.list, mix tlx.watch, Mix task naming fix    |
+| —      | Supply Chain          | v0.3.0  | SPDX headers, SECURITY.md, CI, Dependabot           |
 | 21     | Expressiveness II     | v0.2.11 | Records, multi-EXCEPT, Symbols emitter, FAQ         |
 | 20     | Expressiveness II     | v0.2.10 | Sequences, DOMAIN, range, implies/equiv, extends    |
 | 19     | Expressiveness II     | v0.2.9  | at/except, CHOOSE, filter, CASE, if-syntax DX       |

@@ -99,7 +99,7 @@ Then run `mix usage_rules.sync`.
 
 ## Status
 
-Active development. Not yet published on Hex.
+Published on [Hex](https://hex.pm/packages/tlx). Active development, contributions welcome.
 
 ## Documentation
 

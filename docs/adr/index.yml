@@ -1,4 +1,4 @@
-# Architecture Decision Records — TLx
+# Architecture Decision Records — TLX
 
 foundational:
   - id: 1
@@ -15,4 +15,34 @@ foundational:
     file: 0003-adopt-elixir-spark-stack.md
     title: Use Elixir with Spark DSL Framework
     purpose: WHAT TECH
+    status: Accepted
+
+architectural:
+  - id: 4
+    file: 0004-emit-tla-not-reimplement-tlc.md
+    title: Emit TLA+, Don't Reimplement TLC
+    status: Accepted
+  - id: 5
+    file: 0005-expr-wrapper-for-ast-passthrough.md
+    title: "Use {:expr, quoted} Wrapper for AST Passthrough"
+    status: Accepted
+  - id: 6
+    file: 0006-shared-format-module-with-symbol-tables.md
+    title: Shared Format Module with Symbol Tables
+    status: Accepted
+  - id: 7
+    file: 0007-auto-declare-atom-model-values.md
+    title: Auto-Declare Atom Values as TLA+ Model Value CONSTANTS
+    status: Accepted
+  - id: 8
+    file: 0008-mix-task-naming-convention.md
+    title: "Mix Task Naming: Mix.Tasks.Tlx, Not Mix.Tasks.TLX"
+    status: Accepted
+  - id: 9
+    file: 0009-pluscal-multi-action-wrapping.md
+    title: PlusCal Multi-Action Wrapping with while/either
+    status: Accepted
+  - id: 10
+    file: 0010-agent-skills-via-usage-rules.md
+    title: Distribute Agent Skills via usage_rules
     status: Accepted
