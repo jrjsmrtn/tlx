@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.3] - 2026-04-01
+
+### Added
+
+- GraphViz DOT emitter (`--format dot`) — state machine diagrams from specs
+- DOT files for all examples (mutex, raft_leader, two_phase_commit)
+
 ## [0.3.2] - 2026-04-01
 
 ### Added

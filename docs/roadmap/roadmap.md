@@ -170,6 +170,7 @@ Sprint 16 — Proper parsers and AST-based code gen:
 
 | Sprint | Phase                 | Version | Summary                                             |
 | ------ | --------------------- | ------- | --------------------------------------------------- |
+| 25     | Visualization         | v0.3.3  | GraphViz DOT emitter, example diagrams              |
 | 24     | Documentation         | v0.3.2  | Internals docs for contributors                     |
 | 23     | Documentation         | v0.3.1  | Sprint index, missing retros, TlaParser subset doc  |
 | 22     | Quality               | v0.3.1  | SANY/pcal.trans validation, emitter bug fixes       |
@@ -199,6 +200,4 @@ Sprint 16 — Proper parsers and AST-based code gen:
 
 ## Proposed Sprints
 
-| Sprint | Phase         | Plan                                                 |
-| ------ | ------------- | ---------------------------------------------------- |
-| 25     | Visualization | GraphViz emitter — state machine diagrams from specs |
+None. All planned sprints are complete.

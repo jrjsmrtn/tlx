@@ -2,13 +2,14 @@
 
 ## Current Status
 
-- **Latest Release**: v0.3.2 (published on Hex)
+- **Latest Release**: v0.3.3 (published on Hex)
 - **Status**: All planned sprints complete
 
 ## Sprint Index
 
 | Sprint | Phase                 | Version | Status   | Plan                        | Retrospective                         |
 | ------ | --------------------- | ------- | -------- | --------------------------- | ------------------------------------- |
+| 25     | Visualization         | v0.3.3  | Complete | [Plan](sprint-0025-plan.md) |                                       |
 | 24     | Documentation         | v0.3.2  | Complete | [Plan](sprint-0024-plan.md) | [Retro](sprint-0024-retrospective.md) |
 | 23     | Documentation         | v0.3.1  | Complete | [Plan](sprint-0023-plan.md) | [Retro](sprint-0023-retrospective.md) |
 | 22     | Quality               | v0.3.1  | Complete | [Plan](sprint-0022-plan.md) | [Retro](sprint-0022-retrospective.md) |
