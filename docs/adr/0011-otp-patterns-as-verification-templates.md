@@ -41,9 +41,11 @@ Erlang gen_server ─┤──→ TLX.Patterns.OTP.GenServer ──→ defspec
 - **StateMachine** — explicit FSM with states, events, transitions. Properties: no invalid states, all transitions valid, reachability.
 - **Supervisor** — restart strategies, child lifecycle. Properties: bounded restarts, always recovers (or escalates).
 
-### Implementation approach
+### Implementation levels
 
-Start with Elixir macros (approach 1 from the design discussion) — zero DSL changes, validates the patterns. If the patterns prove useful, consider promoting to a DSL extension (approach 2).
+Three levels of increasing sophistication. Start at level 1, promote when validated.
+
+**Level 1: Elixir macros** — zero DSL changes. A macro module generates `defspec` calls from parameters. Validates the patterns, ships fast.
 
 ```elixir
 use TLX.Patterns.OTP.GenServer,
@@ -54,6 +56,25 @@ use TLX.Patterns.OTP.GenServer,
     complete: {from: :processing, to: :done}
   }
 ```
+
+**Level 2: DSL extension** — new Spark entities for pattern-specific constructs (`handle_call`, `handle_cast`). Richer validation, better error messages, Spark introspection. Requires new entities and a transformer.
+
+```elixir
+defspec OrderProcessor do
+  use TLX.Pattern.GenServer,
+    states: [:idle, :processing, :done],
+    initial: :idle
+
+  handle_call :start, from: :idle do
+    next :state, :processing
+  end
+
+  # Auto-generates: mailbox variable, message ordering invariant,
+  # at-most-once delivery property
+end
+```
+
+**Level 3: TLA+ module composition** — full multi-module INSTANCE support. Define an OTP behavior module once, INSTANCE it per component. The TLA+ way, but a major architectural change (general module composition, not just refinement).
 
 ## Consequences
 
