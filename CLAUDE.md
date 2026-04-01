@@ -17,9 +17,9 @@ A Spark DSL for writing TLA+/PlusCal specifications, with TLA+ emission for TLC 
 
 ## Current Development Status
 
-- **Latest Release**: v0.3.9
-- **Status**: Active — 5 examples + 12 Forge specs, 298 unit + 87 integration tests, Diátaxis docs complete
-- **Completed sprints**: 1-32 + refinement
+- **Latest Release**: v0.3.10
+- **Status**: Active — 5 examples + 12 Forge specs, 305 unit + 87 integration tests, Diátaxis docs complete
+- **Completed sprints**: 1-33 + refinement
 - **Proposed sprints**: none
 
 ## Foundational ADRs
