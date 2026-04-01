@@ -1,19 +1,20 @@
 # SPDX-FileCopyrightText: 2026 Georges Martin
 # SPDX-License-Identifier: MIT
 
-defmodule Mix.Tasks.Tlx.Gen.FromStateMachine do
+defmodule Mix.Tasks.Tlx.Gen.FromLiveView do
   @moduledoc """
-  Generate a TLX spec skeleton from a GenStateMachine module.
+  Generate a TLX spec skeleton from a Phoenix LiveView module.
 
   ## Usage
 
-      mix tlx.gen.from_state_machine MyApp.MyStateMachine
-      mix tlx.gen.from_state_machine MyApp.MyStateMachine --output my_spec.ex
-      mix tlx.gen.from_state_machine MyApp.MyStateMachine --format codegen
+      mix tlx.gen.from_live_view MyAppWeb.FleetLive
+      mix tlx.gen.from_live_view MyAppWeb.FleetLive --output fleet_spec.ex
+      mix tlx.gen.from_live_view MyAppWeb.FleetLive --format codegen
 
-  Parses the module's source code to extract states, events, and
-  transitions via AST analysis. Generates either a `TLX.Patterns.OTP.StateMachine`
-  module (default) or a `defspec` skeleton via codegen.
+  Parses the module's source code to extract fields (from mount/3),
+  event handlers, and info handlers via AST analysis. Generates either
+  a `TLX.Patterns.OTP.GenServer` module (default) or a `defspec`
+  skeleton via codegen.
 
   ## Options
 
@@ -23,10 +24,10 @@ defmodule Mix.Tasks.Tlx.Gen.FromStateMachine do
 
   use Mix.Task
 
-  alias TLX.Extractor.GenStatem
+  alias TLX.Extractor.LiveView, as: Extractor
   alias TLX.Importer.Codegen
 
-  @shortdoc "Generate a TLX spec skeleton from a GenStateMachine module"
+  @shortdoc "Generate a TLX spec skeleton from a Phoenix LiveView module"
 
   @switches [output: :string, format: :string]
   @aliases [o: :output, f: :format]
@@ -54,7 +55,7 @@ defmodule Mix.Tasks.Tlx.Gen.FromStateMachine do
 
       [] ->
         Mix.raise(
-          "Usage: mix tlx.gen.from_state_machine MyApp.MyStateMachine [--output file.ex] [--format pattern|codegen]"
+          "Usage: mix tlx.gen.from_live_view MyAppWeb.MyLive [--output file.ex] [--format pattern|codegen]"
         )
 
       _ ->
@@ -71,7 +72,7 @@ defmodule Mix.Tasks.Tlx.Gen.FromStateMachine do
         Mix.raise("Cannot find source for #{inspect(module)}. Is it compiled?")
 
       path ->
-        case GenStatem.extract_from_file(path) do
+        case Extractor.extract_from_file(path) do
           {:ok, result} ->
             print_warnings(result.warnings)
             format_output(spec_name, module, result, format)
@@ -83,21 +84,25 @@ defmodule Mix.Tasks.Tlx.Gen.FromStateMachine do
   end
 
   defp format_output(spec_name, module, result, "pattern") do
-    all_high? = Enum.all?(result.transitions, &(&1.confidence == :high))
+    all_handlers = (result.events || []) ++ (result.infos || [])
 
-    if all_high? and result.initial != nil and result.transitions != [] do
+    all_high? = Enum.all?(all_handlers, &(&1.confidence == :high))
+    has_fields? = result.fields != []
+    has_handlers? = all_handlers != []
+
+    if all_high? and has_fields? and has_handlers? do
       generate_pattern_module(spec_name, result)
     else
       Mix.shell().info(
-        "Note: some transitions have low confidence — falling back to codegen format"
+        "Note: falling back to codegen format (missing fields, handlers, or low confidence)"
       )
 
-      Codegen.from_state_machine(spec_name, module, result)
+      Codegen.from_live_view(spec_name, module, result)
     end
   end
 
   defp format_output(spec_name, module, result, "codegen") do
-    Codegen.from_state_machine(spec_name, module, result)
+    Codegen.from_live_view(spec_name, module, result)
   end
 
   defp format_output(_, _, _, format) do
@@ -105,27 +110,50 @@ defmodule Mix.Tasks.Tlx.Gen.FromStateMachine do
   end
 
   defp generate_pattern_module(spec_name, result) do
-    events_kw =
-      result.transitions
-      |> Enum.map_join(",\n      ", fn t ->
-        "#{t.event}: [from: :#{t.from}, to: :#{t.to}]"
+    fields_kw =
+      result.fields
+      |> Enum.map_join(", ", fn {name, default} ->
+        "#{name}: #{inspect(default)}"
       end)
 
-    source = """
-    defmodule #{spec_name}Spec do
-      use TLX.Patterns.OTP.StateMachine,
-        states: #{inspect(result.states)},
-        initial: :#{result.initial},
-        events: [
-          #{events_kw}
-        ]
+    # Events become calls, infos become casts in the GenServer pattern
+    calls_kw = format_handlers(result.events || [])
+    casts_kw = format_handlers(result.infos || [])
 
-      # TODO: Add temporal properties
-      # property :my_property, always(eventually(e(state == :some_state)))
-    end
-    """
+    parts = ["defmodule #{spec_name}Spec do"]
+    parts = parts ++ ["  use TLX.Patterns.OTP.GenServer,"]
+    parts = parts ++ ["    fields: [#{fields_kw}]"]
+
+    parts =
+      if calls_kw != "" do
+        parts ++ [",\n    calls: [\n#{calls_kw}\n    ]"]
+      else
+        parts
+      end
+
+    parts =
+      if casts_kw != "" do
+        parts ++ [",\n    casts: [\n#{casts_kw}\n    ]"]
+      else
+        parts
+      end
+
+    source = Enum.join(parts, "") <> "\nend\n"
 
     format_source(source)
+  end
+
+  defp format_handlers(handlers) do
+    handlers
+    |> Enum.filter(fn h -> h.next != [] end)
+    |> Enum.map_join(",\n", fn h ->
+      next_kw =
+        h.next
+        |> Enum.reject(fn {_, v} -> v == :unknown end)
+        |> Enum.map_join(", ", fn {field, value} -> "#{field}: #{inspect(value)}" end)
+
+      "      #{h.name}: [next: [#{next_kw}]]"
+    end)
   end
 
   defp find_source(module) do
