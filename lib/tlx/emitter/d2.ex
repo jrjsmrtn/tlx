@@ -22,10 +22,7 @@ defmodule TLX.Emitter.D2 do
       yellow -> red: to_red
   """
 
-  # Delegates graph extraction to Dot emitter, then renders as D2.
-  # Same strategy as Mermaid and PlantUML.
-
-  alias TLX.Emitter.Dot
+  alias TLX.Emitter.Graph
 
   @doc """
   Generate a D2 state diagram string from a compiled spec module.
@@ -34,81 +31,42 @@ defmodule TLX.Emitter.D2 do
     * `:state_var` — name of the state variable (auto-detected if omitted)
   """
   def emit(module, opts \\ []) do
-    dot_output = Dot.emit(module, opts)
-    dot_to_d2(dot_output)
+    graph = Graph.extract(module, opts)
+    render(graph)
   end
 
-  defp dot_to_d2(dot_output) do
-    lines = String.split(dot_output, "\n")
-
-    initial =
-      lines
-      |> Enum.find(&String.contains?(&1, "doublecircle"))
-      |> extract_node_name()
-
-    states =
-      lines
-      |> Enum.filter(&String.contains?(&1, "[shape="))
-      |> Enum.map(&extract_node_name/1)
-      |> Enum.reject(&is_nil/1)
-
-    edges =
-      lines
-      |> Enum.filter(&String.contains?(&1, "->"))
-      |> Enum.map(&parse_dot_edge/1)
-      |> Enum.reject(&is_nil/1)
-
-    render(states, edges, initial)
-  end
-
-  defp extract_node_name(nil), do: nil
-
-  defp extract_node_name(line) do
-    line |> String.trim() |> String.split(" ") |> hd()
-  end
-
-  defp parse_dot_edge(line) do
-    line = String.trim(line)
-
-    case Regex.run(~r/^(\w+)\s*->\s*(\w+)\s*\[label="([^"]*)"(?:,\s*style=(\w+))?/, line) do
-      [_, src, tgt, label, style] -> {src, tgt, label, style}
-      [_, src, tgt, label] -> {src, tgt, label, nil}
-      _ -> nil
-    end
-  end
-
-  defp render(states, edges, initial) do
+  defp render(graph) do
     header = ["direction: right"]
 
-    initial_style =
-      if initial do
-        ["#{initial}.style.bold: true"]
-      else
-        []
-      end
-
-    state_shapes =
-      states
-      |> Enum.reject(&(&1 == initial))
-      |> Enum.map(&"#{&1}: #{&1}")
+    all_states = MapSet.to_list(graph.states) |> Enum.sort()
 
     initial_shape =
-      if initial do
-        ["#{initial}: #{initial}"]
+      if graph.initial do
+        ["#{graph.initial}: #{graph.initial}"]
       else
         []
       end
 
-    # Deduplicate edges between same pair by using connection references
+    other_shapes =
+      all_states
+      |> Enum.reject(&(&1 == graph.initial))
+      |> Enum.map(&"#{&1}: #{&1}")
+
+    initial_style =
+      if graph.initial do
+        ["#{graph.initial}.style.bold: true"]
+      else
+        []
+      end
+
     edge_lines =
-      edges
+      graph.edges
       |> Enum.with_index()
-      |> Enum.map(fn {{src, tgt, label, style}, idx} ->
-        line = "conn#{idx}: #{src} -> #{tgt}: #{label}"
-        if style == "dashed", do: line <> " {style.stroke-dash: 3}", else: line
+      |> Enum.map(fn {{src, tgt, label}, idx} ->
+        "conn#{idx}: #{src} -> #{tgt}: #{label}"
       end)
 
-    (header ++ [""] ++ initial_shape ++ state_shapes ++ initial_style ++ [""] ++ edge_lines)
+    (header ++ [""] ++ initial_shape ++ other_shapes ++ initial_style ++ [""] ++ edge_lines)
     |> Enum.join("\n")
   end
 end
