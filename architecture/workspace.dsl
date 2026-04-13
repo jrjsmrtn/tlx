@@ -39,7 +39,8 @@ workspace "TLX" "Spark DSL for TLA+/PlusCal specifications in Elixir" {
                 symbols = component "Symbols Emitter" "TLX DSL with Unicode math notation"
                 config = component "Config Emitter" "TLC .cfg files (SPECIFICATION, CONSTANTS, INVARIANTS)"
                 atoms = component "Atoms Collector" "Auto-collects atom literals for TLA+ CONSTANTS"
-                dot = component "DOT Emitter" "GraphViz digraph — foundation for all diagram emitters"
+                graph = component "Graph Module" "Shared state/edge/initial extraction for all diagram emitters"
+                dot = component "DOT Emitter" "GraphViz digraph"
                 mermaid = component "Mermaid Emitter" "stateDiagram-v2 for GitHub/GitLab markdown"
                 plantuml = component "PlantUML Emitter" "Enterprise diagram tooling (Confluence, IntelliJ)"
                 d2 = component "D2 Emitter" "Modern declarative diagrams (Terrastruct)"
@@ -104,10 +105,11 @@ workspace "TLX" "Spark DSL for TLA+/PlusCal specifications in Elixir" {
         tlx.mixTasks -> tlx.extractors "Invokes"
         tlx.mixTasks -> tlc "Calls TLC/SANY/pcal.trans" "Java subprocess"
 
-        # Diagram emitter delegation
-        tlx.emitters.mermaid -> tlx.emitters.dot "Parses output from"
-        tlx.emitters.plantuml -> tlx.emitters.dot "Parses output from"
-        tlx.emitters.d2 -> tlx.emitters.dot "Parses output from"
+        # Diagram emitter shared graph extraction
+        tlx.emitters.dot -> tlx.emitters.graph "Extracts graph from"
+        tlx.emitters.mermaid -> tlx.emitters.graph "Extracts graph from"
+        tlx.emitters.plantuml -> tlx.emitters.graph "Extracts graph from"
+        tlx.emitters.d2 -> tlx.emitters.graph "Extracts graph from"
 
         # External
         tlx -> hexpm "Published to" "mix hex.publish"
