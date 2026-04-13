@@ -1,0 +1,14 @@
+direction: right
+
+disconnected: disconnected
+connected: connected
+connecting: connecting
+error: error
+disconnected.style.bold: true
+
+conn0: disconnected -> connecting: connect
+conn1: connecting -> connected: connected
+conn2: connecting -> error: timeout
+conn3: connected -> disconnected: disconnect
+conn4: error -> disconnected: recover
+conn5: error -> connecting: retry

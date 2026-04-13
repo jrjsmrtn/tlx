@@ -1,0 +1,14 @@
+digraph ConnectionSpec {
+  rankdir=LR
+  node [shape=circle]
+  connected [shape=circle]
+  connecting [shape=circle]
+  disconnected [shape=doublecircle]
+  error [shape=circle]
+  disconnected -> connecting [label="connect"]
+  connecting -> connected [label="connected"]
+  connecting -> error [label="timeout"]
+  connected -> disconnected [label="disconnect"]
+  error -> disconnected [label="recover"]
+  error -> connecting [label="retry"]
+}
