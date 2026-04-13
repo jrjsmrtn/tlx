@@ -98,6 +98,39 @@ Key functions:
 
 `TLX.Emitter.Config` generates `.cfg` files for TLC: `SPECIFICATION`, `CONSTANTS` (model values), `INVARIANT`, and `PROPERTY` directives.
 
+### Diagram Emitters
+
+Four emitters generate state machine diagrams from specs:
+
+- `TLX.Emitter.Dot` — GraphViz DOT digraph (foundation for all diagram emitters)
+- `TLX.Emitter.Mermaid` — Mermaid `stateDiagram-v2` (renders in GitHub/GitLab markdown)
+- `TLX.Emitter.PlantUML` — PlantUML `@startuml`/`@enduml` (enterprise tools, Confluence)
+- `TLX.Emitter.D2` — D2/Terrastruct (modern declarative diagrams)
+
+Mermaid, PlantUML, and D2 all delegate to DOT for graph extraction (states, edges, initial state), then render in their respective syntax.
+
+## Extractors
+
+Extractors auto-generate spec skeletons from existing code (see [Extraction Architecture](extraction-architecture.md) and [ADR-0012](../adr/0012-otp-extraction-strategy.md)):
+
+| Extractor        | Module                          | Method                |
+| ---------------- | ------------------------------- | --------------------- |
+| gen_statem       | `TLX.Extractor.GenStatem`       | Elixir source AST     |
+| GenServer        | `TLX.Extractor.GenServer`       | Elixir source AST     |
+| LiveView         | `TLX.Extractor.LiveView`        | Elixir source AST     |
+| Erlang           | `TLX.Extractor.Erlang`          | BEAM abstract_code    |
+| Ash.StateMachine | `TLX.Extractor.AshStateMachine` | Runtime introspection |
+| Reactor          | `TLX.Extractor.Reactor`         | Spark introspection   |
+| Broadway         | `TLX.Extractor.Broadway`        | Elixir source AST     |
+
+## OTP Patterns
+
+Reusable macros in `TLX.Patterns.OTP.*` generate complete specs from declarative options (see [OTP Patterns Reference](../reference/otp-patterns.md) and [ADR-0011](../adr/0011-otp-patterns-as-verification-templates.md)):
+
+- `TLX.Patterns.OTP.StateMachine` — single state variable, event-driven transitions
+- `TLX.Patterns.OTP.GenServer` — multiple fields, partial state updates, guards
+- `TLX.Patterns.OTP.Supervisor` — restart strategies, bounded restarts, escalation
+
 ## The Simulator
 
 `TLX.Simulator` (`lib/tlx/simulator.ex`) performs random walk state exploration without TLC or Java. It:

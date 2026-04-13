@@ -11,18 +11,20 @@ mix tlx.emit MySpec --format pluscal-p     # PlusCal P-syntax (begin/end)
 mix tlx.emit MySpec --format elixir        # TLX DSL round-trip
 mix tlx.emit MySpec --format dot           # GraphViz state machine diagram
 mix tlx.emit MySpec --format mermaid       # Mermaid diagram (renders in GitHub markdown)
+mix tlx.emit MySpec --format plantuml      # PlantUML state diagram
+mix tlx.emit MySpec --format d2            # D2 (Terrastruct) state diagram
 mix tlx.emit MySpec --format symbols       # TLX DSL with math symbols
 mix tlx.emit MySpec --output spec.tla      # write to file
 ```
 
 **Flags:**
 
-| Flag             | Default | Description                                                                           |
-| ---------------- | ------- | ------------------------------------------------------------------------------------- |
-| `--format`, `-f` | `tla`   | Output format: `tla`, `pluscal-c`, `pluscal-p`, `elixir`, `dot`, `mermaid`, `symbols` |
-| `--output`, `-o` | stdout  | Write to file instead of stdout                                                       |
+| Flag             | Default | Description                                                                                             |
+| ---------------- | ------- | ------------------------------------------------------------------------------------------------------- |
+| `--format`, `-f` | `tla`   | Output format: `tla`, `pluscal-c`, `pluscal-p`, `elixir`, `dot`, `mermaid`, `plantuml`, `d2`, `symbols` |
+| `--output`, `-o` | stdout  | Write to file instead of stdout                                                                         |
 
-The `dot` format generates a GraphViz digraph. The `mermaid` format generates a Mermaid `stateDiagram-v2` that renders natively in GitHub, hexdocs, GitLab, and Obsidian markdown. Both work best for specs with atom-valued state variables.
+The `dot` format generates a GraphViz digraph. The `mermaid` format generates a Mermaid `stateDiagram-v2` that renders natively in GitHub, hexdocs, GitLab, and Obsidian markdown. The `plantuml` format generates PlantUML `@startuml`/`@enduml` (for enterprise tools, Confluence, IntelliJ). The `d2` format generates D2 (Terrastruct) diagrams. All diagram formats work best for specs with atom-valued state variables.
 
 ## mix tlx.check
 
@@ -82,22 +84,81 @@ mix tlx.import spec.tla --output my_spec.ex # write to file
 
 Best-effort parser. Works well for TLX-emitted TLA+ and simple hand-written specs. Complex TLA+ may need manual cleanup.
 
-## mix tlx.gen.from_state_machine
+## Extraction Tasks
 
-Generate a TLX spec skeleton from a GenStateMachine module.
+All extraction tasks parse source code or introspect compiled modules to generate TLX spec skeletons. Default output is `--format pattern` (when all transitions have high confidence) or `--format codegen` (defspec with TODO comments).
+
+### mix tlx.gen.from_state_machine
+
+Generate from a gen_statem/GenStateMachine module (Elixir source AST).
 
 ```bash
 mix tlx.gen.from_state_machine MyApp.MyStateMachine
-mix tlx.gen.from_state_machine MyApp.MyStateMachine --output my_spec.ex
+mix tlx.gen.from_state_machine MyApp.MyStateMachine --format codegen --output spec.ex
 ```
 
-**Flags:**
+### mix tlx.gen.from_gen_server
 
-| Flag             | Default | Description                     |
-| ---------------- | ------- | ------------------------------- |
-| `--output`, `-o` | stdout  | Write to file instead of stdout |
+Generate from an Elixir GenServer module (source AST). Extracts fields from `init/1`, callbacks from `handle_call/3`, `handle_cast/2`, `handle_info/2`.
 
-Produces a skeleton with `TODO` comments. Requires the module to be compiled. Complete the skeleton with guards, transitions, and invariants.
+```bash
+mix tlx.gen.from_gen_server MyApp.Reconciler
+mix tlx.gen.from_gen_server MyApp.Reconciler --output spec.ex
+```
+
+### mix tlx.gen.from_live_view
+
+Generate from a Phoenix LiveView module (source AST). Extracts fields from `mount/3`, events from `handle_event/3`, infos from `handle_info/2`. Detects `assign/2,3`, `update/3`, and pipe chains.
+
+```bash
+mix tlx.gen.from_live_view MyAppWeb.FleetLive
+mix tlx.gen.from_live_view MyAppWeb.FleetLive --output spec.ex
+```
+
+### mix tlx.gen.from_erlang
+
+Generate from a compiled Erlang module (BEAM abstract_code). Auto-detects `gen_server` or `gen_fsm` behaviour. Requires `debug_info`.
+
+```bash
+mix tlx.gen.from_erlang :my_erl_module
+mix tlx.gen.from_erlang :my_erl_module --output spec.ex
+```
+
+### mix tlx.gen.from_ash_state_machine
+
+Generate from an Ash resource with AshStateMachine (runtime introspection). Reads states, transitions, and initial states via `AshStateMachine.Info`.
+
+```bash
+mix tlx.gen.from_ash_state_machine MyApp.Order
+mix tlx.gen.from_ash_state_machine MyApp.Order --output spec.ex
+```
+
+### mix tlx.gen.from_reactor
+
+Generate from a Reactor workflow module (Spark introspection). Reads the step DAG, inputs, dependencies, async flags, and compensation callbacks.
+
+```bash
+mix tlx.gen.from_reactor MyApp.ProvisionWorkflow
+mix tlx.gen.from_reactor MyApp.ProvisionWorkflow --output spec.ex
+```
+
+### mix tlx.gen.from_broadway
+
+Generate from a Broadway pipeline module (source AST). Extracts producer, processor, and batcher config from `Broadway.start_link/2`.
+
+```bash
+mix tlx.gen.from_broadway MyApp.IngestPipeline
+mix tlx.gen.from_broadway MyApp.IngestPipeline --output spec.ex
+```
+
+### Common extraction flags
+
+| Flag             | Default   | Description                           |
+| ---------------- | --------- | ------------------------------------- |
+| `--output`, `-o` | stdout    | Write to file instead of stdout       |
+| `--format`, `-f` | `pattern` | Output format: `pattern` or `codegen` |
+
+Not all tasks support `--format` (Reactor and Broadway always produce codegen).
 
 ## mix tlx.list
 

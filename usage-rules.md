@@ -1,6 +1,6 @@
 # TLX Usage Rules
 
-TLX is a Spark DSL for writing TLA+/PlusCal specifications in Elixir with TLC model checking.
+TLX is a Spark DSL for writing TLA+/PlusCal specifications in Elixir with TLC model checking. It includes extractors for auto-generating specs from existing code, OTP verification patterns, diagram emitters, and AI agent skills.
 
 ## Core Concepts
 
@@ -15,6 +15,43 @@ TLX is a Spark DSL for writing TLA+/PlusCal specifications in Elixir with TLC mo
 - Invariants: `invariant :name, e(boolean_expression)`
 - Properties: `property :name, always(eventually(e(...)))`
 - Refinement: `refines AbstractSpec do mapping :var, e(expr) end`
+
+## OTP Verification Patterns
+
+Reusable macros that generate complete specs from declarative options:
+
+```elixir
+# State machine (gen_statem)
+use TLX.Patterns.OTP.StateMachine,
+  states: [:idle, :running], initial: :idle,
+  events: [start: [from: :idle, to: :running]]
+
+# GenServer (multi-field)
+use TLX.Patterns.OTP.GenServer,
+  fields: [status: :idle, deps_met: true],
+  calls: [check: [next: [status: :in_sync]]],
+  casts: [drift: [next: [status: :drifted]]]
+
+# Supervisor (restart strategies)
+use TLX.Patterns.OTP.Supervisor,
+  strategy: :one_for_one, max_restarts: 3, children: [:db, :cache]
+```
+
+## Extractors
+
+Auto-generate spec skeletons from existing code:
+
+| Source                    | Command                                     | Method                |
+| ------------------------- | ------------------------------------------- | --------------------- |
+| Elixir gen_statem         | `mix tlx.gen.from_state_machine Module`     | Source AST            |
+| Elixir GenServer          | `mix tlx.gen.from_gen_server Module`        | Source AST            |
+| Phoenix LiveView          | `mix tlx.gen.from_live_view Module`         | Source AST            |
+| Erlang gen_server/gen_fsm | `mix tlx.gen.from_erlang :module`           | BEAM abstract_code    |
+| Ash.StateMachine          | `mix tlx.gen.from_ash_state_machine Module` | Runtime introspection |
+| Reactor workflow          | `mix tlx.gen.from_reactor Module`           | Spark introspection   |
+| Broadway pipeline         | `mix tlx.gen.from_broadway Module`          | Source AST            |
+
+All extraction tasks accept `--output file.ex` and `--format pattern|codegen`.
 
 ## Expression Helpers
 
@@ -37,11 +74,33 @@ TLX is a Spark DSL for writing TLA+/PlusCal specifications in Elixir with TLC mo
 
 ## Mix Tasks
 
-- `mix tlx.emit MySpec --format tla|pluscal-c|pluscal-p|elixir` — emit specification
+### Emit and verify
+
+- `mix tlx.emit MySpec --format tla|pluscal-c|pluscal-p|elixir|dot|mermaid|plantuml|d2|symbols` — emit specification or diagram
 - `mix tlx.check MySpec` — emit PlusCal, translate, run TLC
 - `mix tlx.simulate MySpec --runs 100` — Elixir random walk simulation
 - `mix tlx.import spec.tla --format tla|pluscal` — import TLA+/PlusCal to TLX DSL
-- `mix tlx.gen.from_state_machine MyModule` — generate spec skeleton from GenStateMachine
+- `mix tlx.list` — discover spec modules in the project
+- `mix tlx.watch MySpec` — auto-simulate on file changes
+
+### Extract spec skeletons
+
+- `mix tlx.gen.from_state_machine MyModule` — from gen_statem
+- `mix tlx.gen.from_gen_server MyModule` — from GenServer
+- `mix tlx.gen.from_live_view MyModule` — from Phoenix LiveView
+- `mix tlx.gen.from_erlang :module` — from Erlang gen_server/gen_fsm
+- `mix tlx.gen.from_ash_state_machine MyModule` — from Ash.StateMachine
+- `mix tlx.gen.from_reactor MyModule` — from Reactor workflow
+- `mix tlx.gen.from_broadway MyModule` — from Broadway pipeline
+
+## Agent Skills
+
+TLX ships 4 agent skills via [usage_rules](https://hexdocs.pm/usage_rules/):
+
+- **`formal-spec`** — full formal specification workflow: ADR → abstract spec → extract concrete skeleton → enrich with invariants/properties → refinement check → CI integration
+- **`spec-audit`** — scan a project for extractable modules, report spec coverage, prioritize verification targets
+- **`visualize`** — generate state machine diagrams in DOT, Mermaid, PlantUML, or D2
+- **`spec-drift`** — detect when implementation code has changed but specs haven't been updated
 
 ## Documentation Lookup
 
@@ -59,3 +118,4 @@ mix usage_rules.search_docs "refinement" -p tlx
 - Keep model values small for TLC (e.g., `max_concurrent = 2`)
 - Empty branches cause TLC errors — always set all variables in every branch
 - Atom values are auto-declared as TLA+ CONSTANTS
+- Start with OTP patterns for initial verification, switch to defspec when you need branches/properties/refinement

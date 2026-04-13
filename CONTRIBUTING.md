@@ -4,7 +4,17 @@
 
 I'm not a TLA+ or formal specification expert. I'm an Elixir developer who had an itch to scratch: I wanted to prove that the design and implementation of a large Elixir project were correct. I've been aware of TLA+ for years and knew it was the right tool for the job, but the syntax barrier was real. TLX is the result of my experimentations — building the tool I wished existed.
 
+## Call for Contributors
+
 If you're a TLA+, formal methods, Elixir, Ash, or Spark expert in the BEAM community and find TLX useful, I'd welcome collaborators. Open an issue or reach out.
+
+There are specific areas where contributors would have outsized impact:
+
+**BEAM language coverage** — Elixir extraction is well covered (GenServer, gen_statem, LiveView, Ash.StateMachine, Reactor, Broadway). Erlang has basic support (gen_server, gen_fsm via BEAM abstract_code) but could use more experienced reviewers. Gleam and LFE are not covered at all — extractors for their OTP modules would open TLX to the wider BEAM ecosystem.
+
+**TLA+ expertise** — Some advanced TLA+ concepts are not yet implemented in the DSL or the importer: `RECURSIVE` operators, `LAMBDA` expressions, `ASSUME`/`THEOREM`/`PROOF`, nested module definitions, and module-level `LET`/`IN`. See the "Not Supported" section in the [`TLX.Importer.TlaParser` moduledoc](lib/tlx/importer/tla_parser.ex) for the full list. A more experienced TLA+ practitioner could advise us on expanding our support and ensuring the DSL correctly maps to TLA+ semantics.
+
+**Ash, Reactor, and Broadway reviewers** — TLX has extractors for Ash.StateMachine (runtime introspection via `AshStateMachine.Info`), Reactor (Spark DAG introspection for step ordering and compensation), and Broadway (source AST for pipeline topology). These were built from documentation and basic test fixtures, not production use. Contributors experienced with these libraries could review the extractors for correctness, identify edge cases we're missing, and suggest verification properties that matter in real-world deployments.
 
 ## Development Process
 
