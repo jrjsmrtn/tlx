@@ -9,7 +9,7 @@ Add `tlx` to your `mix.exs`:
 ```elixir
 def deps do
   [
-    {:tlx, "~> 0.3.0", only: [:dev, :test]}
+    {:tlx, "~> 0.4.0", only: [:dev, :test]}
   ]
 end
 ```

@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-04-01
+
+### Added
+
+- OTP verification patterns: StateMachine, GenServer, Supervisor — reusable macros generating complete specs from declarative options
+- 7 extractors for auto-generating spec skeletons from existing code:
+  - Elixir source AST: gen_statem, GenServer, LiveView
+  - BEAM abstract_code: Erlang gen_server, gen_fsm
+  - Runtime introspection: Ash.StateMachine, Reactor
+  - Source AST: Broadway pipelines
+- 3 diagram emitters: Mermaid (GitHub markdown), PlantUML (enterprise), D2 (Terrastruct)
+- 4 agent skills: formal-spec (with enrichment workflow), spec-audit, visualize, spec-drift
+- 8 new mix tasks: `gen.from_gen_server`, `gen.from_live_view`, `gen.from_erlang`, `gen.from_ash_state_machine`, `gen.from_reactor`, `gen.from_broadway`, emit formats `plantuml` and `d2`
+- ADR-0011 (OTP patterns as verification templates)
+- ADR-0012 (OTP extraction strategy — tiered fallback)
+- Diátaxis documentation: 2 tutorials, 5 how-tos, 2 explanations, 3 references for v0.4.0 features
+- Dev dependencies: ash, ash_state_machine, broadway (dev/test only)
+
 ## [0.3.3] - 2026-04-01
 
 ### Added
