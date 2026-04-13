@@ -216,9 +216,57 @@ Sprint 16 — Proper parsers and AST-based code gen:
 
 ## Proposed Sprints
 
-| Sprint | Phase   | Plan                                                                     |
-| ------ | ------- | ------------------------------------------------------------------------ |
-| 44     | Tooling | State/transition coverage — verify ExUnit tests exercise all spec states |
+| Sprint | Phase          | Plan                                                                     |
+| ------ | -------------- | ------------------------------------------------------------------------ |
+| 44     | Tooling        | State/transition coverage — verify ExUnit tests exercise all spec states |
+| 45     | Expressiveness | Elixir `case/do` inside `e()` — emit as TLA+ CASE                        |
+
+### Sprint 45: Elixir `case/do` inside `e()`
+
+**Goal**: Support native Elixir `case` syntax inside `e()`, emitting TLA+ `CASE`.
+
+Currently, TLA+ `CASE` is only accessible via `case_of/1` with `{condition, value}` tuple lists. Elixir's `case/do` is more natural for multi-way conditionals, especially in refinement mappings.
+
+**Before** (current — nested if/else or case_of tuples):
+
+```elixir
+mapping :stage,
+        e(
+          if state == :queued, do: :queued,
+          else: if state == :deployed, do: :deployed,
+          else: :deploying
+        )
+```
+
+**After** (proposed — Elixir case/do):
+
+```elixir
+mapping :stage,
+        e(case state do
+          :queued -> :queued
+          :deployed -> :deployed
+          :failed -> :failed
+          _ -> :deploying
+        end)
+```
+
+**Emits as TLA+ CASE**:
+
+```tla
+CASE state = "queued"   -> "queued"
+  [] state = "deployed" -> "deployed"
+  [] state = "failed"   -> "failed"
+  [] OTHER              -> "deploying"
+```
+
+**Implementation**:
+
+1. Handle `:case` AST node in `e()` macro — transform `case var do pattern -> expr end` into `{:case_of, clauses}` IR
+2. Pattern matching: support literal atoms/integers in patterns, `_` as `OTHER`
+3. Emitters: TLA+ emits `CASE cond -> val [] ...`, PlusCal equivalent, Elixir round-trip
+4. Simulator: evaluate case clauses by pattern matching at runtime
+
+**Scope**: Only literal pattern matching (atoms, integers, `_` wildcard). Complex patterns (tuples, guards) out of scope — use `case_of/1` for those.
 
 ### Sprint 44: State/Transition Coverage
 
