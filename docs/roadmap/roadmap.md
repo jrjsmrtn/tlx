@@ -216,5 +216,90 @@ Sprint 16 — Proper parsers and AST-based code gen:
 
 ## Proposed Sprints
 
-| Sprint | Phase | Plan |
-| ------ | ----- | ---- |
+| Sprint | Phase   | Plan                                                                     |
+| ------ | ------- | ------------------------------------------------------------------------ |
+| 44     | Tooling | State/transition coverage — verify ExUnit tests exercise all spec states |
+
+### Sprint 44: State/Transition Coverage
+
+**Goal**: Answer "do my tests exercise all the states and transitions my spec defines?"
+
+TLC gives exhaustive spec coverage (proof). This feature gives **test coverage against the spec** — which states/transitions the ExUnit suite actually exercises at runtime.
+
+**Architecture**:
+
+```
+Spec (TLX)              Implementation            Tests (ExUnit)
+    │                        │                         │
+    ▼                        ▼                         ▼
+Graph.extract/2 ──→  State/Transition Map    Instrumentation hooks
+    │                                              │
+    └──────────────── Compare ─────────────────────┘
+                         │
+                    Coverage Report
+```
+
+**Instrumentation approaches by module type**:
+
+| Module type      | State access                               | Hook mechanism                                     |
+| ---------------- | ------------------------------------------ | -------------------------------------------------- |
+| gen_statem       | `:sys.get_state/1` returns `{state, data}` | `:sys.trace/2` or custom `handle_event` wrapper    |
+| GenServer        | `:sys.get_state/1` returns state map       | Telemetry events or `:sys.trace/2`                 |
+| LiveView         | `socket.assigns`                           | Test helper that captures assigns after each event |
+| Ash.StateMachine | Resource attribute value                   | Ash notifications or `after_action` hooks          |
+
+**Deliverables**:
+
+1. `TLX.Coverage` — test helper module
+   - `start_tracking(module, spec)` — begins state/transition recording
+   - `stop_tracking(module)` — returns `%{visited_states, visited_transitions}`
+   - `report(module, spec)` — compares against spec, prints coverage table
+
+2. `mix tlx.coverage` — mix task that runs tests with tracking enabled
+   - Reads spec → implementation mapping from `# Source:` headers
+   - Instruments implementations during test run
+   - Reports per-spec coverage after tests complete
+
+3. ExUnit integration:
+   ```elixir
+   defmodule MyApp.ReconcilerTest do
+     use ExUnit.Case
+     use TLX.Coverage, spec: ReconcilerSpec, module: MyApp.Reconciler
+
+     # Tests run normally — coverage tracked automatically
+     test "check returns in_sync" do
+       # ...
+     end
+   end
+   # After: prints state/transition coverage report
+   ```
+
+**Output format**:
+
+```
+State Coverage: MyApp.Reconciler (spec: ReconcilerSpec)
+─────────────────────────────────────────────────────
+States:
+  :idle        ✓ (12 visits)
+  :in_sync     ✓ (8 visits)
+  :drifted     ✓ (4 visits)
+  :error       ✗ NOT TESTED
+
+Transitions:
+  idle → in_sync (check/success)     ✓ (6 visits)
+  idle → drifted (check/failure)     ✓ (4 visits)
+  drifted → in_sync (apply/success)  ✓ (3 visits)
+  drifted → drifted (apply/failure)  ✗ NOT TESTED
+─────────────────────────────────────────────────────
+States: 3/4 (75%)   Transitions: 3/4 (75%)
+```
+
+**Challenges**:
+
+- GenServer state is opaque — need to map struct fields to spec variables
+- LiveView assigns change frequently — need to filter spec-relevant fields only
+- Transition detection requires comparing consecutive states, not just snapshots
+- gen_statem `state_functions` mode: state is the function name, not in `:sys.get_state`
+- Performance: `:sys.trace` adds overhead; only enable during test runs
+
+**Prerequisites**: None — uses existing specs and `Graph.extract/2`. Independent of extractors.
