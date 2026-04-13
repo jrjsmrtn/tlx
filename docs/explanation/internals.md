@@ -102,12 +102,13 @@ Key functions:
 
 Four emitters generate state machine diagrams from specs:
 
-- `TLX.Emitter.Dot` — GraphViz DOT digraph (foundation for all diagram emitters)
+- `TLX.Emitter.Graph` — shared module that extracts states, edges, and initial state from a compiled spec into a `%Graph{}` struct
+- `TLX.Emitter.Dot` — GraphViz DOT digraph
 - `TLX.Emitter.Mermaid` — Mermaid `stateDiagram-v2` (renders in GitHub/GitLab markdown)
 - `TLX.Emitter.PlantUML` — PlantUML `@startuml`/`@enduml` (enterprise tools, Confluence)
 - `TLX.Emitter.D2` — D2/Terrastruct (modern declarative diagrams)
 
-Mermaid, PlantUML, and D2 all delegate to DOT for graph extraction (states, edges, initial state), then render in their respective syntax.
+All four diagram emitters consume `TLX.Emitter.Graph.extract/2` for graph data, then render in their respective syntax.
 
 ## Extractors
 

@@ -23,10 +23,7 @@ defmodule TLX.Emitter.PlantUML do
       @enduml
   """
 
-  # Delegates graph extraction to Dot emitter, then renders as PlantUML.
-  # Same strategy as Mermaid — single source of truth for state/edge detection.
-
-  alias TLX.Emitter.Dot
+  alias TLX.Emitter.Graph
 
   @doc """
   Generate a PlantUML state diagram string from a compiled spec module.
@@ -35,50 +32,16 @@ defmodule TLX.Emitter.PlantUML do
     * `:state_var` — name of the state variable (auto-detected if omitted)
   """
   def emit(module, opts \\ []) do
-    dot_output = Dot.emit(module, opts)
-    dot_to_plantuml(dot_output)
+    graph = Graph.extract(module, opts)
+    render(graph)
   end
 
-  defp dot_to_plantuml(dot_output) do
-    lines = String.split(dot_output, "\n")
-
-    initial =
-      lines
-      |> Enum.find(&String.contains?(&1, "doublecircle"))
-      |> extract_node_name()
-
-    edges =
-      lines
-      |> Enum.filter(&String.contains?(&1, "->"))
-      |> Enum.map(&parse_dot_edge/1)
-      |> Enum.reject(&is_nil/1)
-
-    render(edges, initial)
-  end
-
-  defp extract_node_name(nil), do: nil
-
-  defp extract_node_name(line) do
-    line |> String.trim() |> String.split(" ") |> hd()
-  end
-
-  defp parse_dot_edge(line) do
-    line = String.trim(line)
-
-    case Regex.run(~r/^(\w+)\s*->\s*(\w+)\s*\[label="([^"]*)"(?:,\s*style=(\w+))?/, line) do
-      [_, src, tgt, label, style] -> {src, tgt, label, style}
-      [_, src, tgt, label] -> {src, tgt, label, nil}
-      _ -> nil
-    end
-  end
-
-  defp render(edges, initial) do
-    initial_line = if initial, do: ["[*] --> #{initial}"], else: []
+  defp render(graph) do
+    initial_line = if graph.initial, do: ["[*] --> #{graph.initial}"], else: []
 
     edge_lines =
-      Enum.map(edges, fn {src, tgt, label, style} ->
-        line = "#{src} --> #{tgt} : #{label}"
-        if style == "dashed", do: line <> " [dashed]", else: line
+      Enum.map(graph.edges, fn {src, tgt, label} ->
+        "#{src} --> #{tgt} : #{label}"
       end)
 
     (["@startuml"] ++ initial_line ++ edge_lines ++ ["@enduml"])

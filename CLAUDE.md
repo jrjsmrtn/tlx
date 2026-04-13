@@ -17,7 +17,7 @@ A Spark DSL for writing TLA+/PlusCal specifications, with TLA+ emission for TLC 
 
 ## Current Development Status
 
-- **Latest Release**: v0.4.1
+- **Latest Release**: v0.4.2
 - **Status**: Active — 5 examples + 12 Forge specs, 356 unit + 87 integration tests, Diátaxis docs complete
 - **Completed sprints**: 1-43 + refinement
 - **Proposed sprints**: none
@@ -128,7 +128,8 @@ Key TLA+/PlusCal concepts mapped to DSL constructs:
 - Spark entity target structs must include `__identifier__` and `__spark_metadata__` fields
 - Schema options are set as bare calls inside `do` blocks, not as keyword args on entity calls
 - Use `mix usage_rules.search_docs` and `mix usage_rules.docs` to consult Spark API docs
-- All emitters delegate formatting to `TLX.Emitter.Format` with symbol tables
+- Text emitters delegate formatting to `TLX.Emitter.Format` with symbol tables
+- Diagram emitters (DOT, Mermaid, PlantUML, D2) share `TLX.Emitter.Graph` for state/edge extraction
 - The `{:expr, quoted}` wrapper carries Elixir AST through Spark schema validation without interpretation
 - Atom values are auto-declared as TLA+ CONSTANTS via `TLX.Emitter.Atoms`
 - Refinement uses TLA+ INSTANCE/WITH with auto-generated identity mappings for abstract spec atoms
