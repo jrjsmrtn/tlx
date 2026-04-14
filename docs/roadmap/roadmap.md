@@ -221,6 +221,7 @@ Sprint 16 — Proper parsers and AST-based code gen:
 | 44     | Tooling        | State/transition coverage — verify ExUnit tests exercise all spec states |
 | 45     | Expressiveness | Elixir `case/do` inside `e()` — emit as TLA+ CASE                        |
 | 46     | Expressiveness | `until(p, q)` and `weak_until(p, q)` — TLA+ P U Q and P W Q              |
+| 47     | Expressiveness | Set/sequence/tuple gaps — difference, map, concat, tuples                |
 
 ### Sprint 45: Elixir `case/do` inside `e()`
 
@@ -393,3 +394,52 @@ LockHeld           == (locked = TRUE) \W (released = TRUE)
 6. Simulator: cannot check temporal operators (requires TLC)
 
 **Scope**: Small — follows the same pattern as `always`/`eventually`/`leads_to` in `TLX.Temporal`. Both operators in one sprint.
+
+### Sprint 47: Set, Sequence, and Tuple Gaps
+
+**Goal**: Fill the remaining practical gaps in TLA+ expression coverage.
+
+**Sets** — add to `TLX.Sets`:
+
+| DSL                       | TLA+                 | Use case                                                |
+| ------------------------- | -------------------- | ------------------------------------------------------- |
+| `difference(a, b)`        | `a \ b`              | Set difference — permission exclusion, resource removal |
+| `set_map(:x, :set, expr)` | `{expr : x \in set}` | Set image/transform — map over a set                    |
+| `power_set(s)`            | `SUBSET s`           | Power set — all subsets (e.g., possible coalitions)     |
+| `distributed_union(s)`    | `UNION s`            | Flatten a set of sets                                   |
+
+```elixir
+# Remove failed nodes from active set
+next :active, e(difference(active, failed))
+
+# Map node IDs to their statuses
+invariant :all_tracked, e(set_map(:id, nodes, at(status, id)) == expected)
+```
+
+**Sequences** — add to `TLX.Sequences`:
+
+| DSL                       | TLA+                           | Use case                                             |
+| ------------------------- | ------------------------------ | ---------------------------------------------------- |
+| `concat(s, t)`            | `s \o t`                       | Sequence concatenation — log append, queue merge     |
+| `select_seq(s, :x, pred)` | `SelectSeq(s, LAMBDA x: pred)` | Filter sequence — remove processed items             |
+| `seq_set(s)`              | `Seq(s)`                       | Set of all finite sequences over S — type constraint |
+
+```elixir
+# Append new log to history
+next :history, e(concat(history, log_entry))
+```
+
+**Tuples** — new `TLX.Tuples` or extend expressions:
+
+| DSL              | TLA+          | Use case                                         |
+| ---------------- | ------------- | ------------------------------------------------ |
+| `tuple(a, b, c)` | `<<a, b, c>>` | Tuple constructor — multi-value, message passing |
+
+```elixir
+# Send a message as a tuple
+next :messages, e(append(messages, tuple(sender, receiver, payload)))
+```
+
+**Implementation**: Each is a tagged tuple in IR + emitter clause. Same pattern as existing set/sequence ops. `set_map` is the most complex (needs variable binding like `filter`). `select_seq` requires LAMBDA emission.
+
+**Scope**: Medium — 7 new operators across 3 modules, each following established patterns. `select_seq` deferred if LAMBDA emission is too complex (use `filter` on sequence indices instead).
