@@ -381,13 +381,13 @@ defmodule TLX.Emitter.Format do
     do: "{#{Enum.map_join(elements, ", ", &format_expr(&1, s))}}"
 
   def format_expr({:member, var, values}, s) do
-    vals = Enum.map_join(values, ", ", &Atom.to_string/1)
+    vals = Enum.map_join(values, ", ", &format_atom(&1, s))
     "#{Atom.to_string(var)} #{s.member} {#{vals}}"
   end
 
   def format_expr({:and_members, clauses}, s) do
     Enum.map_join(clauses, " #{s.and} ", fn {var, values} ->
-      vals = Enum.map_join(values, ", ", &Atom.to_string/1)
+      vals = Enum.map_join(values, ", ", &format_atom(&1, s))
       "#{Atom.to_string(var)} #{s.member} {#{vals}}"
     end)
   end
