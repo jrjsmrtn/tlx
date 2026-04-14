@@ -220,7 +220,7 @@ Sprint 16 — Proper parsers and AST-based code gen:
 | ------ | -------------- | ------------------------------------------------------------------------ |
 | 44     | Tooling        | State/transition coverage — verify ExUnit tests exercise all spec states |
 | 45     | Expressiveness | Elixir `case/do` inside `e()` — emit as TLA+ CASE                        |
-| 46     | Expressiveness | `until(p, q)` temporal operator — TLA+ P U Q (strong until)              |
+| 46     | Expressiveness | `until(p, q)` and `weak_until(p, q)` — TLA+ P U Q and P W Q              |
 
 ### Sprint 45: Elixir `case/do` inside `e()`
 
@@ -353,38 +353,43 @@ States: 3/4 (75%)   Transitions: 3/4 (75%)
 
 **Prerequisites**: None — uses existing specs and `Graph.extract/2`. Independent of extractors.
 
-### Sprint 46: `until(p, q)` Temporal Operator
+### Sprint 46: `until(p, q)` and `weak_until(p, q)` Temporal Operators
 
-**Goal**: Add the TLA+ "strong until" operator (P U Q) to the temporal property DSL.
+**Goal**: Add TLA+'s two "until" operators to the temporal property DSL.
 
-TLX currently supports `always` ([]P), `eventually` (<>P), and `leads_to` (P ~> Q). The `until` operator fills the gap for properties like "P holds continuously until Q becomes true, and Q must eventually become true."
+TLX currently supports `always` ([]P), `eventually` (<>P), and `leads_to` (P ~> Q). The two "until" variants complete TLA+'s temporal logic:
 
-**TLA+ semantics**: `P U Q` means: Q eventually holds, and P holds in every state before Q first holds. This is "strong until" — Q is guaranteed to happen. (Weak until, P W Q, allows P to hold forever if Q never occurs.)
+| Operator           | TLA+  | Meaning                                                           |
+| ------------------ | ----- | ----------------------------------------------------------------- |
+| `until(p, q)`      | P U Q | P holds until Q becomes true; **Q must eventually hold** (strong) |
+| `weak_until(p, q)` | P W Q | P holds until Q becomes true, **or P holds forever** (weak)       |
+
+The difference: strong until guarantees progress (Q happens). Weak until allows the system to stay in P indefinitely — useful for safety properties where termination isn't required.
 
 **DSL syntax**:
 
 ```elixir
-# "system stays in safe mode until recovery completes"
+# Strong: "safe mode until recovery completes" (recovery MUST happen)
 property :safe_until_recovered, until(e(mode == :safe), e(mode == :recovered))
 
-# "buffer is non-empty until consumer reads"
-property :non_empty_until_read, until(e(count > 0), e(count == 0))
+# Weak: "lock held until explicitly released" (may hold forever — that's OK)
+property :lock_held, weak_until(e(locked == true), e(released == true))
 ```
 
 **Emits as TLA+**:
 
 ```tla
 SafeUntilRecovered == (mode = "safe") \U (mode = "recovered")
+LockHeld           == (locked = TRUE) \W (released = TRUE)
 ```
 
 **Implementation**:
 
 1. `TLX.Temporal.until/2` — returns `{:until, p, q}` IR node
-2. TLA+ emitter: emit `(p) \U (q)` with correct operator precedence
-3. PlusCal emitters: emit in the `PROPERTY` section (same as other temporal ops)
-4. Config emitter: add to `PROPERTY` directives
-5. Simulator: cannot check `until` (same limitation as `always`/`eventually` — temporal properties require TLC)
+2. `TLX.Temporal.weak_until/2` — returns `{:weak_until, p, q}` IR node
+3. TLA+ emitter: emit `(p) \U (q)` and `(p) \W (q)` with correct precedence
+4. PlusCal emitters: emit in the `PROPERTY` section (same as other temporal ops)
+5. Config emitter: add to `PROPERTY` directives
+6. Simulator: cannot check temporal operators (requires TLC)
 
-**Also consider**: `weak_until(p, q)` for P W Q (P holds until Q, or P holds forever). Lower priority — strong until covers most practical cases.
-
-**Scope**: Small — follows the same pattern as `always`/`eventually`/`leads_to` in `TLX.Temporal`.
+**Scope**: Small — follows the same pattern as `always`/`eventually`/`leads_to` in `TLX.Temporal`. Both operators in one sprint.
