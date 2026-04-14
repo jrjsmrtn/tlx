@@ -55,6 +55,26 @@ defmodule TLX.SimulatorTest do
     end
   end
 
+  describe "simulator with ite/3" do
+    defmodule IteSpec do
+      use TLX.Spec
+
+      variable(:x, 0)
+
+      action :step do
+        guard(e(x < 5))
+        next(:x, ite(e(x >= 3), 0, e(x + 1)))
+      end
+
+      invariant(:bounded, e(x >= 0 and x <= 4))
+    end
+
+    test "evaluates ite expressions correctly" do
+      assert {:ok, stats} = Simulator.simulate(IteSpec, runs: 100, steps: 50, seed: 42)
+      assert stats.runs == 100
+    end
+  end
+
   describe "simulator with deadlock" do
     defmodule DeadlockSpec do
       use TLX.Spec
