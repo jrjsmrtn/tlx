@@ -170,6 +170,7 @@ Sprint 16 — Proper parsers and AST-based code gen:
 
 | Sprint | Phase                 | Version | Summary                                                  |
 | ------ | --------------------- | ------- | -------------------------------------------------------- |
+| —      | Release               | v0.4.5  | mix tlx.check uses TLA+ emission directly (not PlusCal)  |
 | —      | Release               | v0.4.4  | Bug fixes: atom mismatch, simulator ite/case_of/let_in   |
 | —      | Release               | v0.4.3  | TLA+ references, pattern examples, roadmap sprints 44–47 |
 | —      | Release               | v0.4.2  | Graph refactor, C4 model, CONTRIBUTING, examples         |
