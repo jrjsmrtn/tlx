@@ -135,4 +135,4 @@ Require `extends [:Sequences]`.
 
 ## Not Supported
 
-See [TLA+ constructs not supported by TLX](tla-unsupported.md) for the full list.
+See [TLA+ constructs not supported by TLX](tlaplus-unsupported.md) for the full list.
