@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.4] - 2026-04-14
+
+### Fixed
+
+- PlusCal emitters: type_ok and member invariants now use quoted strings for atoms, matching action variable values. Previously invariants used bare constants while actions used strings, causing SANY/TLC failures.
+- Simulator: `ite/3`, `case_of/1`, `let_in/3` used outside `e()` now evaluate correctly. Previously `compile_expr` treated them as literals instead of routing to `eval_ast`.
+- Simulator: `{:expr, ast}` nodes inside `ite`/`case_of`/`let_in` children now unwrapped during evaluation.
+
+### Added
+
+- Property-based atom consistency tests: for every atom in a spec, verify each emitter uses its expected format consistently (quoted for PlusCal, bare for TLA+). Catches representation mismatches across emitters.
+- Regression tests for simulator `ite/3`, `case_of/1`, `let_in/3` outside `e()`.
+
+### Changed
+
+- Forge example specs moved to the Forge project (`~/Projects/Forge/specs/`).
+
 ## [0.4.3] - 2026-04-14
 
 ### Added

@@ -150,6 +150,18 @@ defmodule TLX.Simulator do
     fn state -> eval_ast(ast, state) end
   end
 
+  defp compile_expr({:ite, _, _, _} = ast) do
+    fn state -> eval_ast(ast, state) end
+  end
+
+  defp compile_expr({:case_of, _} = ast) do
+    fn state -> eval_ast(ast, state) end
+  end
+
+  defp compile_expr({:let_in, _, _, _} = ast) do
+    fn state -> eval_ast(ast, state) end
+  end
+
   defp compile_expr(literal) do
     fn _state -> literal end
   end
@@ -161,6 +173,9 @@ defmodule TLX.Simulator do
   end
 
   # Evaluate Elixir AST against a state map
+
+  # Unwrap {:expr, ast} — appears inside ite/case_of when children use e()
+  defp eval_ast({:expr, ast}, state), do: eval_ast(ast, state)
 
   defp eval_ast({:and, _, [left, right]}, state),
     do: eval_ast(left, state) and eval_ast(right, state)

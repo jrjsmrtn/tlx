@@ -18,17 +18,6 @@
 | Cache with TTL       | `patterns/gen_server.ex`    | `GenServer` — 3 fields, 5 calls/casts, partial updates   |
 | App supervisor       | `patterns/supervisor.ex`    | `Supervisor` — one_for_all, 3 children, bounded restarts |
 
-## Forge specs (abstract + concrete with refinement)
-
-| Abstract                           | Concrete                         | Domain               |
-| ---------------------------------- | -------------------------------- | -------------------- |
-| `forge/abstract_reconciler.ex`     | `forge/resource_reconciler.ex`   | Resource convergence |
-| `forge/abstract_firmware.ex`       | `forge/firmware_orchestrator.ex` | Firmware updates     |
-| `forge/abstract_build.ex`          | `forge/build_coordinator.ex`     | Build pipeline       |
-| `forge/abstract_vm.ex`             | `forge/vm_coordinator.ex`        | VM provisioning      |
-| `forge/abstract_approval.ex`       | `forge/approval_manager.ex`      | Approval gates       |
-| `forge/abstract_operating_mode.ex` | `forge/operating_mode.ex`        | Operating modes      |
-
 ## Diagrams
 
 Multi-format diagrams for the connection spec:
