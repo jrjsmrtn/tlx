@@ -220,6 +220,7 @@ Sprint 16 — Proper parsers and AST-based code gen:
 | ------ | -------------- | ------------------------------------------------------------------------ |
 | 44     | Tooling        | State/transition coverage — verify ExUnit tests exercise all spec states |
 | 45     | Expressiveness | Elixir `case/do` inside `e()` — emit as TLA+ CASE                        |
+| 46     | Expressiveness | `until(p, q)` temporal operator — TLA+ P U Q (strong until)              |
 
 ### Sprint 45: Elixir `case/do` inside `e()`
 
@@ -351,3 +352,39 @@ States: 3/4 (75%)   Transitions: 3/4 (75%)
 - Performance: `:sys.trace` adds overhead; only enable during test runs
 
 **Prerequisites**: None — uses existing specs and `Graph.extract/2`. Independent of extractors.
+
+### Sprint 46: `until(p, q)` Temporal Operator
+
+**Goal**: Add the TLA+ "strong until" operator (P U Q) to the temporal property DSL.
+
+TLX currently supports `always` ([]P), `eventually` (<>P), and `leads_to` (P ~> Q). The `until` operator fills the gap for properties like "P holds continuously until Q becomes true, and Q must eventually become true."
+
+**TLA+ semantics**: `P U Q` means: Q eventually holds, and P holds in every state before Q first holds. This is "strong until" — Q is guaranteed to happen. (Weak until, P W Q, allows P to hold forever if Q never occurs.)
+
+**DSL syntax**:
+
+```elixir
+# "system stays in safe mode until recovery completes"
+property :safe_until_recovered, until(e(mode == :safe), e(mode == :recovered))
+
+# "buffer is non-empty until consumer reads"
+property :non_empty_until_read, until(e(count > 0), e(count == 0))
+```
+
+**Emits as TLA+**:
+
+```tla
+SafeUntilRecovered == (mode = "safe") \U (mode = "recovered")
+```
+
+**Implementation**:
+
+1. `TLX.Temporal.until/2` — returns `{:until, p, q}` IR node
+2. TLA+ emitter: emit `(p) \U (q)` with correct operator precedence
+3. PlusCal emitters: emit in the `PROPERTY` section (same as other temporal ops)
+4. Config emitter: add to `PROPERTY` directives
+5. Simulator: cannot check `until` (same limitation as `always`/`eventually` — temporal properties require TLC)
+
+**Also consider**: `weak_until(p, q)` for P W Q (P holds until Q, or P holds forever). Lower priority — strong until covers most practical cases.
+
+**Scope**: Small — follows the same pattern as `always`/`eventually`/`leads_to` in `TLX.Temporal`.
