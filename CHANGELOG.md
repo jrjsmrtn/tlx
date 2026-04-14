@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.5] - 2026-04-14
+
+### Fixed
+
+- `mix tlx.check` now emits TLA+ directly instead of PlusCal-C → pcal.trans. Eliminates false deadlocks from PlusCal's `pc` variable and removes one Java invocation.
+
+### Removed
+
+- Dead code: `translate_pluscal/2` and `find_tla2tools/0` from `Mix.Tasks.Tlx.Check` (TLC.check/3 has its own jar detection).
+
 ## [0.4.4] - 2026-04-14
 
 ### Fixed

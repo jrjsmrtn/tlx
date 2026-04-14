@@ -28,7 +28,7 @@ The `dot` format generates a GraphViz digraph. The `mermaid` format generates a 
 
 ## mix tlx.check
 
-Emit PlusCal, translate to TLA+ via `pcal.trans`, run TLC.
+Emit TLA+ and run TLC model checker.
 
 ```bash
 mix tlx.check MySpec

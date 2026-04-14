@@ -3,7 +3,7 @@
 
 defmodule Mix.Tasks.Tlx.Check do
   @moduledoc """
-  Emit a PlusCal spec, translate to TLA+, and run TLC model checker.
+  Emit a TLA+ spec and run TLC model checker.
 
   ## Usage
 
@@ -58,15 +58,9 @@ defmodule Mix.Tasks.Tlx.Check do
     tla_path = Path.join(dir, "#{module_name}.tla")
     cfg_path = Path.join(dir, "#{module_name}.cfg")
 
-    # Emit PlusCal wrapped in .tla
-    pluscal = Emitter.PlusCalC.emit(module)
-    File.write!(tla_path, pluscal <> "\n")
-
-    # Translate PlusCal to TLA+
-    case translate_pluscal(tla_path, opts) do
-      :ok -> :ok
-      {:error, reason} -> Mix.raise("PlusCal translation failed: #{reason}")
-    end
+    # Emit TLA+ directly (no PlusCal translation needed)
+    tla = Emitter.TLA.emit(module)
+    File.write!(tla_path, tla <> "\n")
 
     # Emit .cfg
     cfg = Emitter.Config.emit(module, model_values: model_values)
@@ -104,32 +98,6 @@ defmodule Mix.Tasks.Tlx.Check do
     end
 
     Mix.raise("TLC verification failed")
-  end
-
-  defp translate_pluscal(tla_path, opts) do
-    jar = opts[:tla2tools] || find_tla2tools()
-
-    if jar do
-      case System.cmd("java", ["-cp", jar, "pcal.trans", tla_path], stderr_to_stdout: true) do
-        {_, 0} -> :ok
-        {output, _} -> {:error, output}
-      end
-    else
-      {:error, "tla2tools.jar not found"}
-    end
-  end
-
-  defp find_tla2tools do
-    candidates =
-      [
-        System.get_env("TLA2TOOLS"),
-        "tla2tools.jar",
-        "docs/specs/tla2tools.jar",
-        Path.expand("~/.tla2tools/tla2tools.jar")
-      ]
-      |> Enum.reject(&is_nil/1)
-
-    Enum.find(candidates, &File.exists?/1)
   end
 
   defp parse_model_values(values) when is_list(values) do
