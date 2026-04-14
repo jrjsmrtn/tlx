@@ -170,7 +170,9 @@ Sprint 16 — Proper parsers and AST-based code gen:
 
 | Sprint | Phase                 | Version | Summary                                              |
 | ------ | --------------------- | ------- | ---------------------------------------------------- |
+| —      | Release               | v0.4.2  | Graph refactor, C4 model, CONTRIBUTING, examples     |
 | 43     | Documentation         | v0.4.1  | Diátaxis docs for v0.4.0 features                    |
+| —      | Release               | v0.4.0  | Squash release: Sprints 26–42 + credo/dialyzer fixes |
 | 42     | Extractors            | v0.3.17 | Broadway extractor — pipeline topology via AST       |
 | 41     | Extractors            | v0.3.16 | Reactor extractor — step DAG via Spark introspection |
 | 38-40  | Skills                | v0.3.15 | spec-audit, visualize, spec-drift skills             |
