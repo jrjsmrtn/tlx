@@ -4,7 +4,7 @@
 defmodule TLX.Emitter.AtomConsistencyTest do
   use ExUnit.Case
 
-  alias TLX.Emitter.{PlusCalC, PlusCalP, TLA}
+  alias TLX.Emitter.{Atoms, PlusCalC, PlusCalP, TLA}
 
   import TLX
 
@@ -96,6 +96,77 @@ defmodule TLX.Emitter.AtomConsistencyTest do
       assert valid_line =~ ~s("normal")
       assert valid_line =~ ~s("standby")
       assert valid_line =~ ~s("autonomous")
+    end
+  end
+
+  describe "property: every atom has consistent representation within each emitter" do
+    # For each emitter, every occurrence of an atom value in the output
+    # must use the same format (quoted or bare). No mixing within one emitter.
+
+    @emitters [
+      {"PlusCalC", &PlusCalC.emit/1, :quoted},
+      {"PlusCalP", &PlusCalP.emit/1, :quoted},
+      {"TLA+", &TLA.emit/1, :unquoted}
+    ]
+
+    for {name, _emitter_fn, expected_format} <- @emitters do
+      test "#{name}: all atoms use #{expected_format} format consistently" do
+        {_name, emitter_fn, expected} = Enum.find(@emitters, &(elem(&1, 0) == unquote(name)))
+        output = emitter_fn.(AtomSpec)
+        atoms = Atoms.collect(AtomSpec)
+
+        for atom <- atoms do
+          atom_str = Atom.to_string(atom)
+          quoted = ~s("#{atom_str}")
+          bare_re = ~r/(?<!["\w])#{Regex.escape(atom_str)}(?!["\w])/
+
+          has_quoted = String.contains?(output, quoted)
+          has_bare = Regex.match?(bare_re, output)
+
+          case expected do
+            :quoted ->
+              assert has_quoted,
+                     "#{unquote(name)}: atom :#{atom_str} should appear quoted but doesn't"
+
+            :unquoted ->
+              assert has_bare,
+                     "#{unquote(name)}: atom :#{atom_str} should appear bare but doesn't"
+          end
+        end
+      end
+    end
+
+    test "no emitter mixes quoted and bare atoms in invariant lines" do
+      atoms = Atoms.collect(AtomSpec)
+
+      for {name, emitter_fn, _} <- @emitters do
+        output = emitter_fn.(AtomSpec)
+
+        invariant_lines =
+          output
+          |> String.split("\n")
+          |> Enum.filter(fn line ->
+            String.starts_with?(line, "type_ok") or String.starts_with?(line, "valid_")
+          end)
+
+        for line <- invariant_lines do
+          quoted_count =
+            Enum.count(atoms, fn atom ->
+              String.contains?(line, ~s("#{Atom.to_string(atom)}"))
+            end)
+
+          bare_count =
+            Enum.count(atoms, fn atom ->
+              atom_str = Atom.to_string(atom)
+              bare_re = ~r/(?<!["\w])#{Regex.escape(atom_str)}(?!["\w])/
+              Regex.match?(bare_re, line) and not String.contains?(line, ~s("#{atom_str}"))
+            end)
+
+          # Within one invariant line, all atoms should be same format
+          assert quoted_count == 0 or bare_count == 0,
+                 "#{name}: invariant line mixes quoted (#{quoted_count}) and bare (#{bare_count}) atoms: #{line}"
+        end
+      end
     end
   end
 end
