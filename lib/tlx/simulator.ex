@@ -158,6 +158,10 @@ defmodule TLX.Simulator do
     fn state -> eval_ast(ast, state) end
   end
 
+  defp compile_expr({:let_in, _, _, _} = ast) do
+    fn state -> eval_ast(ast, state) end
+  end
+
   defp compile_expr(literal) do
     fn _state -> literal end
   end
