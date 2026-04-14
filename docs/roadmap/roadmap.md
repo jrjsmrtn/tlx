@@ -170,7 +170,9 @@ Sprint 16 — Proper parsers and AST-based code gen:
 
 | Sprint | Phase                 | Version | Summary                                              |
 | ------ | --------------------- | ------- | ---------------------------------------------------- |
+| —      | Release               | v0.4.2  | Graph refactor, C4 model, CONTRIBUTING, examples     |
 | 43     | Documentation         | v0.4.1  | Diátaxis docs for v0.4.0 features                    |
+| —      | Release               | v0.4.0  | Squash release: Sprints 26–42 + credo/dialyzer fixes |
 | 42     | Extractors            | v0.3.17 | Broadway extractor — pipeline topology via AST       |
 | 41     | Extractors            | v0.3.16 | Reactor extractor — step DAG via Spark introspection |
 | 38-40  | Skills                | v0.3.15 | spec-audit, visualize, spec-drift skills             |
@@ -216,5 +218,230 @@ Sprint 16 — Proper parsers and AST-based code gen:
 
 ## Proposed Sprints
 
-| Sprint | Phase | Plan |
-| ------ | ----- | ---- |
+| Sprint | Phase          | Plan                                                                     |
+| ------ | -------------- | ------------------------------------------------------------------------ |
+| 44     | Tooling        | State/transition coverage — verify ExUnit tests exercise all spec states |
+| 45     | Expressiveness | Elixir `case/do` inside `e()` — emit as TLA+ CASE                        |
+| 46     | Expressiveness | `until(p, q)` and `weak_until(p, q)` — TLA+ P U Q and P W Q              |
+| 47     | Expressiveness | Set/sequence/tuple gaps — difference, map, concat, tuples                |
+
+### Sprint 45: Elixir `case/do` inside `e()`
+
+**Goal**: Support native Elixir `case` syntax inside `e()`, emitting TLA+ `CASE`.
+
+Currently, TLA+ `CASE` is only accessible via `case_of/1` with `{condition, value}` tuple lists. Elixir's `case/do` is more natural for multi-way conditionals, especially in refinement mappings.
+
+**Before** (current — nested if/else or case_of tuples):
+
+```elixir
+mapping :stage,
+        e(
+          if state == :queued, do: :queued,
+          else: if state == :deployed, do: :deployed,
+          else: :deploying
+        )
+```
+
+**After** (proposed — Elixir case/do):
+
+```elixir
+mapping :stage,
+        e(case state do
+          :queued -> :queued
+          :deployed -> :deployed
+          :failed -> :failed
+          _ -> :deploying
+        end)
+```
+
+**Emits as TLA+ CASE**:
+
+```tla
+CASE state = "queued"   -> "queued"
+  [] state = "deployed" -> "deployed"
+  [] state = "failed"   -> "failed"
+  [] OTHER              -> "deploying"
+```
+
+**Implementation**:
+
+1. Handle `:case` AST node in `e()` macro — transform `case var do pattern -> expr end` into `{:case_of, clauses}` IR
+2. Pattern matching: support literal atoms/integers in patterns, `_` as `OTHER`
+3. Emitters: TLA+ emits `CASE cond -> val [] ...`, PlusCal equivalent, Elixir round-trip
+4. Simulator: evaluate case clauses by pattern matching at runtime
+
+**Scope**: Only literal pattern matching (atoms, integers, `_` wildcard). Complex patterns (tuples, guards) out of scope — use `case_of/1` for those.
+
+### Sprint 44: State/Transition Coverage
+
+**Goal**: Answer "do my tests exercise all the states and transitions my spec defines?"
+
+TLC gives exhaustive spec coverage (proof). This feature gives **test coverage against the spec** — which states/transitions the ExUnit suite actually exercises at runtime.
+
+**Architecture**:
+
+```
+Spec (TLX)              Implementation            Tests (ExUnit)
+    │                        │                         │
+    ▼                        ▼                         ▼
+Graph.extract/2 ──→  State/Transition Map    Instrumentation hooks
+    │                                              │
+    └──────────────── Compare ─────────────────────┘
+                         │
+                    Coverage Report
+```
+
+**Instrumentation approaches by module type**:
+
+| Module type      | State access                               | Hook mechanism                                     |
+| ---------------- | ------------------------------------------ | -------------------------------------------------- |
+| gen_statem       | `:sys.get_state/1` returns `{state, data}` | `:sys.trace/2` or custom `handle_event` wrapper    |
+| GenServer        | `:sys.get_state/1` returns state map       | Telemetry events or `:sys.trace/2`                 |
+| LiveView         | `socket.assigns`                           | Test helper that captures assigns after each event |
+| Ash.StateMachine | Resource attribute value                   | Ash notifications or `after_action` hooks          |
+
+**Deliverables**:
+
+1. `TLX.Coverage` — test helper module
+   - `start_tracking(module, spec)` — begins state/transition recording
+   - `stop_tracking(module)` — returns `%{visited_states, visited_transitions}`
+   - `report(module, spec)` — compares against spec, prints coverage table
+
+2. `mix tlx.coverage` — mix task that runs tests with tracking enabled
+   - Reads spec → implementation mapping from `# Source:` headers
+   - Instruments implementations during test run
+   - Reports per-spec coverage after tests complete
+
+3. ExUnit integration:
+   ```elixir
+   defmodule MyApp.ReconcilerTest do
+     use ExUnit.Case
+     use TLX.Coverage, spec: ReconcilerSpec, module: MyApp.Reconciler
+
+     # Tests run normally — coverage tracked automatically
+     test "check returns in_sync" do
+       # ...
+     end
+   end
+   # After: prints state/transition coverage report
+   ```
+
+**Output format**:
+
+```
+State Coverage: MyApp.Reconciler (spec: ReconcilerSpec)
+─────────────────────────────────────────────────────
+States:
+  :idle        ✓ (12 visits)
+  :in_sync     ✓ (8 visits)
+  :drifted     ✓ (4 visits)
+  :error       ✗ NOT TESTED
+
+Transitions:
+  idle → in_sync (check/success)     ✓ (6 visits)
+  idle → drifted (check/failure)     ✓ (4 visits)
+  drifted → in_sync (apply/success)  ✓ (3 visits)
+  drifted → drifted (apply/failure)  ✗ NOT TESTED
+─────────────────────────────────────────────────────
+States: 3/4 (75%)   Transitions: 3/4 (75%)
+```
+
+**Challenges**:
+
+- GenServer state is opaque — need to map struct fields to spec variables
+- LiveView assigns change frequently — need to filter spec-relevant fields only
+- Transition detection requires comparing consecutive states, not just snapshots
+- gen_statem `state_functions` mode: state is the function name, not in `:sys.get_state`
+- Performance: `:sys.trace` adds overhead; only enable during test runs
+
+**Prerequisites**: None — uses existing specs and `Graph.extract/2`. Independent of extractors.
+
+### Sprint 46: `until(p, q)` and `weak_until(p, q)` Temporal Operators
+
+**Goal**: Add TLA+'s two "until" operators to the temporal property DSL.
+
+TLX currently supports `always` ([]P), `eventually` (<>P), and `leads_to` (P ~> Q). The two "until" variants complete TLA+'s temporal logic:
+
+| Operator           | TLA+  | Meaning                                                           |
+| ------------------ | ----- | ----------------------------------------------------------------- |
+| `until(p, q)`      | P U Q | P holds until Q becomes true; **Q must eventually hold** (strong) |
+| `weak_until(p, q)` | P W Q | P holds until Q becomes true, **or P holds forever** (weak)       |
+
+The difference: strong until guarantees progress (Q happens). Weak until allows the system to stay in P indefinitely — useful for safety properties where termination isn't required.
+
+**DSL syntax**:
+
+```elixir
+# Strong: "safe mode until recovery completes" (recovery MUST happen)
+property :safe_until_recovered, until(e(mode == :safe), e(mode == :recovered))
+
+# Weak: "lock held until explicitly released" (may hold forever — that's OK)
+property :lock_held, weak_until(e(locked == true), e(released == true))
+```
+
+**Emits as TLA+**:
+
+```tla
+SafeUntilRecovered == (mode = "safe") \U (mode = "recovered")
+LockHeld           == (locked = TRUE) \W (released = TRUE)
+```
+
+**Implementation**:
+
+1. `TLX.Temporal.until/2` — returns `{:until, p, q}` IR node
+2. `TLX.Temporal.weak_until/2` — returns `{:weak_until, p, q}` IR node
+3. TLA+ emitter: emit `(p) \U (q)` and `(p) \W (q)` with correct precedence
+4. PlusCal emitters: emit in the `PROPERTY` section (same as other temporal ops)
+5. Config emitter: add to `PROPERTY` directives
+6. Simulator: cannot check temporal operators (requires TLC)
+
+**Scope**: Small — follows the same pattern as `always`/`eventually`/`leads_to` in `TLX.Temporal`. Both operators in one sprint.
+
+### Sprint 47: Set, Sequence, and Tuple Gaps
+
+**Goal**: Fill the remaining practical gaps in TLA+ expression coverage.
+
+**Sets** — add to `TLX.Sets`:
+
+| DSL                       | TLA+                 | Use case                                                |
+| ------------------------- | -------------------- | ------------------------------------------------------- |
+| `difference(a, b)`        | `a \ b`              | Set difference — permission exclusion, resource removal |
+| `set_map(:x, :set, expr)` | `{expr : x \in set}` | Set image/transform — map over a set                    |
+| `power_set(s)`            | `SUBSET s`           | Power set — all subsets (e.g., possible coalitions)     |
+| `distributed_union(s)`    | `UNION s`            | Flatten a set of sets                                   |
+
+```elixir
+# Remove failed nodes from active set
+next :active, e(difference(active, failed))
+
+# Map node IDs to their statuses
+invariant :all_tracked, e(set_map(:id, nodes, at(status, id)) == expected)
+```
+
+**Sequences** — add to `TLX.Sequences`:
+
+| DSL                       | TLA+                           | Use case                                             |
+| ------------------------- | ------------------------------ | ---------------------------------------------------- |
+| `concat(s, t)`            | `s \o t`                       | Sequence concatenation — log append, queue merge     |
+| `select_seq(s, :x, pred)` | `SelectSeq(s, LAMBDA x: pred)` | Filter sequence — remove processed items             |
+| `seq_set(s)`              | `Seq(s)`                       | Set of all finite sequences over S — type constraint |
+
+```elixir
+# Append new log to history
+next :history, e(concat(history, log_entry))
+```
+
+**Tuples** — new `TLX.Tuples` or extend expressions:
+
+| DSL              | TLA+          | Use case                                         |
+| ---------------- | ------------- | ------------------------------------------------ |
+| `tuple(a, b, c)` | `<<a, b, c>>` | Tuple constructor — multi-value, message passing |
+
+```elixir
+# Send a message as a tuple
+next :messages, e(append(messages, tuple(sender, receiver, payload)))
+```
+
+**Implementation**: Each is a tagged tuple in IR + emitter clause. Same pattern as existing set/sequence ops. `set_map` is the most complex (needs variable binding like `filter`). `select_seq` requires LAMBDA emission.
+
+**Scope**: Medium — 7 new operators across 3 modules, each following established patterns. `select_seq` deferred if LAMBDA emission is too complex (use `filter` on sequence indices instead).

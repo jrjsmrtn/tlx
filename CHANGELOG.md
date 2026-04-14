@@ -7,6 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.3] - 2026-04-14
+
+### Added
+
+- Reference: TLA+↔TLX comprehensive mapping (`docs/reference/tlaplus-mapping.md`)
+- Reference: TLA+ unsupported constructs with workarounds (`docs/reference/tlaplus-unsupported.md`)
+- 3 OTP pattern examples: StateMachine, GenServer, Supervisor (`examples/patterns/`)
+- Multi-format diagram examples: DOT, Mermaid, PlantUML, D2 (`examples/diagrams/`)
+- `examples/README.md` — index of all specs, patterns, and diagrams
+- Roadmap: Sprints 44–47 (state coverage, `case/do` in `e()`, `until`/`weak_until`, set/sequence/tuple gaps)
+
+## [0.4.2] - 2026-04-14
+
+### Changed
+
+- Extract shared `TLX.Emitter.Graph` module from diagram emitters — DOT, Mermaid, PlantUML, D2 now consume struct directly instead of regex-parsing DOT text output
+- C4 architecture model updated for v0.4.0 features (extractors, patterns, skills, Graph module)
+
+### Added
+
+- CONTRIBUTING.md: call for contributors (BEAM languages, TLA+, Ash/Reactor/Broadway reviewers)
+- `usage-rules.md` updated for v0.4.0 (patterns, extractors, skills)
+
+## [0.4.1] - 2026-04-13
+
+### Added
+
+- Diátaxis documentation for v0.4.0 features:
+  - Tutorials: extract-and-verify, visualize-a-spec
+  - How-tos: extract-from-otp, extract-from-frameworks, use-otp-patterns, generate-diagrams, audit-spec-coverage
+  - Explanations: extraction-architecture, patterns-vs-defspec
+  - References: mix-tasks (updated with 8 new tasks + PlantUML/D2), otp-patterns, extractors
+- CHANGELOG v0.4.0 entry
+- Updated README, getting-started, internals for v0.4.0
+- `model-a-genserver.md`: note about extractor shortcut
+
 ## [0.4.0] - 2026-04-01
 
 ### Added

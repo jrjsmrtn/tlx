@@ -1,0 +1,9 @@
+@startuml
+[*] --> disconnected
+disconnected --> connecting : connect
+connecting --> connected : connected
+connecting --> error : timeout
+connected --> disconnected : disconnect
+error --> disconnected : recover
+error --> connecting : retry
+@enduml
