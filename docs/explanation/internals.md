@@ -8,8 +8,8 @@ A TLX specification goes through three stages:
 
 ```
 Elixir source → Spark DSL (compile-time) → Internal IR → Output
-                                                          ├── TLA+ emitter → .tla file → TLC
-                                                          ├── PlusCal emitter → .tla file → pcal.trans → TLC
+                                                          ├── TLA+ emitter → .tla file → TLC (mix tlx.check)
+                                                          ├── PlusCal emitters → .tla file (C/P syntax)
                                                           ├── Config emitter → .cfg file
                                                           ├── Elixir emitter → round-trip source
                                                           └── Simulator → Elixir state exploration
