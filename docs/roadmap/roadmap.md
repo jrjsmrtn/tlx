@@ -224,9 +224,12 @@ Sprint 16 — Proper parsers and AST-based code gen:
 
 ## Proposed Sprints
 
-| Sprint | Phase   | Plan                                                                     |
-| ------ | ------- | ------------------------------------------------------------------------ |
-| 44     | Tooling | State/transition coverage — verify ExUnit tests exercise all spec states |
+| Sprint | Phase          | Plan                                                                        |
+| ------ | -------------- | --------------------------------------------------------------------------- |
+| 44     | Tooling        | State/transition coverage — verify ExUnit tests exercise all spec states    |
+| 48     | Simulator      | AST-form eval audit — close the gap for set/sequence ops inside `e()`       |
+| 49     | Expressiveness | `select_seq` + LAMBDA emission for sequence filtering                       |
+| 50     | Simulator      | `case_of` `find_value` fix — don't drop clauses whose body is `false`/`nil` |
 
 ### Sprint 45: Elixir `case/do` inside `e()`
 
@@ -448,3 +451,110 @@ next :messages, e(append(messages, tuple(sender, receiver, payload)))
 **Implementation**: Each is a tagged tuple in IR + emitter clause. Same pattern as existing set/sequence ops. `set_map` is the most complex (needs variable binding like `filter`). `select_seq` requires LAMBDA emission.
 
 **Scope**: Medium — 7 new operators across 3 modules, each following established patterns. `select_seq` deferred if LAMBDA emission is too complex (use `filter` on sequence indices instead).
+
+### Sprint 48: Simulator AST-form Eval for Set/Sequence Ops
+
+**Source**: Sprint 47 retrospective — "pre-existing AST-form gap for `cardinality`/`len`/`in_set`"
+
+**Goal**: Make the simulator evaluate set and sequence operators inside `e()` so they work in guards, invariants, and transitions.
+
+Today, `TLX.Sets.union/2` returns the direct-call IR `{:union, a, b}`, and the simulator's `eval_ast` only matches that shape. Writing `e(cardinality(remaining))` in a guard parses to AST `{:cardinality, [meta], [remaining]}` — a different shape — and the simulator raises `FunctionClauseError`. Sprint 47 ran into this mid-sprint and worked around it by rewriting tests with counter-variable guards. Real user specs won't have that workaround available.
+
+**Scope** — add `{op, meta, [args]}` AST-capture clauses (mirroring the direct-call logic) for every set/sequence op the simulator evaluates:
+
+| Op            | Direct form (today)       | AST form (needed)                 |
+| ------------- | ------------------------- | --------------------------------- |
+| `union`       | `{:union, a, b}`          | `{:union, meta, [a, b]}`          |
+| `intersect`   | `{:intersect, a, b}`      | `{:intersect, meta, [a, b]}`      |
+| `subset`      | `{:subset, a, b}`         | `{:subset, meta, [a, b]}`         |
+| `cardinality` | `{:cardinality, s}`       | `{:cardinality, meta, [s]}`       |
+| `in_set`      | `{:in_set, elem, s}`      | `{:in_set, meta, [elem, s]}`      |
+| `set_of`      | `{:set_of, [elems]}`      | `{:set_of, meta, [[elems]]}`      |
+| `filter`      | `{:filter, var, s, expr}` | `{:filter, meta, [var, s, expr]}` |
+| `choose`      | `{:choose, var, s, expr}` | `{:choose, meta, [var, s, expr]}` |
+| `seq_len`     | `{:seq_len, s}`           | `{:len, meta, [s]}`               |
+| `seq_append`  | `{:seq_append, s, x}`     | `{:append, meta, [s, x]}`         |
+| `seq_head`    | `{:seq_head, s}`          | `{:head, meta, [s]}`              |
+| `seq_tail`    | `{:seq_tail, s}`          | `{:tail, meta, [s]}`              |
+| `seq_sub_seq` | `{:seq_sub_seq, s, m, n}` | `{:sub_seq, meta, [s, m, n]}`     |
+| `at`          | `{:at, f, x}`             | `{:at, meta, [f, x]}`             |
+| `except`      | `{:except, f, x, v}`      | `{:except, meta, [f, x, v]}`      |
+| `domain`      | `{:domain, f}`            | `{:domain, meta, [f]}`            |
+| `range`       | `{:range, a, b}`          | `{:range, meta, [a, b]}`          |
+| `implies`     | `{:implies, p, q}`        | `{:implies, meta, [p, q]}`        |
+| `equiv`       | `{:equiv, p, q}`          | `{:equiv, meta, [p, q]}`          |
+
+Note the tag-name differences for sequence ops: direct form is prefixed (`:seq_len`), AST form uses the user-written name (`:len`). That's because `TLX.Sequences.len/1` returns `{:seq_len, s}` but inside `e()`, `len(queue)` parses to `{:len, meta, [queue]}`.
+
+**Implementation**: each row becomes one new `eval_ast` clause delegating to the direct-form logic. Best done with a small helper:
+
+```elixir
+defp eval_ast({:cardinality, meta, [s]}, state) when is_list(meta),
+  do: eval_ast({:cardinality, s}, state)
+```
+
+Once this pattern is applied uniformly, new ops in future sprints follow the same template.
+
+**Out of scope**: AST-form eval for non-set/sequence ops (temporal operators aren't simulator-evaluable anyway; comparison/arithmetic operators already work).
+
+**Verification**: add simulator tests that use each op in an invariant AND a guard (the two places that hit this). Existing emission tests are unaffected.
+
+### Sprint 49: `select_seq` with LAMBDA Emission
+
+**Source**: Sprint 47 retrospective — `select_seq` deferred pending LAMBDA support.
+
+**Goal**: Emit TLA+ `SelectSeq(s, LAMBDA x: pred)` from `e(select_seq(s, :x, pred))`.
+
+`SelectSeq(s, Test(_))` is the sequence analog of `filter` — it returns the subsequence of `s` whose elements satisfy `Test`. In TLA+ this requires passing an operator, and the idiomatic form is an anonymous `LAMBDA`:
+
+```elixir
+e(select_seq(history, :entry, entry.priority > 0))
+```
+
+Emits:
+
+```tla
+SelectSeq(history, LAMBDA entry: entry["priority"] > 0)
+```
+
+**Implementation**:
+
+1. `TLX.Sequences.select_seq/3` → `{:seq_select, s, var, pred}` IR node
+2. TLA+/PlusCal/Elixir emitters: render the LAMBDA form
+3. Simulator: evaluate by binding `var` to each element and filtering
+4. AST-capture form: `{:select_seq, meta, [s, var, pred]}` (both in format + simulator)
+
+**Scope**: Small-medium. The new machinery is the LAMBDA syntax — first place in TLX that emits TLA+ operator literals. Once in place, it unlocks future ops that take predicates (e.g., `\A x \in s : P(x)` with higher-order predicates, if ever needed).
+
+**Out of scope**: general LAMBDA support outside `SelectSeq`. Keep emission scoped to this one call site until a second use case shows up.
+
+### Sprint 50: `case_of` `find_value` Fix
+
+**Source**: Sprint 45 retrospective — "pre-existing `find_value` semantics (falsy result treated as 'keep looking')".
+
+**Goal**: Fix the simulator's `case_of` eval so a matched clause with a `false` or `nil` body returns that value instead of falling through.
+
+Today:
+
+```elixir
+defp eval_ast({:case_of, clauses}, state) do
+  Enum.find_value(clauses, fn
+    {:otherwise, expr} -> eval_ast(expr, state)
+    {cond, expr} -> if eval_ast(cond, state), do: eval_ast(expr, state)
+  end)
+end
+```
+
+`Enum.find_value` treats any `falsy` return (`false`/`nil`) from the function as "not matched, keep looking" — so a case like:
+
+```elixir
+case_of([{e(flag == true), false}, {:otherwise, true}])
+```
+
+…returns `true` even when `flag == true`, because the `false` body is swallowed.
+
+**Fix**: replace with `Enum.reduce_while` returning `{:halt, {:ok, value}}` on match, or wrap intermediate results in `{:ok, _}` tuples and unwrap at the end. Minimal change, isolated blast radius — affects only `case_of` eval.
+
+**Scope**: Tiny. Plus one regression test with a falsy-body clause.
+
+**When it matters**: users writing boolean-valued cases (refinement mappings between spec states that happen to align with `true`/`false`, or explicit `nil` sentinels).
