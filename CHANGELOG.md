@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.6] - 2026-04-18
+
+Eight sprints of expressiveness and simulator work: every sprint-retro follow-up from 45–47 is closed, every basic TLA+ primitive gap identified by codebase audit is shipped.
+
 ### Added
 
 - `case/do` syntax inside `e()` — native Elixir `case` expressions transform at macro expansion into `{:case_of, clauses}` IR, emitting TLA+ `CASE ... [] OTHER -> ...`. Supports literal atom/integer/string patterns and `_` wildcard (mapped to `:otherwise` sentinel).
