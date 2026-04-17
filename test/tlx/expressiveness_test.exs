@@ -594,4 +594,60 @@ defmodule TLX.ExpressivenessTest do
       assert output =~ "x >= -100"
     end
   end
+
+  # --- Sprint 52: function constructor, function set, Cartesian product ---
+
+  defmodule FnOfSpec do
+    use TLX.Spec
+
+    variable(:vote_counts, %{})
+
+    constant(:nodes)
+
+    initial do
+      constraint(e(vote_counts == fn_of(:n, nodes, 0)))
+    end
+  end
+
+  defmodule FnSetSpec do
+    use TLX.Spec
+
+    variable(:flags, %{})
+
+    constant(:nodes)
+
+    invariant(:type_ok, e(in_set(flags, fn_set(nodes, set_of([true, false])))))
+  end
+
+  defmodule CrossSpec do
+    use TLX.Spec
+
+    variable(:in_flight, MapSet.new())
+
+    constant(:nodes)
+
+    invariant(:msg_type, e(subset(in_flight, cross(nodes, nodes))))
+  end
+
+  describe "function constructor (fn_of)" do
+    test "TLA+ emits [var \\in set |-> expr]" do
+      output = TLA.emit(FnOfSpec)
+      assert output =~ "[n \\in nodes |-> 0]"
+    end
+  end
+
+  describe "function set (fn_set)" do
+    test "TLA+ emits [domain -> range]" do
+      output = TLA.emit(FnSetSpec)
+      assert output =~ "[nodes -> {TRUE, FALSE}]"
+    end
+  end
+
+  describe "Cartesian product (cross)" do
+    test "TLA+ emits \\X" do
+      output = TLA.emit(CrossSpec)
+      assert output =~ "\\X"
+      assert output =~ "nodes"
+    end
+  end
 end

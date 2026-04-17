@@ -395,6 +395,27 @@ defmodule TLX.Emitter.Format do
   def format_ast({:tuple, elements}, s) when is_list(elements),
     do: "<<#{Enum.map_join(elements, ", ", &format_expr(&1, s))}>>"
 
+  # Function constructor — [var \in set |-> expr]
+  def format_ast({:fn_of, meta, [var, set, expr]}, s) when is_list(meta),
+    do: "[#{Atom.to_string(var)} #{s.member} #{format_ast(set, s)} |-> #{format_ast(expr, s)}]"
+
+  def format_ast({:fn_of, var, set, expr}, s),
+    do: "[#{Atom.to_string(var)} #{s.member} #{format_expr(set, s)} |-> #{format_expr(expr, s)}]"
+
+  # Function set (type) — [domain -> range]
+  def format_ast({:fn_set, meta, [domain, range]}, s) when is_list(meta),
+    do: "[#{format_ast(domain, s)} -> #{format_ast(range, s)}]"
+
+  def format_ast({:fn_set, domain, range}, s),
+    do: "[#{format_expr(domain, s)} -> #{format_expr(range, s)}]"
+
+  # Cartesian product — (a \X b)
+  def format_ast({:cross, meta, [a, b]}, s) when is_list(meta),
+    do: "(#{format_ast(a, s)} \\X #{format_ast(b, s)})"
+
+  def format_ast({:cross, a, b}, s),
+    do: "(#{format_expr(a, s)} \\X #{format_expr(b, s)})"
+
   # Variable reference
   def format_ast({name, _meta, ctx}, _s) when is_atom(name) and is_atom(ctx),
     do: Atom.to_string(name)
@@ -441,6 +462,9 @@ defmodule TLX.Emitter.Format do
   def format_expr({:power_set, _} = q, s), do: format_ast(q, s)
   def format_expr({:distributed_union, _} = q, s), do: format_ast(q, s)
   def format_expr({:tuple, _} = q, s), do: format_ast(q, s)
+  def format_expr({:fn_of, _, _, _} = q, s), do: format_ast(q, s)
+  def format_expr({:fn_set, _, _} = q, s), do: format_ast(q, s)
+  def format_expr({:cross, _, _} = q, s), do: format_ast(q, s)
   def format_expr({:union, a, b}, s), do: "(#{format_expr(a, s)} \\union #{format_expr(b, s)})"
 
   def format_expr({:intersect, a, b}, s),

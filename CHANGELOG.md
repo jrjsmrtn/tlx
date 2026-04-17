@@ -32,6 +32,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 All four are AST-form only (inside `e()`) and use operators from the TLA+ `Integers` module (always extended). Simulator evaluates them via `Kernel.div/2`, `Kernel.rem/2`, and a tail-recursive `integer_pow/2` (avoids `:math.pow/2`'s float result).
 
+### Added (functions and Cartesian product)
+
+- Function constructor: `fn_of(:x, set, expr)` → `[x \in set |-> expr]`. Simulator materializes as an Elixir map.
+- Function set (type): `fn_set(domain, range)` → `[domain -> range]`. Emission-only — `[S -> T]` can be exponentially large; TLC handles it at model-check time.
+- Cartesian product: `cross(a, b)` → `(a \X b)`. Simulator builds a `MapSet` of 2-element lists.
+- New `TLX.Functions` module wired into all DSL section imports alongside `TLX.Sets`, `TLX.Sequences`, `TLX.Tuples`, `TLX.Temporal`, `TLX.Expr`.
+
 ## [0.4.5] - 2026-04-14
 
 ### Fixed

@@ -109,6 +109,9 @@ Key TLA+/PlusCal concepts mapped to DSL constructs:
 | Set image           | `set_map(:var, :set, expr)`                                     | `{expr : var \in set}`          |
 | Power / distributed | `power_set(s)`, `distributed_union(s)`                          | `SUBSET s`, `UNION s`           |
 | Tuple literal       | `tuple([a, b, c])`                                              | `<<a, b, c>>`                   |
+| Function ctor       | `fn_of(:x, set, expr)`                                          | `[x \in set \|-> expr]`         |
+| Function set        | `fn_set(domain, range)`                                         | `[domain -> range]` (emit only) |
+| Cartesian product   | `cross(a, b)`                                                   | `(a \X b)`                      |
 | Function access     | `at(f, x)`, `except(f, x, v)`                                   | `f[x]`, `[f EXCEPT ![x]=v]`     |
 | Records             | `record(a: 1, b: 2)`                                            | `[a \|-> 1, b \|-> 2]`          |
 | Multi-key EXCEPT    | `except_many(f, [{k1, v1}, ...])`                               | `[f EXCEPT ![k1]=v1, ...]`      |

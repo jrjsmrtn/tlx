@@ -467,6 +467,18 @@ defmodule TLX.Simulator do
   defp eval_ast({:tuple, elements}, state) when is_list(elements),
     do: Enum.map(elements, &eval_ast(&1, state))
 
+  # Function constructor — [x \in S |-> expr]
+  defp eval_ast({:fn_of, meta, [var, set, expr]}, state) when is_list(meta),
+    do: eval_fn_of(var, set, expr, state)
+
+  defp eval_ast({:fn_of, var, set, expr}, state), do: eval_fn_of(var, set, expr, state)
+
+  # Cartesian product — (a \X b)
+  defp eval_ast({:cross, meta, [a, b]}, state) when is_list(meta),
+    do: eval_cross(a, b, state)
+
+  defp eval_ast({:cross, a, b}, state), do: eval_cross(a, b, state)
+
   # LET/IN
   defp eval_ast({:let_in, var, binding, body}, state) do
     val = eval_ast(binding, state)
@@ -518,6 +530,20 @@ defmodule TLX.Simulator do
     |> Enum.reduce(MapSet.new(), fn inner, acc ->
       MapSet.union(acc, to_mapset(inner))
     end)
+  end
+
+  defp eval_fn_of(var, set, expr, state) do
+    set
+    |> eval_ast(state)
+    |> to_mapset()
+    |> MapSet.to_list()
+    |> Map.new(fn elem -> {elem, eval_ast(expr, Map.put(state, var, elem))} end)
+  end
+
+  defp eval_cross(a, b, state) do
+    la = a |> eval_ast(state) |> to_mapset() |> MapSet.to_list()
+    lb = b |> eval_ast(state) |> to_mapset() |> MapSet.to_list()
+    for x <- la, y <- lb, into: MapSet.new(), do: [x, y]
   end
 
   # Power set of a list — returns list of lists. Caller lifts to MapSet.

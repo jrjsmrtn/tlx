@@ -190,6 +190,10 @@ defmodule TLX.Emitter.Elixir do
   defp fmt({:tuple, elements}) when is_list(elements),
     do: "tuple([#{Enum.map_join(elements, ", ", &fmt/1)}])"
 
+  defp fmt({:fn_of, var, set, expr}), do: "fn_of(:#{var}, :#{set}, #{fmt(expr)})"
+  defp fmt({:fn_set, d, r}), do: "fn_set(#{fmt(d)}, #{fmt(r)})"
+  defp fmt({:cross, a, b}), do: "cross(#{fmt(a)}, #{fmt(b)})"
+
   defp fmt({:record, pairs}),
     do: "record(#{Enum.map_join(pairs, ", ", fn {k, v} -> "#{k}: #{fmt(v)}" end)})"
 

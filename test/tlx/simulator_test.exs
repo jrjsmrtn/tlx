@@ -529,6 +529,47 @@ defmodule TLX.SimulatorTest do
     end
   end
 
+  describe "simulator with fn_of and cross (sprint 52)" do
+    defmodule FnOfSimSpec do
+      use TLX.Spec
+
+      variable(:n, 0)
+      variable(:keys, MapSet.new([:a, :b, :c]))
+      variable(:table, %{})
+
+      action :init_table do
+        guard(e(n == 0))
+        next(:n, 1)
+        next(:table, e(fn_of(:k, keys, 0)))
+      end
+    end
+
+    defmodule CrossSimSpec do
+      use TLX.Spec
+
+      variable(:n, 0)
+      variable(:xs, MapSet.new([1, 2]))
+      variable(:ys, MapSet.new([:a, :b]))
+      variable(:pairs, MapSet.new())
+
+      action :build do
+        guard(e(n == 0))
+        next(:n, 1)
+        next(:pairs, e(cross(xs, ys)))
+      end
+    end
+
+    test "evaluates fn_of — builds function (map) from domain and body" do
+      assert {:ok, stats} = Simulator.simulate(FnOfSimSpec, runs: 10, steps: 3, seed: 42)
+      assert stats.runs == 10
+    end
+
+    test "evaluates cross — builds Cartesian product of pairs" do
+      assert {:ok, stats} = Simulator.simulate(CrossSimSpec, runs: 10, steps: 3, seed: 42)
+      assert stats.runs == 10
+    end
+  end
+
   describe "simulator with let_in/3" do
     defmodule LetInSpec do
       use TLX.Spec

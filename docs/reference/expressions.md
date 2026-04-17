@@ -262,6 +262,35 @@ e(sub_seq(queue, 1, 3))
 | `concat(s, t)`      | `(s \o t)`        |
 | `seq_set(s)`        | `Seq(s)`          |
 
+## Functions (maps) and Cartesian product
+
+| Elixir inside `e()`     | TLA+ output             | Use case                                   |
+| ----------------------- | ----------------------- | ------------------------------------------ |
+| `fn_of(:x, set, expr)`  | `[x \in set \|-> expr]` | Construct a function mapping               |
+| `fn_set(domain, range)` | `[domain -> range]`     | Type of all functions from domain to range |
+| `cross(a, b)`           | `(a \X b)`              | Cartesian product                          |
+
+Typical use in `TypeOK` invariants:
+
+```elixir
+invariant :type_ok,
+  e(in_set(flags, fn_set(nodes, set_of([true, false]))))
+
+# Initial function value
+initial do
+  constraint(e(vote_counts == fn_of(:n, nodes, 0)))
+end
+
+# Cartesian product for message channels
+invariant :msg_type, e(subset(in_flight, cross(nodes, nodes)))
+```
+
+Simulator support: `fn_of` materializes as an Elixir map; `cross` as a
+`MapSet` of 2-element lists (TLA+ tuples). `fn_set` is emission-only —
+`[S -> T]` is the set of all functions, which can be exponential and
+is rarely useful to enumerate; used in type invariants that are
+checked by TLC at model time, not by the Elixir simulator.
+
 ## Tuples
 
 Tuple literals (`<<a, b, c>>` in TLA+) are finite sequences commonly used
