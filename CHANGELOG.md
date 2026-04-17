@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Simulator: ops written inside `e(...)` in guards or invariants now evaluate correctly. Previously `e(cardinality(set))`, `e(in_set(x, s))`, `e(len(q))`, and 20+ other set/sequence/function ops raised `FunctionClauseError` because only the direct-call IR form was handled. Added AST-capture clauses delegating to the existing direct-call logic.
+- Simulator `case_of` eval no longer drops matched clauses whose body evaluates to `false` or `nil`. Previously used `Enum.find_value/2`, which treats any falsy callback return as "no match found" and falls through to later clauses. Switched to `Enum.reduce_while/3`.
 
 ### Added (arithmetic)
 

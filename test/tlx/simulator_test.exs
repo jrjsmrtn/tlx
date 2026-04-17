@@ -123,6 +123,47 @@ defmodule TLX.SimulatorTest do
       assert {:ok, stats} = Simulator.simulate(CaseDoSimSpec, runs: 100, steps: 50, seed: 42)
       assert stats.runs == 100
     end
+
+    # Sprint 50 regression: a matched clause whose body evaluates to
+    # false or nil must still win — previously `Enum.find_value`
+    # treated those as "keep looking" and fell through.
+    defmodule CaseOfFalsyBodySpec do
+      use TLX.Spec
+
+      variable(:flag, :high)
+      variable(:enabled, true)
+      variable(:n, 0)
+
+      action :derive do
+        guard(e(n < 2))
+        next(:n, e(n + 1))
+
+        # Reports enabled=false when flag is :high. If the matched
+        # clause were dropped, enabled would stay true and the
+        # invariant below would hold trivially — incorrect.
+        next(
+          :enabled,
+          case_of([
+            {e(flag == :high), false},
+            {:otherwise, true}
+          ])
+        )
+      end
+
+      # If the bug were present, `enabled` would stay `true` after
+      # deriving it from flag=:high; with the fix, it becomes `false`
+      # on the first step and this invariant fails if broken.
+      invariant(:ever_disabled, e(not (n >= 1 and enabled)))
+    end
+
+    test "case_of clause with false body wins over otherwise" do
+      # Using n=1 to ensure we've taken at least one step and
+      # set enabled=false; runs complete without invariant violation.
+      assert {:ok, stats} =
+               Simulator.simulate(CaseOfFalsyBodySpec, runs: 5, steps: 3, seed: 42)
+
+      assert stats.runs == 5
+    end
   end
 
   describe "simulator with set/sequence/tuple gaps" do

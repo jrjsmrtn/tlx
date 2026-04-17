@@ -404,11 +404,17 @@ defmodule TLX.Simulator do
     |> MapSet.new()
   end
 
-  # CASE expression
+  # CASE expression — reduce_while (not find_value) so a matched clause
+  # with a falsy body (false/nil) still wins instead of falling through.
   defp eval_ast({:case_of, clauses}, state) do
-    Enum.find_value(clauses, fn
-      {:otherwise, expr} -> eval_ast(expr, state)
-      {cond, expr} -> if eval_ast(cond, state), do: eval_ast(expr, state)
+    Enum.reduce_while(clauses, nil, fn
+      {:otherwise, expr}, _acc ->
+        {:halt, eval_ast(expr, state)}
+
+      {cond, expr}, acc ->
+        if eval_ast(cond, state),
+          do: {:halt, eval_ast(expr, state)},
+          else: {:cont, acc}
     end)
   end
 
