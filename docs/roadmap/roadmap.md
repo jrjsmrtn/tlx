@@ -170,6 +170,7 @@ Sprint 16 — Proper parsers and AST-based code gen:
 
 | Sprint | Phase                 | Version | Summary                                                                       |
 | ------ | --------------------- | ------- | ----------------------------------------------------------------------------- |
+| 48     | Simulator             | —       | AST-form eval for 24 set/sequence/function/logic ops inside `e()`             |
 | 47     | Expressiveness        | —       | Set/seq/tuple gaps: difference, set_map, power_set, UNION, concat, Seq, tuple |
 | 46     | Expressiveness        | —       | `until(p, q)` and `weak_until(p, q)` — TLA+ `\U`, `\W`                        |
 | 45     | Expressiveness        | —       | `case/do` inside `e()` — emits TLA+ `CASE ... [] OTHER`                       |
@@ -227,7 +228,6 @@ Sprint 16 — Proper parsers and AST-based code gen:
 | Sprint | Phase          | Plan                                                                        |
 | ------ | -------------- | --------------------------------------------------------------------------- |
 | 44     | Tooling        | State/transition coverage — verify ExUnit tests exercise all spec states    |
-| 48     | Simulator      | AST-form eval audit — close the gap for set/sequence ops inside `e()`       |
 | 49     | Expressiveness | `select_seq` + LAMBDA emission for sequence filtering                       |
 | 50     | Simulator      | `case_of` `find_value` fix — don't drop clauses whose body is `false`/`nil` |
 | 51     | Expressiveness | Arithmetic completion: integer `div`, `mod`, `pow`, unary `-`               |

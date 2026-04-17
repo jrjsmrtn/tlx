@@ -177,6 +177,100 @@ defmodule TLX.Simulator do
   # Unwrap {:expr, ast} — appears inside ite/case_of when children use e()
   defp eval_ast({:expr, ast}, state), do: eval_ast(ast, state)
 
+  # ========================================
+  # AST-capture forms (ops called inside e())
+  # ========================================
+  # When a user writes `e(union(a, b))`, Elixir parses the AST as
+  # `{:union, meta, [a, b]}` (3-tuple with meta list + args list) without
+  # evaluating the function. The simulator needs clauses that match this
+  # shape and delegate to the direct-call form (`{:union, a, b}`).
+  #
+  # Ordered pattern match: these must appear BEFORE the direct-call
+  # clauses below, since `{:union, a, b}` would otherwise swallow
+  # `{:union, meta, [a, b]}` inputs and treat `meta` as a set operand.
+
+  # Set ops
+  defp eval_ast({:union, meta, [a, b]}, state) when is_list(meta),
+    do: eval_ast({:union, a, b}, state)
+
+  defp eval_ast({:intersect, meta, [a, b]}, state) when is_list(meta),
+    do: eval_ast({:intersect, a, b}, state)
+
+  defp eval_ast({:subset, meta, [a, b]}, state) when is_list(meta),
+    do: eval_ast({:subset, a, b}, state)
+
+  defp eval_ast({:cardinality, meta, [set]}, state) when is_list(meta),
+    do: eval_ast({:cardinality, set}, state)
+
+  defp eval_ast({:in_set, meta, [elem, set]}, state) when is_list(meta),
+    do: eval_ast({:in_set, elem, set}, state)
+
+  defp eval_ast({:set_of, meta, [elements]}, state)
+       when is_list(meta) and is_list(elements),
+       do: eval_ast({:set_of, elements}, state)
+
+  # Function ops
+  defp eval_ast({:at, meta, [f, x]}, state) when is_list(meta),
+    do: eval_ast({:at, f, x}, state)
+
+  defp eval_ast({:except, meta, [f, x, v]}, state) when is_list(meta),
+    do: eval_ast({:except, f, x, v}, state)
+
+  defp eval_ast({:domain, meta, [f]}, state) when is_list(meta),
+    do: eval_ast({:domain, f}, state)
+
+  defp eval_ast({:record, meta, [pairs]}, state)
+       when is_list(meta) and is_list(pairs),
+       do: eval_ast({:record, pairs}, state)
+
+  defp eval_ast({:except_many, meta, [f, pairs]}, state)
+       when is_list(meta) and is_list(pairs),
+       do: eval_ast({:except_many, f, pairs}, state)
+
+  # Binding ops
+  defp eval_ast({:choose, meta, [var, set, expr]}, state) when is_list(meta),
+    do: eval_ast({:choose, var, set, expr}, state)
+
+  defp eval_ast({:filter, meta, [var, set, expr]}, state) when is_list(meta),
+    do: eval_ast({:filter, var, set, expr}, state)
+
+  defp eval_ast({:ite, meta, [cond, then_expr, else_expr]}, state) when is_list(meta),
+    do: eval_ast({:ite, cond, then_expr, else_expr}, state)
+
+  defp eval_ast({:let_in, meta, [var, binding, body]}, state) when is_list(meta),
+    do: eval_ast({:let_in, var, binding, body}, state)
+
+  defp eval_ast({:case_of, meta, [clauses]}, state)
+       when is_list(meta) and is_list(clauses),
+       do: eval_ast({:case_of, clauses}, state)
+
+  # Logic / numeric ops
+  defp eval_ast({:implies, meta, [p, q]}, state) when is_list(meta),
+    do: eval_ast({:implies, p, q}, state)
+
+  defp eval_ast({:equiv, meta, [p, q]}, state) when is_list(meta),
+    do: eval_ast({:equiv, p, q}, state)
+
+  defp eval_ast({:range, meta, [a, b]}, state) when is_list(meta),
+    do: eval_ast({:range, a, b}, state)
+
+  # Sequence ops — user writes len/append/head/tail/sub_seq inside e()
+  # but the direct-call tag is prefixed (:seq_len, etc.)
+  defp eval_ast({:len, meta, [s]}, state) when is_list(meta),
+    do: eval_ast({:seq_len, s}, state)
+
+  defp eval_ast({:append, meta, [s, x]}, state) when is_list(meta),
+    do: eval_ast({:seq_append, s, x}, state)
+
+  defp eval_ast({:head, meta, [s]}, state) when is_list(meta),
+    do: eval_ast({:seq_head, s}, state)
+
+  defp eval_ast({:tail, meta, [s]}, state) when is_list(meta),
+    do: eval_ast({:seq_tail, s}, state)
+
+  defp eval_ast({:sub_seq, meta, [s, m, n]}, state) when is_list(meta),
+    do: eval_ast({:seq_sub_seq, s, m, n}, state)
+
   defp eval_ast({:and, _, [left, right]}, state),
     do: eval_ast(left, state) and eval_ast(right, state)
 

@@ -225,6 +225,201 @@ defmodule TLX.SimulatorTest do
     end
   end
 
+  describe "simulator AST-form eval for set/function/sequence ops inside e()" do
+    # Sprint 48. These tests exercise ops used inside `e(...)` in guards
+    # and invariants — the two positions that forced AST-form evaluation
+    # after sprint 47.
+
+    defmodule SetOpsGuardSpec do
+      use TLX.Spec
+
+      variable(:active, MapSet.new([:a, :b]))
+      variable(:done, false)
+
+      action :finish do
+        guard(e(not done and cardinality(active) > 0))
+        next(:done, true)
+      end
+
+      invariant(:sane, e(cardinality(active) >= 0))
+    end
+
+    defmodule InSetGuardSpec do
+      use TLX.Spec
+
+      variable(:allowed, MapSet.new([:ok, :pending]))
+      variable(:state, :ok)
+      variable(:done, false)
+
+      action :advance do
+        guard(e(not done and in_set(state, allowed)))
+        next(:done, true)
+      end
+    end
+
+    defmodule UnionInvariantSpec do
+      use TLX.Spec
+
+      variable(:a, MapSet.new([1, 2]))
+      variable(:b, MapSet.new([3, 4]))
+      variable(:n, 0)
+
+      action :step do
+        guard(e(n < 3))
+        next(:n, e(n + 1))
+      end
+
+      invariant(:has_four, e(cardinality(union(a, b)) == 4))
+    end
+
+    defmodule SubsetGuardSpec do
+      use TLX.Spec
+
+      variable(:hot, MapSet.new([:a]))
+      variable(:all, MapSet.new([:a, :b, :c]))
+      variable(:done, false)
+
+      action :promote do
+        guard(e(not done and subset(hot, all)))
+        next(:done, true)
+      end
+    end
+
+    defmodule SeqLenGuardSpec do
+      use TLX.Spec
+
+      extends([:Sequences])
+
+      variable(:queue, [1, 2, 3])
+      variable(:drained, false)
+
+      action :drain do
+        guard(e(not drained and len(queue) > 0))
+        next(:drained, true)
+      end
+
+      invariant(:bounded, e(len(queue) <= 10))
+    end
+
+    defmodule RangeGuardSpec do
+      use TLX.Spec
+
+      variable(:x, 3)
+      variable(:ok, false)
+
+      action :check do
+        guard(e(not ok and in_set(x, range(1, 10))))
+        next(:ok, true)
+      end
+    end
+
+    defmodule ImpliesInvariantSpec do
+      use TLX.Spec
+
+      variable(:locked, false)
+      variable(:waiters, 0)
+
+      action :wait do
+        guard(e(locked))
+        next(:waiters, e(waiters + 1))
+      end
+
+      invariant(:wait_only_when_locked, e(implies(waiters > 0, locked)))
+    end
+
+    defmodule DomainGuardSpec do
+      use TLX.Spec
+
+      variable(:counts, %{a: 0, b: 0})
+      variable(:done, false)
+
+      action :tally do
+        guard(e(not done and cardinality(domain(counts)) == 2))
+        next(:done, true)
+      end
+    end
+
+    defmodule AtGuardSpec do
+      use TLX.Spec
+
+      variable(:flags, %{p1: true, p2: false})
+      variable(:done, false)
+
+      action :proceed do
+        guard(e(not done and at(flags, :p1)))
+        next(:done, true)
+      end
+    end
+
+    defmodule FilterInvariantSpec do
+      use TLX.Spec
+
+      variable(:items, MapSet.new([1, 2, 3, 4]))
+      variable(:n, 0)
+
+      action :tick do
+        guard(e(n < 3))
+        next(:n, e(n + 1))
+      end
+
+      invariant(:has_evens, e(cardinality(filter(:x, items, x > 2)) == 2))
+    end
+
+    test "cardinality inside e() in guard and invariant" do
+      assert {:ok, stats} = Simulator.simulate(SetOpsGuardSpec, runs: 10, steps: 5, seed: 42)
+      assert stats.runs == 10
+    end
+
+    test "in_set inside e() in guard" do
+      assert {:ok, stats} = Simulator.simulate(InSetGuardSpec, runs: 10, steps: 5, seed: 42)
+      assert stats.runs == 10
+    end
+
+    test "union inside e() in invariant" do
+      assert {:ok, stats} = Simulator.simulate(UnionInvariantSpec, runs: 10, steps: 5, seed: 42)
+      assert stats.runs == 10
+    end
+
+    test "subset inside e() in guard" do
+      assert {:ok, stats} = Simulator.simulate(SubsetGuardSpec, runs: 10, steps: 5, seed: 42)
+      assert stats.runs == 10
+    end
+
+    test "len inside e() in guard and invariant" do
+      assert {:ok, stats} = Simulator.simulate(SeqLenGuardSpec, runs: 10, steps: 5, seed: 42)
+      assert stats.runs == 10
+    end
+
+    test "range inside e() in guard" do
+      assert {:ok, stats} = Simulator.simulate(RangeGuardSpec, runs: 10, steps: 5, seed: 42)
+      assert stats.runs == 10
+    end
+
+    test "implies inside e() in invariant" do
+      assert {:ok, stats} =
+               Simulator.simulate(ImpliesInvariantSpec, runs: 10, steps: 5, seed: 42)
+
+      assert stats.runs == 10
+    end
+
+    test "domain + cardinality inside e() in guard" do
+      assert {:ok, stats} = Simulator.simulate(DomainGuardSpec, runs: 10, steps: 5, seed: 42)
+      assert stats.runs == 10
+    end
+
+    test "at inside e() in guard" do
+      assert {:ok, stats} = Simulator.simulate(AtGuardSpec, runs: 10, steps: 5, seed: 42)
+      assert stats.runs == 10
+    end
+
+    test "filter inside e() in invariant" do
+      assert {:ok, stats} =
+               Simulator.simulate(FilterInvariantSpec, runs: 10, steps: 5, seed: 42)
+
+      assert stats.runs == 10
+    end
+  end
+
   describe "simulator with let_in/3" do
     defmodule LetInSpec do
       use TLX.Spec

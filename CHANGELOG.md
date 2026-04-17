@@ -18,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - New `TLX.Tuples` module with `tuple([a, b, c])` → `<<a, b, c>>`. Imported into all DSL sections alongside Sets/Sequences/Temporal/Expr.
 - Simulator support for all new ops (both AST-capture and direct-call forms) — except `seq_set` (infinite type constraint, not materializable).
 
+### Fixed
+
+- Simulator: ops written inside `e(...)` in guards or invariants now evaluate correctly. Previously `e(cardinality(set))`, `e(in_set(x, s))`, `e(len(q))`, and 20+ other set/sequence/function ops raised `FunctionClauseError` because only the direct-call IR form was handled. Added AST-capture clauses delegating to the existing direct-call logic.
+
 ## [0.4.5] - 2026-04-14
 
 ### Fixed
