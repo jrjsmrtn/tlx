@@ -274,7 +274,8 @@ defmodule TLX.Dsl do
       expr: [
         type: :any,
         required: true,
-        doc: "A temporal expression: always(P), eventually(P), leads_to(P, Q)."
+        doc:
+          "A temporal expression: always(P), eventually(P), leads_to(P, Q), until(P, Q), weak_until(P, Q)."
       ]
     ],
     describe: "Declare a temporal property (liveness or safety over traces)."

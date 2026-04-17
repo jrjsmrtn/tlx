@@ -196,6 +196,11 @@ defmodule TLX.Emitter.Elixir do
   defp fmt_temporal({:always, inner}), do: "always(#{fmt_temporal(inner)})"
   defp fmt_temporal({:eventually, inner}), do: "eventually(#{fmt_temporal(inner)})"
   defp fmt_temporal({:leads_to, p, q}), do: "leads_to(#{fmt_temporal(p)}, #{fmt_temporal(q)})"
+  defp fmt_temporal({:until, p, q}), do: "until(#{fmt_temporal(p)}, #{fmt_temporal(q)})"
+
+  defp fmt_temporal({:weak_until, p, q}),
+    do: "weak_until(#{fmt_temporal(p)}, #{fmt_temporal(q)})"
+
   defp fmt_temporal({:expr, ast}), do: "e(#{fmt_ast(ast)})"
   defp fmt_temporal(other), do: fmt(other)
 

@@ -32,12 +32,22 @@ defmodule TLX.PropertyTest do
       :leads_to_positive,
       leads_to(e(x == 0), e(x > 0))
     )
+
+    property(
+      :safe_until_max,
+      until(e(x < max), e(x == max))
+    )
+
+    property(
+      :bounded_weak,
+      weak_until(e(x >= 0), e(x == max))
+    )
   end
 
   describe "property DSL" do
     test "properties are declared" do
       properties = Extension.get_entities(LivenessSpec, [:properties])
-      assert length(properties) == 2
+      assert length(properties) == 4
       assert hd(properties).name == :eventually_max
     end
   end
@@ -51,6 +61,16 @@ defmodule TLX.PropertyTest do
     test "emits leads-to" do
       output = TLA.emit(LivenessSpec)
       assert output =~ "leads_to_positive == (x = 0) ~> (x > 0)"
+    end
+
+    test "emits strong until" do
+      output = TLA.emit(LivenessSpec)
+      assert output =~ "safe_until_max == (x < max) \\U (x = max)"
+    end
+
+    test "emits weak until" do
+      output = TLA.emit(LivenessSpec)
+      assert output =~ "bounded_weak == (x >= 0) \\W (x = max)"
     end
   end
 
@@ -79,6 +99,8 @@ defmodule TLX.PropertyTest do
       output = Config.emit(LivenessSpec)
       assert output =~ "PROPERTY eventually_max"
       assert output =~ "PROPERTY leads_to_positive"
+      assert output =~ "PROPERTY safe_until_max"
+      assert output =~ "PROPERTY bounded_weak"
     end
   end
 

@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `case/do` syntax inside `e()` — native Elixir `case` expressions transform at macro expansion into `{:case_of, clauses}` IR, emitting TLA+ `CASE ... [] OTHER -> ...`. Supports literal atom/integer/string patterns and `_` wildcard (mapped to `:otherwise` sentinel).
 - `:otherwise` sentinel in `case_of/1` clauses — emits TLA+ `OTHER` branch and is treated as always-truthy in the simulator.
 - Tests: `case/do` emission across TLA+, PlusCal-C, PlusCal-P; simulator evaluation with literal patterns + wildcard.
+- `until(p, q)` and `weak_until(p, q)` temporal operators — emit TLA+ `(p) \U (q)` (strong: q must eventually hold) and `(p) \W (q)` (weak: p may hold forever). Round-trip via Elixir emitter and Unicode `U`/`W` symbols via Symbols emitter.
 
 ## [0.4.5] - 2026-04-14
 

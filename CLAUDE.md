@@ -97,6 +97,7 @@ Key TLA+/PlusCal concepts mapped to DSL constructs:
 | Actions           | `action :name do ... end` with `guard` and `next`       | Guarded transitions             |
 | Invariants `[]P`  | `invariant :name, e(...)`                               | Safety properties               |
 | Liveness `<>P`    | `property :name, always(eventually(...))`               | Temporal properties             |
+| Until `P \U Q`    | `property :name, until(p, q)` / `weak_until(p, q)`      | Strong/weak until               |
 | Constants         | `constant :name`                                        | Model parameters                |
 | Processes         | `process :name do set(:s); ... end`                     | Concurrent actors               |
 | Non-determinism   | `branch`, `pick`                                        | Branching exploration           |

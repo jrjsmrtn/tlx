@@ -265,14 +265,18 @@ property :name, always(e(p))
 property :name, eventually(e(p))
 property :name, always(eventually(e(p)))
 property :name, leads_to(e(p), e(q))
+property :name, until(e(p), e(q))
+property :name, weak_until(e(p), e(q))
 ```
 
-| Function                | TLA+ output  | Meaning                                  |
-| ----------------------- | ------------ | ---------------------------------------- |
-| `always(p)`             | `[](p)`      | p holds in every state of every behavior |
-| `eventually(p)`         | `<>(p)`      | p holds in some future state             |
-| `always(eventually(p))` | `[]<>(p)`    | p holds infinitely often                 |
-| `leads_to(p, q)`        | `(p) ~> (q)` | whenever p holds, q eventually follows   |
+| Function                | TLA+ output  | Meaning                                             |
+| ----------------------- | ------------ | --------------------------------------------------- |
+| `always(p)`             | `[](p)`      | p holds in every state of every behavior            |
+| `eventually(p)`         | `<>(p)`      | p holds in some future state                        |
+| `always(eventually(p))` | `[]<>(p)`    | p holds infinitely often                            |
+| `leads_to(p, q)`        | `(p) ~> (q)` | whenever p holds, q eventually follows              |
+| `until(p, q)`           | `(p) \U (q)` | p holds until q becomes true; q **must** hold       |
+| `weak_until(p, q)`      | `(p) \W (q)` | p holds until q becomes true, **or** p holds always |
 
 ## Literals
 
