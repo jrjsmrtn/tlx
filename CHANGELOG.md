@@ -39,6 +39,10 @@ All four are AST-form only (inside `e()`) and use operators from the TLA+ `Integ
 - Cartesian product: `cross(a, b)` → `(a \X b)`. Simulator builds a `MapSet` of 2-element lists.
 - New `TLX.Functions` module wired into all DSL section imports alongside `TLX.Sets`, `TLX.Sequences`, `TLX.Tuples`, `TLX.Temporal`, `TLX.Expr`.
 
+### Added (sequence filtering)
+
+- `select_seq(:var, seq, pred)` — sequence filter emitting TLA+ `SelectSeq(s, LAMBDA var: pred)`. First TLX construct to emit LAMBDA. Signature mirrors `filter/3`, `choose/3`, `set_map/3` (variable-first). Simulator filters using the bound variable, same semantics as `filter`.
+
 ## [0.4.5] - 2026-04-14
 
 ### Fixed

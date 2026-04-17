@@ -460,6 +460,13 @@ defmodule TLX.Simulator do
 
   defp eval_ast({:seq_concat, a, b}, state), do: eval_ast(a, state) ++ eval_ast(b, state)
 
+  # SelectSeq — filter a sequence by a predicate bound to `var`
+  defp eval_ast({:select_seq, meta, [var, seq, pred]}, state) when is_list(meta),
+    do: eval_select_seq(var, seq, pred, state)
+
+  defp eval_ast({:seq_select, var, seq, pred}, state),
+    do: eval_select_seq(var, seq, pred, state)
+
   # Tuple — materialize as list (TLA+ tuples are finite sequences)
   defp eval_ast({:tuple, meta, [elements]}, state) when is_list(meta) and is_list(elements),
     do: Enum.map(elements, &eval_ast(&1, state))
@@ -544,6 +551,12 @@ defmodule TLX.Simulator do
     la = a |> eval_ast(state) |> to_mapset() |> MapSet.to_list()
     lb = b |> eval_ast(state) |> to_mapset() |> MapSet.to_list()
     for x <- la, y <- lb, into: MapSet.new(), do: [x, y]
+  end
+
+  defp eval_select_seq(var, seq, pred, state) do
+    seq
+    |> eval_ast(state)
+    |> Enum.filter(fn elem -> eval_ast(pred, Map.put(state, var, elem)) end)
   end
 
   # Power set of a list — returns list of lists. Caller lifts to MapSet.

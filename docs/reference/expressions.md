@@ -252,15 +252,21 @@ e(tail(queue))
 e(sub_seq(queue, 1, 3))
 ```
 
-| Elixir inside `e()` | TLA+ output       |
-| ------------------- | ----------------- |
-| `len(s)`            | `Len(s)`          |
-| `append(s, x)`      | `Append(s, x)`    |
-| `head(s)`           | `Head(s)`         |
-| `tail(s)`           | `Tail(s)`         |
-| `sub_seq(s, m, n)`  | `SubSeq(s, m, n)` |
-| `concat(s, t)`      | `(s \o t)`        |
-| `seq_set(s)`        | `Seq(s)`          |
+| Elixir inside `e()`         | TLA+ output                      |
+| --------------------------- | -------------------------------- |
+| `len(s)`                    | `Len(s)`                         |
+| `append(s, x)`              | `Append(s, x)`                   |
+| `head(s)`                   | `Head(s)`                        |
+| `tail(s)`                   | `Tail(s)`                        |
+| `sub_seq(s, m, n)`          | `SubSeq(s, m, n)`                |
+| `concat(s, t)`              | `(s \o t)`                       |
+| `seq_set(s)`                | `Seq(s)`                         |
+| `select_seq(:var, s, pred)` | `SelectSeq(s, LAMBDA var: pred)` |
+
+`select_seq` is the sequence analog of `filter` — it returns the
+subsequence of `s` whose elements satisfy the predicate. Signature
+mirrors `filter/3`/`choose/3`/`set_map/3` (variable-first). This is
+currently the only TLX construct that emits TLA+ `LAMBDA`.
 
 ## Functions (maps) and Cartesian product
 

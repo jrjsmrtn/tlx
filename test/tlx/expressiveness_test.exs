@@ -650,4 +650,26 @@ defmodule TLX.ExpressivenessTest do
       assert output =~ "nodes"
     end
   end
+
+  # --- Sprint 49: select_seq with LAMBDA emission ---
+
+  defmodule SelectSeqSpec do
+    use TLX.Spec
+
+    extends([:Sequences])
+
+    variable(:history, [])
+    variable(:positive, [])
+
+    action :filter do
+      next(:positive, e(select_seq(:entry, history, entry > 0)))
+    end
+  end
+
+  describe "select_seq (SelectSeq with LAMBDA)" do
+    test "TLA+ emits SelectSeq with LAMBDA" do
+      output = TLA.emit(SelectSeqSpec)
+      assert output =~ "SelectSeq(history, LAMBDA entry: entry > 0)"
+    end
+  end
 end

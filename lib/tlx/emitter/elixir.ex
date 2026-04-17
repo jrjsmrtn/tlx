@@ -182,6 +182,7 @@ defmodule TLX.Emitter.Elixir do
   defp fmt({:seq_sub_seq, s, m, n}), do: "sub_seq(#{fmt(s)}, #{fmt(m)}, #{fmt(n)})"
   defp fmt({:seq_concat, a, b}), do: "concat(#{fmt(a)}, #{fmt(b)})"
   defp fmt({:seq_set, s}), do: "seq_set(#{fmt(s)})"
+  defp fmt({:seq_select, var, s, pred}), do: "select_seq(:#{var}, #{fmt(s)}, #{fmt(pred)})"
   defp fmt({:difference, a, b}), do: "difference(#{fmt(a)}, #{fmt(b)})"
   defp fmt({:set_map, var, set, expr}), do: "set_map(:#{var}, :#{set}, #{fmt(expr)})"
   defp fmt({:power_set, s}), do: "power_set(#{fmt(s)})"

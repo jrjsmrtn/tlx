@@ -6,21 +6,17 @@ what's not (yet) supported and suggested workarounds.
 
 ## Planned (on the roadmap)
 
-These will be added in future sprints:
+These are still queued — see `docs/roadmap/roadmap.md` for scope details:
 
-| Construct              | TLA+                 | Sprint | Workaround                                                             |
-| ---------------------- | -------------------- | ------ | ---------------------------------------------------------------------- |
-| Strong until           | `P \U Q`             | 46     | Use `leads_to(p, q)` (weaker — doesn't require P to hold continuously) |
-| Weak until             | `P \W Q`             | 46     | Use `always(implies(p, eventually(q)))` (approximate)                  |
-| Elixir `case` in `e()` | `CASE`               | 45     | Use `case_of([{cond, val}, ...])` or nested `if`                       |
-| Set difference         | `S \ T`              | 47     | Use `filter(:x, :s, not in_set(x, t))`                                 |
-| Set map/image          | `{expr : x \in S}`   | 47     | No direct workaround — use filter + manual construction                |
-| Power set              | `SUBSET S`           | 47     | No workaround — enumerate subsets manually for small sets              |
-| Distributed union      | `UNION S`            | 47     | No workaround                                                          |
-| Sequence concat        | `s \o t`             | 47     | No workaround — build sequences element by element                     |
-| Select sequence        | `SelectSeq(s, Test)` | 47     | No workaround                                                          |
-| Sequence set           | `Seq(S)`             | 47     | No workaround — use bounded sequences                                  |
-| Tuple constructor      | `<<a, b, c>>`        | 47     | Use list literal `[a, b, c]` (emits as sequence)                       |
+| Construct           | TLA+      | Sprint | Workaround                  |
+| ------------------- | --------- | ------ | --------------------------- |
+| State/test coverage | (tooling) | 44     | Manual inspection of traces |
+
+Recently shipped (Sprints 45–52): `CASE`/`case/do`, `\U`/`\W`, set
+difference, `set_map`/`SUBSET`/`UNION`, sequence concat/`Seq`/`SelectSeq`,
+tuples, integer arithmetic (`\div`, `%`, `^`, unary `-`), function
+constructor/set, Cartesian product, and simulator AST-form eval for
+all set/sequence/function ops. See the roadmap history for details.
 
 ## Not Planned
 
@@ -40,7 +36,7 @@ These are TLA+ features that TLX intentionally doesn't target:
 | Construct              | TLA+                                    | Why not                                                                                                          |
 | ---------------------- | --------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
 | Recursive operators    | `RECURSIVE Op(_)`                       | Would require detecting termination. Use bounded iteration via set comprehension or sequence operations instead. |
-| LAMBDA                 | `LAMBDA x: expr`                        | Rare in practical specs. `SelectSeq` is the main use case (Sprint 47).                                           |
+| LAMBDA                 | `LAMBDA x: expr`                        | Emitted only inside `select_seq/3` (Sprint 49). General LAMBDA outside that context is out of scope.             |
 | Higher-order operators | Operators taking operators as arguments | Beyond current DSL scope.                                                                                        |
 | Operator parameters    | `Op(x, y) == ...`                       | TLX actions don't take parameters — use variables and guards instead.                                            |
 

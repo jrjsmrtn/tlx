@@ -388,6 +388,14 @@ defmodule TLX.Emitter.Format do
 
   def format_ast({:seq_set, set}, s), do: "Seq(#{format_expr(set, s)})"
 
+  # SelectSeq — filter a sequence via a LAMBDA predicate
+  def format_ast({:select_seq, meta, [var, seq, pred]}, s) when is_list(meta),
+    do: "SelectSeq(#{format_ast(seq, s)}, LAMBDA #{Atom.to_string(var)}: #{format_ast(pred, s)})"
+
+  def format_ast({:seq_select, var, seq, pred}, s),
+    do:
+      "SelectSeq(#{format_expr(seq, s)}, LAMBDA #{Atom.to_string(var)}: #{format_expr(pred, s)})"
+
   # Tuple literal — <<a, b, c>>
   def format_ast({:tuple, meta, [elements]}, s) when is_list(meta) and is_list(elements),
     do: "<<#{Enum.map_join(elements, ", ", &format_ast(&1, s))}>>"
@@ -457,6 +465,7 @@ defmodule TLX.Emitter.Format do
   def format_expr({:seq_sub_seq, _, _, _} = q, s), do: format_ast(q, s)
   def format_expr({:seq_concat, _, _} = q, s), do: format_ast(q, s)
   def format_expr({:seq_set, _} = q, s), do: format_ast(q, s)
+  def format_expr({:seq_select, _, _, _} = q, s), do: format_ast(q, s)
   def format_expr({:difference, _, _} = q, s), do: format_ast(q, s)
   def format_expr({:set_map, _, _, _} = q, s), do: format_ast(q, s)
   def format_expr({:power_set, _} = q, s), do: format_ast(q, s)

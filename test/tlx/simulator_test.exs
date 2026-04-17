@@ -570,6 +570,29 @@ defmodule TLX.SimulatorTest do
     end
   end
 
+  describe "simulator with select_seq (sprint 49)" do
+    defmodule SelectSeqSimSpec do
+      use TLX.Spec
+
+      extends([:Sequences])
+
+      variable(:n, 0)
+      variable(:input, [1, -2, 3, -4, 5])
+      variable(:positive, [])
+
+      action :filter_positive do
+        guard(e(n == 0))
+        next(:n, 1)
+        next(:positive, e(select_seq(:x, input, x > 0)))
+      end
+    end
+
+    test "evaluates select_seq — filters with LAMBDA predicate" do
+      assert {:ok, stats} = Simulator.simulate(SelectSeqSimSpec, runs: 10, steps: 3, seed: 42)
+      assert stats.runs == 10
+    end
+  end
+
   describe "simulator with let_in/3" do
     defmodule LetInSpec do
       use TLX.Spec

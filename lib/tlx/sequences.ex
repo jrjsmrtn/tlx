@@ -15,6 +15,7 @@ defmodule TLX.Sequences do
       sub_seq(s, m, n)    # SubSeq(s, m, n)
       concat(s, t)        # s \\o t
       seq_set(s)          # Seq(s) — type of finite sequences over s
+      select_seq(:x, s, pred)  # SelectSeq(s, LAMBDA x: pred)
   """
 
   @doc "Sequence length: `Len(s)`"
@@ -37,4 +38,13 @@ defmodule TLX.Sequences do
 
   @doc "Set of all finite sequences over s: `Seq(s)` (type constraint)."
   def seq_set(s), do: {:seq_set, s}
+
+  @doc """
+  Sequence filter: `SelectSeq(s, LAMBDA var: pred)` in TLA+.
+
+  Var-first signature mirrors `filter/3`, `choose/3`, `set_map/3` —
+  the binding variable is always the first argument for three-arg
+  binding operators in TLX.
+  """
+  def select_seq(var, s, pred) when is_atom(var), do: {:seq_select, var, s, pred}
 end
