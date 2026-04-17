@@ -90,33 +90,36 @@ mix usage_rules.sync --yes
 
 Key TLA+/PlusCal concepts mapped to DSL constructs:
 
-| TLA+ Concept      | DSL Construct                                           | Nature                          |
-| ----------------- | ------------------------------------------------------- | ------------------------------- |
-| State variables   | `variable :name, type: ..., default: ...`               | Named mutable slots             |
-| Init predicate    | `initial do constraint(...) end`                        | Constraint on initial values    |
-| Actions           | `action :name do ... end` with `guard` and `next`       | Guarded transitions             |
-| Invariants `[]P`  | `invariant :name, e(...)`                               | Safety properties               |
-| Liveness `<>P`    | `property :name, always(eventually(...))`               | Temporal properties             |
-| Until `P \U Q`    | `property :name, until(p, q)` / `weak_until(p, q)`      | Strong/weak until               |
-| Constants         | `constant :name`                                        | Model parameters                |
-| Processes         | `process :name do set(:s); ... end`                     | Concurrent actors               |
-| Non-determinism   | `branch`, `pick`                                        | Branching exploration           |
-| Quantifiers       | `exists/forall`                                         | Set predicates                  |
-| IF/THEN/ELSE      | `e(if cond, do: x, else: y)` or `ite/3`                 | Conditional expressions         |
-| LET/IN            | `let_in(:var, binding, body)`                           | Local definitions               |
-| Set operations    | `union`, `intersect`, `subset`, `cardinality`           | Set algebra                     |
-| Set comprehension | `filter(:var, :set, expr)`                              | `{var \in set : expr}`          |
-| Function access   | `at(f, x)`, `except(f, x, v)`                           | `f[x]`, `[f EXCEPT ![x]=v]`     |
-| Records           | `record(a: 1, b: 2)`                                    | `[a \|-> 1, b \|-> 2]`          |
-| Multi-key EXCEPT  | `except_many(f, [{k1, v1}, ...])`                       | `[f EXCEPT ![k1]=v1, ...]`      |
-| CHOOSE            | `choose(:var, :set, expr)`                              | Deterministic selection         |
-| CASE              | `case_of([{cond, val}, ...])` or `e(case x do ... end)` | Multi-way conditional           |
-| Implication       | `implies(p, q)`, `equiv(p, q)`                          | `=>`, `<=>`                     |
-| Range set         | `range(a, b)`                                           | `a..b`                          |
-| DOMAIN            | `domain(f)`                                             | Keys of a function              |
-| Extends config    | `extends [:Sequences]`                                  | Configurable EXTENDS modules    |
-| Sequences         | `len`, `append`, `head`, `tail`, `sub_seq`              | Requires `extends [:Sequences]` |
-| Refinement        | `refines Mod do mapping :var, e(...) end`               | Spec comparison                 |
+| TLA+ Concept        | DSL Construct                                                   | Nature                          |
+| ------------------- | --------------------------------------------------------------- | ------------------------------- |
+| State variables     | `variable :name, type: ..., default: ...`                       | Named mutable slots             |
+| Init predicate      | `initial do constraint(...) end`                                | Constraint on initial values    |
+| Actions             | `action :name do ... end` with `guard` and `next`               | Guarded transitions             |
+| Invariants `[]P`    | `invariant :name, e(...)`                                       | Safety properties               |
+| Liveness `<>P`      | `property :name, always(eventually(...))`                       | Temporal properties             |
+| Until `P \U Q`      | `property :name, until(p, q)` / `weak_until(p, q)`              | Strong/weak until               |
+| Constants           | `constant :name`                                                | Model parameters                |
+| Processes           | `process :name do set(:s); ... end`                             | Concurrent actors               |
+| Non-determinism     | `branch`, `pick`                                                | Branching exploration           |
+| Quantifiers         | `exists/forall`                                                 | Set predicates                  |
+| IF/THEN/ELSE        | `e(if cond, do: x, else: y)` or `ite/3`                         | Conditional expressions         |
+| LET/IN              | `let_in(:var, binding, body)`                                   | Local definitions               |
+| Set operations      | `union`, `intersect`, `difference`, `subset`, `cardinality`     | Set algebra                     |
+| Set comprehension   | `filter(:var, :set, expr)`                                      | `{var \in set : expr}`          |
+| Set image           | `set_map(:var, :set, expr)`                                     | `{expr : var \in set}`          |
+| Power / distributed | `power_set(s)`, `distributed_union(s)`                          | `SUBSET s`, `UNION s`           |
+| Tuple literal       | `tuple([a, b, c])`                                              | `<<a, b, c>>`                   |
+| Function access     | `at(f, x)`, `except(f, x, v)`                                   | `f[x]`, `[f EXCEPT ![x]=v]`     |
+| Records             | `record(a: 1, b: 2)`                                            | `[a \|-> 1, b \|-> 2]`          |
+| Multi-key EXCEPT    | `except_many(f, [{k1, v1}, ...])`                               | `[f EXCEPT ![k1]=v1, ...]`      |
+| CHOOSE              | `choose(:var, :set, expr)`                                      | Deterministic selection         |
+| CASE                | `case_of([{cond, val}, ...])` or `e(case x do ... end)`         | Multi-way conditional           |
+| Implication         | `implies(p, q)`, `equiv(p, q)`                                  | `=>`, `<=>`                     |
+| Range set           | `range(a, b)`                                                   | `a..b`                          |
+| DOMAIN              | `domain(f)`                                                     | Keys of a function              |
+| Extends config      | `extends [:Sequences]`                                          | Configurable EXTENDS modules    |
+| Sequences           | `len`, `append`, `head`, `tail`, `sub_seq`, `concat`, `seq_set` | Requires `extends [:Sequences]` |
+| Refinement          | `refines Mod do mapping :var, e(...) end`                       | Spec comparison                 |
 
 ## AI Collaboration Notes
 

@@ -428,4 +428,131 @@ defmodule TLX.ExpressivenessTest do
       assert output =~ "end with;"
     end
   end
+
+  # --- Sprint 47: set/sequence/tuple gaps ---
+
+  defmodule DifferenceSpec do
+    use TLX.Spec
+
+    variable(:active, MapSet.new([:a, :b, :c]))
+    variable(:failed, MapSet.new([:b]))
+
+    action :evict do
+      next(:active, e(difference(active, failed)))
+    end
+  end
+
+  defmodule SetMapSpec do
+    use TLX.Spec
+
+    variable(:xs, MapSet.new([1, 2, 3]))
+    variable(:doubled, MapSet.new())
+
+    action :double do
+      next(:doubled, e(set_map(:x, xs, x * 2)))
+    end
+  end
+
+  defmodule PowerSetSpec do
+    use TLX.Spec
+
+    variable(:members, MapSet.new())
+
+    constant(:nodes)
+
+    invariant(:is_subset, e(in_set(members, power_set(nodes))))
+  end
+
+  defmodule DistributedUnionSpec do
+    use TLX.Spec
+
+    variable(:all, MapSet.new())
+
+    constant(:groups)
+
+    invariant(:flattened, e(all == distributed_union(groups)))
+  end
+
+  defmodule ConcatSpec do
+    use TLX.Spec
+
+    extends([:Sequences])
+
+    variable(:history, [])
+
+    action :append_log do
+      next(:history, e(concat(history, tuple([:log_entry]))))
+    end
+  end
+
+  defmodule SeqSetSpec do
+    use TLX.Spec
+
+    extends([:Sequences])
+
+    variable(:trace, [])
+
+    constant(:events)
+
+    invariant(:typed, e(in_set(trace, seq_set(events))))
+  end
+
+  defmodule TupleSpec do
+    use TLX.Spec
+
+    variable(:message, [])
+
+    action :send do
+      next(:message, e(tuple([:sender, :receiver, :payload])))
+    end
+  end
+
+  describe "set difference" do
+    test "TLA+ emits \\" do
+      output = TLA.emit(DifferenceSpec)
+      assert output =~ "active \\ failed"
+    end
+  end
+
+  describe "set_map (set image)" do
+    test "TLA+ emits {expr : var \\in set}" do
+      output = TLA.emit(SetMapSpec)
+      assert output =~ "{x * 2 : x \\in xs}"
+    end
+  end
+
+  describe "power_set (SUBSET)" do
+    test "TLA+ emits SUBSET" do
+      output = TLA.emit(PowerSetSpec)
+      assert output =~ "SUBSET nodes"
+    end
+  end
+
+  describe "distributed_union (UNION)" do
+    test "TLA+ emits UNION" do
+      output = TLA.emit(DistributedUnionSpec)
+      assert output =~ "UNION groups"
+    end
+  end
+
+  describe "sequence concatenation" do
+    test "TLA+ emits \\o" do
+      output = TLA.emit(ConcatSpec)
+      assert output =~ "\\o"
+    end
+  end
+
+  describe "seq_set (Seq)" do
+    test "TLA+ emits Seq(s)" do
+      output = TLA.emit(SeqSetSpec)
+      assert output =~ "Seq(events)"
+    end
+  end
+
+  describe "tuple literal" do
+    test "TLA+ emits <<a, b, c>>" do
+      output = TLA.emit(TupleSpec)
+      assert output =~ "<<sender, receiver, payload>>"
+    end
+  end
 end

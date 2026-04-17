@@ -240,6 +240,31 @@ defmodule TLX.Simulator do
 
   defp eval_ast({:set_of, elements}, state), do: MapSet.new(elements, &eval_ast(&1, state))
 
+  # Set difference — AST form and direct form
+  defp eval_ast({:difference, meta, [a, b]}, state) when is_list(meta),
+    do: MapSet.difference(to_mapset(eval_ast(a, state)), to_mapset(eval_ast(b, state)))
+
+  defp eval_ast({:difference, a, b}, state),
+    do: MapSet.difference(to_mapset(eval_ast(a, state)), to_mapset(eval_ast(b, state)))
+
+  # Set image / set_map
+  defp eval_ast({:set_map, meta, [var, set, expr]}, state) when is_list(meta),
+    do: eval_set_map(var, set, expr, state)
+
+  defp eval_ast({:set_map, var, set, expr}, state), do: eval_set_map(var, set, expr, state)
+
+  # Power set — enumerates all subsets (exponential, caller responsibility)
+  defp eval_ast({:power_set, meta, [set]}, state) when is_list(meta),
+    do: eval_power_set(set, state)
+
+  defp eval_ast({:power_set, set}, state), do: eval_power_set(set, state)
+
+  # Distributed union — flatten a set of sets
+  defp eval_ast({:distributed_union, meta, [set]}, state) when is_list(meta),
+    do: eval_distributed_union(set, state)
+
+  defp eval_ast({:distributed_union, set}, state), do: eval_distributed_union(set, state)
+
   # Function application
   defp eval_ast({:at, f, x}, state) do
     func = eval_ast(f, state)
@@ -318,6 +343,18 @@ defmodule TLX.Simulator do
   defp eval_ast({:seq_sub_seq, s, m, n}, state),
     do: Enum.slice(eval_ast(s, state), (eval_ast(m, state) - 1)..(eval_ast(n, state) - 1)//1)
 
+  defp eval_ast({:concat, meta, [a, b]}, state) when is_list(meta),
+    do: eval_ast(a, state) ++ eval_ast(b, state)
+
+  defp eval_ast({:seq_concat, a, b}, state), do: eval_ast(a, state) ++ eval_ast(b, state)
+
+  # Tuple — materialize as list (TLA+ tuples are finite sequences)
+  defp eval_ast({:tuple, meta, [elements]}, state) when is_list(meta) and is_list(elements),
+    do: Enum.map(elements, &eval_ast(&1, state))
+
+  defp eval_ast({:tuple, elements}, state) when is_list(elements),
+    do: Enum.map(elements, &eval_ast(&1, state))
+
   # LET/IN
   defp eval_ast({:let_in, var, binding, body}, state) do
     val = eval_ast(binding, state)
@@ -335,4 +372,39 @@ defmodule TLX.Simulator do
 
   defp to_mapset(%MapSet{} = s), do: s
   defp to_mapset(list) when is_list(list), do: MapSet.new(list)
+
+  defp eval_set_map(var, set, expr, state) do
+    eval_ast(set, state)
+    |> to_mapset()
+    |> MapSet.to_list()
+    |> Enum.map(fn elem -> eval_ast(expr, Map.put(state, var, elem)) end)
+    |> MapSet.new()
+  end
+
+  defp eval_power_set(set, state) do
+    set
+    |> eval_ast(state)
+    |> to_mapset()
+    |> MapSet.to_list()
+    |> power_set_list()
+    |> Enum.map(&MapSet.new/1)
+    |> MapSet.new()
+  end
+
+  defp eval_distributed_union(set, state) do
+    set
+    |> eval_ast(state)
+    |> to_mapset()
+    |> Enum.reduce(MapSet.new(), fn inner, acc ->
+      MapSet.union(acc, to_mapset(inner))
+    end)
+  end
+
+  # Power set of a list — returns list of lists. Caller lifts to MapSet.
+  defp power_set_list([]), do: [[]]
+
+  defp power_set_list([h | t]) do
+    rest = power_set_list(t)
+    rest ++ Enum.map(rest, &[h | &1])
+  end
 end

@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `:otherwise` sentinel in `case_of/1` clauses — emits TLA+ `OTHER` branch and is treated as always-truthy in the simulator.
 - Tests: `case/do` emission across TLA+, PlusCal-C, PlusCal-P; simulator evaluation with literal patterns + wildcard.
 - `until(p, q)` and `weak_until(p, q)` temporal operators — emit TLA+ `(p) \U (q)` (strong: q must eventually hold) and `(p) \W (q)` (weak: p may hold forever). Round-trip via Elixir emitter and Unicode `U`/`W` symbols via Symbols emitter.
+- Set ops: `difference(a, b)` (`a \ b`), `set_map(:var, :set, expr)` (`{expr : var \in set}`), `power_set(s)` (`SUBSET s`), `distributed_union(s)` (`UNION s`).
+- Sequence ops: `concat(s, t)` (`s \o t`), `seq_set(s)` (`Seq(s)` type constraint).
+- New `TLX.Tuples` module with `tuple([a, b, c])` → `<<a, b, c>>`. Imported into all DSL sections alongside Sets/Sequences/Temporal/Expr.
+- Simulator support for all new ops (both AST-capture and direct-call forms) — except `seq_set` (infinite type constraint, not materializable).
 
 ## [0.4.5] - 2026-04-14
 

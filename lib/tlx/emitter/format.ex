@@ -328,6 +328,52 @@ defmodule TLX.Emitter.Format do
   def format_ast({:set_of, elements}, s) when is_list(elements),
     do: "{#{Enum.map_join(elements, ", ", &format_expr(&1, s))}}"
 
+  # Set difference — AST form and direct call form
+  def format_ast({:difference, meta, [a, b]}, s) when is_list(meta),
+    do: "(#{format_ast(a, s)} \\ #{format_ast(b, s)})"
+
+  def format_ast({:difference, a, b}, s),
+    do: "(#{format_expr(a, s)} \\ #{format_expr(b, s)})"
+
+  # Set image / set_map — {expr : var \in set}
+  def format_ast({:set_map, meta, [var, set, inner]}, s) when is_list(meta),
+    do: "{#{format_ast(inner, s)} : #{Atom.to_string(var)} #{s.member} #{format_ast(set, s)}}"
+
+  def format_ast({:set_map, var, set, inner}, s),
+    do: "{#{format_expr(inner, s)} : #{Atom.to_string(var)} #{s.member} #{format_expr(set, s)}}"
+
+  # Power set — SUBSET s
+  def format_ast({:power_set, meta, [set]}, s) when is_list(meta),
+    do: "SUBSET #{format_ast(set, s)}"
+
+  def format_ast({:power_set, set}, s), do: "SUBSET #{format_expr(set, s)}"
+
+  # Distributed union — UNION s (flatten set of sets)
+  def format_ast({:distributed_union, meta, [set]}, s) when is_list(meta),
+    do: "UNION #{format_ast(set, s)}"
+
+  def format_ast({:distributed_union, set}, s), do: "UNION #{format_expr(set, s)}"
+
+  # Sequence concatenation — s \o t
+  def format_ast({:concat, meta, [l, r]}, s) when is_list(meta),
+    do: "(#{format_ast(l, s)} \\o #{format_ast(r, s)})"
+
+  def format_ast({:seq_concat, l, r}, s),
+    do: "(#{format_expr(l, s)} \\o #{format_expr(r, s)})"
+
+  # Seq(s) — type of finite sequences over s
+  def format_ast({:seq_set, meta, [set]}, s) when is_list(meta),
+    do: "Seq(#{format_ast(set, s)})"
+
+  def format_ast({:seq_set, set}, s), do: "Seq(#{format_expr(set, s)})"
+
+  # Tuple literal — <<a, b, c>>
+  def format_ast({:tuple, meta, [elements]}, s) when is_list(meta) and is_list(elements),
+    do: "<<#{Enum.map_join(elements, ", ", &format_ast(&1, s))}>>"
+
+  def format_ast({:tuple, elements}, s) when is_list(elements),
+    do: "<<#{Enum.map_join(elements, ", ", &format_expr(&1, s))}>>"
+
   # Variable reference
   def format_ast({name, _meta, ctx}, _s) when is_atom(name) and is_atom(ctx),
     do: Atom.to_string(name)
@@ -367,6 +413,13 @@ defmodule TLX.Emitter.Format do
   def format_expr({:seq_head, _} = q, s), do: format_ast(q, s)
   def format_expr({:seq_tail, _} = q, s), do: format_ast(q, s)
   def format_expr({:seq_sub_seq, _, _, _} = q, s), do: format_ast(q, s)
+  def format_expr({:seq_concat, _, _} = q, s), do: format_ast(q, s)
+  def format_expr({:seq_set, _} = q, s), do: format_ast(q, s)
+  def format_expr({:difference, _, _} = q, s), do: format_ast(q, s)
+  def format_expr({:set_map, _, _, _} = q, s), do: format_ast(q, s)
+  def format_expr({:power_set, _} = q, s), do: format_ast(q, s)
+  def format_expr({:distributed_union, _} = q, s), do: format_ast(q, s)
+  def format_expr({:tuple, _} = q, s), do: format_ast(q, s)
   def format_expr({:union, a, b}, s), do: "(#{format_expr(a, s)} \\union #{format_expr(b, s)})"
 
   def format_expr({:intersect, a, b}, s),

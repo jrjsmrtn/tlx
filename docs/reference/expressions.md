@@ -66,14 +66,18 @@ e(union(a, b))
 e(subset(items, all_items))
 ```
 
-| Elixir inside `e()` | TLA+ output        |
-| ------------------- | ------------------ |
-| `union(a, b)`       | `(a \union b)`     |
-| `intersect(a, b)`   | `(a \intersect b)` |
-| `subset(a, b)`      | `(a \subseteq b)`  |
-| `cardinality(s)`    | `Cardinality(s)`   |
-| `in_set(x, s)`      | `x \in s`          |
-| `set_of([a, b, c])` | `{a, b, c}`        |
+| Elixir inside `e()`       | TLA+ output          |
+| ------------------------- | -------------------- |
+| `union(a, b)`             | `(a \union b)`       |
+| `intersect(a, b)`         | `(a \intersect b)`   |
+| `difference(a, b)`        | `(a \ b)`            |
+| `subset(a, b)`            | `(a \subseteq b)`    |
+| `cardinality(s)`          | `Cardinality(s)`     |
+| `in_set(x, s)`            | `x \in s`            |
+| `set_of([a, b, c])`       | `{a, b, c}`          |
+| `set_map(:x, :set, expr)` | `{expr : x \in set}` |
+| `power_set(s)`            | `SUBSET s`           |
+| `distributed_union(s)`    | `UNION s`            |
 
 ## Function Application and Update
 
@@ -245,6 +249,22 @@ e(sub_seq(queue, 1, 3))
 | `head(s)`           | `Head(s)`         |
 | `tail(s)`           | `Tail(s)`         |
 | `sub_seq(s, m, n)`  | `SubSeq(s, m, n)` |
+| `concat(s, t)`      | `(s \o t)`        |
+| `seq_set(s)`        | `Seq(s)`          |
+
+## Tuples
+
+Tuple literals (`<<a, b, c>>` in TLA+) are finite sequences commonly used
+for multi-value transitions (e.g., message envelopes). Tuples do not require
+`extends [:Sequences]`.
+
+```elixir
+e(tuple([sender, receiver, payload]))
+```
+
+| Elixir inside `e()` | TLA+ output   |
+| ------------------- | ------------- |
+| `tuple([a, b, c])`  | `<<a, b, c>>` |
 
 ## Local Definitions
 

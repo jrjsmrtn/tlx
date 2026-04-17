@@ -125,6 +125,106 @@ defmodule TLX.SimulatorTest do
     end
   end
 
+  describe "simulator with set/sequence/tuple gaps" do
+    defmodule DifferenceSimSpec do
+      use TLX.Spec
+
+      variable(:n, 0)
+      variable(:active, MapSet.new([:a, :b, :c]))
+      variable(:failed, MapSet.new([:b]))
+      variable(:remaining, MapSet.new())
+
+      action :evict do
+        guard(e(n == 0))
+        next(:n, 1)
+        next(:remaining, e(difference(active, failed)))
+      end
+    end
+
+    defmodule SetMapSimSpec do
+      use TLX.Spec
+
+      variable(:n, 0)
+      variable(:xs, MapSet.new([1, 2, 3]))
+      variable(:doubled, MapSet.new())
+
+      action :double do
+        guard(e(n == 0))
+        next(:n, 1)
+        next(:doubled, e(set_map(:x, xs, x * 2)))
+      end
+    end
+
+    defmodule DistributedUnionSimSpec do
+      use TLX.Spec
+
+      variable(:n, 0)
+      variable(:groups, MapSet.new([MapSet.new([1, 2]), MapSet.new([2, 3])]))
+      variable(:all, MapSet.new())
+
+      action :flatten do
+        guard(e(n == 0))
+        next(:n, 1)
+        next(:all, e(distributed_union(groups)))
+      end
+    end
+
+    defmodule ConcatSimSpec do
+      use TLX.Spec
+
+      variable(:n, 0)
+      variable(:a, [1, 2])
+      variable(:b, [3, 4])
+      variable(:joined, [])
+
+      action :join do
+        guard(e(n == 0))
+        next(:n, 1)
+        next(:joined, e(concat(a, b)))
+      end
+    end
+
+    defmodule TupleSimSpec do
+      use TLX.Spec
+
+      variable(:n, 0)
+      variable(:msg, [])
+
+      action :send do
+        guard(e(n < 3))
+        next(:n, e(n + 1))
+        next(:msg, e(tuple([:sender, n, :payload])))
+      end
+    end
+
+    test "evaluates set difference" do
+      assert {:ok, stats} = Simulator.simulate(DifferenceSimSpec, runs: 10, steps: 5, seed: 42)
+      assert stats.runs == 10
+    end
+
+    test "evaluates set_map" do
+      assert {:ok, stats} = Simulator.simulate(SetMapSimSpec, runs: 10, steps: 5, seed: 42)
+      assert stats.runs == 10
+    end
+
+    test "evaluates distributed_union" do
+      assert {:ok, stats} =
+               Simulator.simulate(DistributedUnionSimSpec, runs: 10, steps: 5, seed: 42)
+
+      assert stats.runs == 10
+    end
+
+    test "evaluates sequence concat" do
+      assert {:ok, stats} = Simulator.simulate(ConcatSimSpec, runs: 10, steps: 5, seed: 42)
+      assert stats.runs == 10
+    end
+
+    test "evaluates tuple construction" do
+      assert {:ok, stats} = Simulator.simulate(TupleSimSpec, runs: 10, steps: 5, seed: 42)
+      assert stats.runs == 10
+    end
+  end
+
   describe "simulator with let_in/3" do
     defmodule LetInSpec do
       use TLX.Spec

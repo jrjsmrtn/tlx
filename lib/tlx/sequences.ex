@@ -13,6 +13,8 @@ defmodule TLX.Sequences do
       head(s)             # Head(s)
       tail(s)             # Tail(s)
       sub_seq(s, m, n)    # SubSeq(s, m, n)
+      concat(s, t)        # s \\o t
+      seq_set(s)          # Seq(s) — type of finite sequences over s
   """
 
   @doc "Sequence length: `Len(s)`"
@@ -29,4 +31,10 @@ defmodule TLX.Sequences do
 
   @doc "Subsequence: `SubSeq(s, m, n)`"
   def sub_seq(s, m, n), do: {:seq_sub_seq, s, m, n}
+
+  @doc "Sequence concatenation: `s \\o t`"
+  def concat(s, t), do: {:seq_concat, s, t}
+
+  @doc "Set of all finite sequences over s: `Seq(s)` (type constraint)."
+  def seq_set(s), do: {:seq_set, s}
 end

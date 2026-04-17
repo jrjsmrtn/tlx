@@ -180,6 +180,15 @@ defmodule TLX.Emitter.Elixir do
   defp fmt({:seq_head, s}), do: "head(#{fmt(s)})"
   defp fmt({:seq_tail, s}), do: "tail(#{fmt(s)})"
   defp fmt({:seq_sub_seq, s, m, n}), do: "sub_seq(#{fmt(s)}, #{fmt(m)}, #{fmt(n)})"
+  defp fmt({:seq_concat, a, b}), do: "concat(#{fmt(a)}, #{fmt(b)})"
+  defp fmt({:seq_set, s}), do: "seq_set(#{fmt(s)})"
+  defp fmt({:difference, a, b}), do: "difference(#{fmt(a)}, #{fmt(b)})"
+  defp fmt({:set_map, var, set, expr}), do: "set_map(:#{var}, :#{set}, #{fmt(expr)})"
+  defp fmt({:power_set, s}), do: "power_set(#{fmt(s)})"
+  defp fmt({:distributed_union, s}), do: "distributed_union(#{fmt(s)})"
+
+  defp fmt({:tuple, elements}) when is_list(elements),
+    do: "tuple([#{Enum.map_join(elements, ", ", &fmt/1)}])"
 
   defp fmt({:record, pairs}),
     do: "record(#{Enum.map_join(pairs, ", ", fn {k, v} -> "#{k}: #{fmt(v)}" end)})"
