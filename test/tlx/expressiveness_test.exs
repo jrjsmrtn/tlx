@@ -222,6 +222,61 @@ defmodule TLX.ExpressivenessTest do
     end
   end
 
+  defmodule CaseDoSpec do
+    use TLX.Spec
+
+    variable(:state, :queued)
+    variable(:stage, :queued)
+
+    action :advance do
+      next(
+        :stage,
+        e(
+          case state do
+            :queued -> :queued
+            :deployed -> :deployed
+            :failed -> :failed
+            _ -> :deploying
+          end
+        )
+      )
+    end
+  end
+
+  describe "case/do inside e()" do
+    test "TLA+ emits CASE with state equality clauses" do
+      output = TLA.emit(CaseDoSpec)
+      assert output =~ "CASE"
+      assert output =~ ~r/state = queued\s*->\s*queued/
+      assert output =~ ~r/state = deployed\s*->\s*deployed/
+      assert output =~ ~r/state = failed\s*->\s*failed/
+    end
+
+    test "TLA+ emits OTHER for `_` wildcard" do
+      output = TLA.emit(CaseDoSpec)
+      assert output =~ ~r/OTHER\s*->\s*deploying/
+    end
+
+    test "atoms in case patterns are declared as CONSTANTS" do
+      output = TLA.emit(CaseDoSpec)
+      assert output =~ "CONSTANTS"
+      assert output =~ "deployed"
+      assert output =~ "failed"
+    end
+
+    test "PlusCal-C emits CASE" do
+      output = PlusCalC.emit(CaseDoSpec)
+      assert output =~ "CASE"
+      assert output =~ "OTHER"
+    end
+
+    test "PlusCal-P emits CASE" do
+      output = PlusCalP.emit(CaseDoSpec)
+      assert output =~ "CASE"
+      assert output =~ "OTHER"
+    end
+  end
+
   defmodule ImpliesSpec do
     use TLX.Spec
 

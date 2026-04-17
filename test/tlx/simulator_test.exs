@@ -95,6 +95,36 @@ defmodule TLX.SimulatorTest do
     end
   end
 
+  describe "simulator with case/do inside e()" do
+    defmodule CaseDoSimSpec do
+      use TLX.Spec
+
+      variable(:x, 0)
+
+      action :step do
+        guard(e(x < 3))
+
+        next(
+          :x,
+          e(
+            case x do
+              0 -> 1
+              1 -> 2
+              _ -> 0
+            end
+          )
+        )
+      end
+
+      invariant(:bounded, e(x >= 0 and x <= 2))
+    end
+
+    test "evaluates case/do with literal patterns and wildcard" do
+      assert {:ok, stats} = Simulator.simulate(CaseDoSimSpec, runs: 100, steps: 50, seed: 42)
+      assert stats.runs == 100
+    end
+  end
+
   describe "simulator with let_in/3" do
     defmodule LetInSpec do
       use TLX.Spec

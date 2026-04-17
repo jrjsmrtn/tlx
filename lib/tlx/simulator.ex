@@ -275,8 +275,9 @@ defmodule TLX.Simulator do
 
   # CASE expression
   defp eval_ast({:case_of, clauses}, state) do
-    Enum.find_value(clauses, fn {cond, expr} ->
-      if eval_ast(cond, state), do: eval_ast(expr, state)
+    Enum.find_value(clauses, fn
+      {:otherwise, expr} -> eval_ast(expr, state)
+      {cond, expr} -> if eval_ast(cond, state), do: eval_ast(expr, state)
     end)
   end
 

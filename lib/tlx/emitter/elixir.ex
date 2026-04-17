@@ -169,7 +169,7 @@ defmodule TLX.Emitter.Elixir do
   defp fmt({:filter, var, set, expr}), do: "filter(:#{var}, :#{set}, #{fmt(expr)})"
 
   defp fmt({:case_of, clauses}),
-    do: "case_of([#{Enum.map_join(clauses, ", ", fn {c, e} -> "{#{fmt(c)}, #{fmt(e)}}" end)}])"
+    do: "case_of([#{Enum.map_join(clauses, ", ", &fmt_case_clause/1)}])"
 
   defp fmt({:domain, f}), do: "domain(#{fmt(f)})"
   defp fmt({:implies, p, q}), do: "implies(#{fmt(p)}, #{fmt(q)})"
@@ -189,6 +189,9 @@ defmodule TLX.Emitter.Elixir do
       "except_many(#{fmt(f)}, [#{Enum.map_join(pairs, ", ", fn {k, v} -> "{#{fmt(k)}, #{fmt(v)}}" end)}])"
 
   defp fmt(val), do: Format.format_expr(val, @symbols)
+
+  defp fmt_case_clause({:otherwise, e}), do: "{:otherwise, #{fmt(e)}}"
+  defp fmt_case_clause({c, e}), do: "{#{fmt(c)}, #{fmt(e)}}"
 
   defp fmt_temporal({:always, inner}), do: "always(#{fmt_temporal(inner)})"
   defp fmt_temporal({:eventually, inner}), do: "eventually(#{fmt_temporal(inner)})"

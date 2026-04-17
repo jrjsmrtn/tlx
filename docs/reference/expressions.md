@@ -122,15 +122,42 @@ e(filter(:x, :items, x != :removed))
 
 ## CASE Expression
 
-Multi-way conditional:
+Multi-way conditional with explicit conditions:
 
 ```elixir
 case_of([{e(status == :critical), 1}, {e(status == :warning), 2}, {e(true), 3}])
 ```
 
-| Elixir                                    | TLA+ output                           |
-| ----------------------------------------- | ------------------------------------- |
-| `case_of([{cond1, val1}, {cond2, val2}])` | `CASE cond1 -> val1 [] cond2 -> val2` |
+| Elixir                                        | TLA+ output                           |
+| --------------------------------------------- | ------------------------------------- |
+| `case_of([{cond1, val1}, {cond2, val2}])`     | `CASE cond1 -> val1 [] cond2 -> val2` |
+| `case_of([{cond, val}, {:otherwise, other}])` | `CASE cond -> val [] OTHER -> other`  |
+
+### `case/do` inside `e()`
+
+Native Elixir `case` is supported inside `e()` and transforms into TLA+
+`CASE` at macro expansion. Scope: literal atom, integer, and string
+patterns, plus `_` wildcard (emitted as `OTHER`).
+
+```elixir
+e(case state do
+  :queued   -> :queued
+  :deployed -> :deployed
+  :failed   -> :failed
+  _         -> :deploying
+end)
+```
+
+Emits:
+
+```tla
+CASE state = queued   -> queued
+  [] state = deployed -> deployed
+  [] state = failed   -> failed
+  [] OTHER            -> deploying
+```
+
+For non-literal patterns (tuples, guards, ranges), use `case_of/1` directly.
 
 ## Implication and Equivalence
 

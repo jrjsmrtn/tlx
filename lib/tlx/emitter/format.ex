@@ -201,16 +201,16 @@ defmodule TLX.Emitter.Format do
 
   # CASE expression
   def format_ast({:case_of, clauses}, s) when is_list(clauses) do
-    Enum.map_join(clauses, " [] ", fn {cond, expr} ->
-      "#{format_expr(cond, s)} -> #{format_expr(expr, s)}"
-    end)
+    fmt = fn ast -> format_expr(ast, s) end
+
+    Enum.map_join(clauses, " [] ", &format_case_clause(&1, fmt))
     |> then(&"CASE #{&1}")
   end
 
   def format_ast({:case_of, meta, [clauses]}, s) when is_list(meta) and is_list(clauses) do
-    Enum.map_join(clauses, " [] ", fn {cond, expr} ->
-      "#{format_ast(cond, s)} -> #{format_ast(expr, s)}"
-    end)
+    fmt = fn ast -> format_ast(ast, s) end
+
+    Enum.map_join(clauses, " [] ", &format_case_clause(&1, fmt))
     |> then(&"CASE #{&1}")
   end
 
@@ -338,6 +338,9 @@ defmodule TLX.Emitter.Format do
   def format_ast(false, s), do: s.false
   def format_ast(atom, s) when is_atom(atom), do: format_atom(atom, s)
   def format_ast(other, _s), do: inspect(other)
+
+  defp format_case_clause({:otherwise, expr}, fmt), do: "OTHER -> #{fmt.(expr)}"
+  defp format_case_clause({cond, expr}, fmt), do: "#{fmt.(cond)} -> #{fmt.(expr)}"
 
   @doc """
   Format a high-level expression (may contain `{:expr, ast}` wrappers,

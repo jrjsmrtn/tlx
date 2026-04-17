@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `case/do` syntax inside `e()` — native Elixir `case` expressions transform at macro expansion into `{:case_of, clauses}` IR, emitting TLA+ `CASE ... [] OTHER -> ...`. Supports literal atom/integer/string patterns and `_` wildcard (mapped to `:otherwise` sentinel).
+- `:otherwise` sentinel in `case_of/1` clauses — emits TLA+ `OTHER` branch and is treated as always-truthy in the simulator.
+- Tests: `case/do` emission across TLA+, PlusCal-C, PlusCal-P; simulator evaluation with literal patterns + wildcard.
+
 ## [0.4.5] - 2026-04-14
 
 ### Fixed

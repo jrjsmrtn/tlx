@@ -170,6 +170,7 @@ Sprint 16 — Proper parsers and AST-based code gen:
 
 | Sprint | Phase                 | Version | Summary                                                  |
 | ------ | --------------------- | ------- | -------------------------------------------------------- |
+| 45     | Expressiveness        | —       | `case/do` inside `e()` — emits TLA+ `CASE ... [] OTHER`  |
 | —      | Release               | v0.4.5  | mix tlx.check uses TLA+ emission directly (not PlusCal)  |
 | —      | Release               | v0.4.4  | Bug fixes: atom mismatch, simulator ite/case_of/let_in   |
 | —      | Release               | v0.4.3  | TLA+ references, pattern examples, roadmap sprints 44–47 |
@@ -224,7 +225,6 @@ Sprint 16 — Proper parsers and AST-based code gen:
 | Sprint | Phase          | Plan                                                                     |
 | ------ | -------------- | ------------------------------------------------------------------------ |
 | 44     | Tooling        | State/transition coverage — verify ExUnit tests exercise all spec states |
-| 45     | Expressiveness | Elixir `case/do` inside `e()` — emit as TLA+ CASE                        |
 | 46     | Expressiveness | `until(p, q)` and `weak_until(p, q)` — TLA+ P U Q and P W Q              |
 | 47     | Expressiveness | Set/sequence/tuple gaps — difference, map, concat, tuples                |
 
