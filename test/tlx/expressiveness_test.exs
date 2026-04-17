@@ -555,4 +555,43 @@ defmodule TLX.ExpressivenessTest do
       assert output =~ "<<sender, receiver, payload>>"
     end
   end
+
+  # --- Sprint 51: arithmetic completion (div, rem, **, unary -) ---
+
+  defmodule ArithmeticSpec do
+    use TLX.Spec
+
+    variable(:x, 10)
+    variable(:y, 3)
+
+    action :compute do
+      next(:x, e(div(x, y)))
+      next(:y, e(rem(x, y)))
+    end
+
+    invariant(:non_negative, e(x >= -100))
+    invariant(:bounded_pow, e(y ** 2 <= 100))
+  end
+
+  describe "arithmetic completion" do
+    test "TLA+ emits \\div for integer division" do
+      output = TLA.emit(ArithmeticSpec)
+      assert output =~ "\\div"
+    end
+
+    test "TLA+ emits % for modulo" do
+      output = TLA.emit(ArithmeticSpec)
+      assert output =~ ~r/y' = x % y/
+    end
+
+    test "TLA+ emits ^ for exponentiation" do
+      output = TLA.emit(ArithmeticSpec)
+      assert output =~ "y ^ 2"
+    end
+
+    test "TLA+ emits unary minus" do
+      output = TLA.emit(ArithmeticSpec)
+      assert output =~ "x >= -100"
+    end
+  end
 end

@@ -170,6 +170,7 @@ Sprint 16 — Proper parsers and AST-based code gen:
 
 | Sprint | Phase                 | Version | Summary                                                                       |
 | ------ | --------------------- | ------- | ----------------------------------------------------------------------------- |
+| 51     | Expressiveness        | —       | Arithmetic completion: integer `div`, `rem` (%), `**` (^), unary `-`          |
 | 48     | Simulator             | —       | AST-form eval for 24 set/sequence/function/logic ops inside `e()`             |
 | 47     | Expressiveness        | —       | Set/seq/tuple gaps: difference, set_map, power_set, UNION, concat, Seq, tuple |
 | 46     | Expressiveness        | —       | `until(p, q)` and `weak_until(p, q)` — TLA+ `\U`, `\W`                        |
@@ -230,7 +231,6 @@ Sprint 16 — Proper parsers and AST-based code gen:
 | 44     | Tooling        | State/transition coverage — verify ExUnit tests exercise all spec states    |
 | 49     | Expressiveness | `select_seq` + LAMBDA emission for sequence filtering                       |
 | 50     | Simulator      | `case_of` `find_value` fix — don't drop clauses whose body is `false`/`nil` |
-| 51     | Expressiveness | Arithmetic completion: integer `div`, `mod`, `pow`, unary `-`               |
 | 52     | Expressiveness | Function constructor `[x \in S \|-> expr]`, function set `[S -> T]`, `\X`   |
 
 ### Sprint 45: Elixir `case/do` inside `e()`

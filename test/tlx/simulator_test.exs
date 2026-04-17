@@ -420,6 +420,74 @@ defmodule TLX.SimulatorTest do
     end
   end
 
+  describe "simulator with arithmetic completion (div, rem, **, unary -)" do
+    # Sprint 51 — user writes these inside e(), Elixir parses as AST,
+    # simulator must evaluate them.
+
+    defmodule DivRemSpec do
+      use TLX.Spec
+
+      variable(:x, 10)
+      variable(:y, 3)
+      variable(:n, 0)
+
+      action :step do
+        guard(e(n < 2))
+        next(:x, e(div(x, y)))
+        next(:y, e(rem(10, y)))
+        next(:n, e(n + 1))
+      end
+
+      invariant(:positive, e(x >= 0))
+    end
+
+    defmodule PowSpec do
+      use TLX.Spec
+
+      variable(:base, 2)
+      variable(:result, 1)
+      variable(:n, 0)
+
+      action :step do
+        guard(e(n < 3))
+        next(:result, e(base ** n))
+        next(:n, e(n + 1))
+      end
+
+      invariant(:reasonable, e(result >= 0))
+    end
+
+    defmodule UnaryMinusSpec do
+      use TLX.Spec
+
+      variable(:x, 5)
+      variable(:n, 0)
+
+      action :flip do
+        guard(e(n < 3))
+        next(:x, e(-x))
+        next(:n, e(n + 1))
+      end
+
+      invariant(:magnitude, e(-10 <= x and x <= 10))
+    end
+
+    test "evaluates div and rem" do
+      assert {:ok, stats} = Simulator.simulate(DivRemSpec, runs: 10, steps: 5, seed: 42)
+      assert stats.runs == 10
+    end
+
+    test "evaluates ** (integer exponentiation)" do
+      assert {:ok, stats} = Simulator.simulate(PowSpec, runs: 10, steps: 5, seed: 42)
+      assert stats.runs == 10
+    end
+
+    test "evaluates unary minus" do
+      assert {:ok, stats} = Simulator.simulate(UnaryMinusSpec, runs: 10, steps: 5, seed: 42)
+      assert stats.runs == 10
+    end
+  end
+
   describe "simulator with let_in/3" do
     defmodule LetInSpec do
       use TLX.Spec

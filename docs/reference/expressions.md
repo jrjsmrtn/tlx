@@ -10,7 +10,11 @@ All standard Elixir operators work inside `e()`:
 | ------------------- | ----------- |
 | `x + 1`             | `x + 1`     |
 | `x - 1`             | `x - 1`     |
+| `-x` (unary)        | `-x`        |
 | `x * y`             | `x * y`     |
+| `div(x, y)`         | `x \div y`  |
+| `rem(x, y)`         | `x % y`     |
+| `x ** y`            | `x ^ y`     |
 | `x == y`            | `x = y`     |
 | `x != y`            | `x # y`     |
 | `x > y`             | `x > y`     |
@@ -20,6 +24,12 @@ All standard Elixir operators work inside `e()`:
 | `x and y`           | `(x /\ y)`  |
 | `x or y`            | `(x \\/ y)` |
 | `not x`             | `~(x)`      |
+
+`div`, `rem`, `**`, and unary `-` work only inside `e()` — they are
+Elixir's native arithmetic syntax captured as AST. There is no direct
+function form outside `e()` (using `Kernel.div/2` etc. would evaluate
+at Elixir runtime rather than building IR). All four map to operators
+from the `Integers` module, which TLX always extends.
 
 ## Conditionals
 

@@ -24,6 +24,9 @@ defmodule TLX.Emitter.Format do
     plus: "+",
     minus: "-",
     mul: "*",
+    div: "\\div",
+    mod: "%",
+    pow: "^",
     true: "TRUE",
     false: "FALSE",
     atom: :unquoted,
@@ -52,6 +55,9 @@ defmodule TLX.Emitter.Format do
     plus: "+",
     minus: "-",
     mul: "×",
+    div: "÷",
+    mod: "mod",
+    pow: "^",
     true: "TRUE",
     false: "FALSE",
     atom: :unquoted,
@@ -75,6 +81,9 @@ defmodule TLX.Emitter.Format do
     plus: "+",
     minus: "-",
     mul: "*",
+    div: "div",
+    mod: "rem",
+    pow: "**",
     true: "true",
     false: "false",
     atom: :elixir,
@@ -123,8 +132,20 @@ defmodule TLX.Emitter.Format do
 
   # Arithmetic operators
   def format_ast({:+, _, [l, r]}, s), do: "#{format_ast(l, s)} #{s.plus} #{format_ast(r, s)}"
+  # Unary minus — 1-element args list; must match before binary `-`
+  def format_ast({:-, _, [x]}, s), do: "#{s.minus}#{format_ast(x, s)}"
   def format_ast({:-, _, [l, r]}, s), do: "#{format_ast(l, s)} #{s.minus} #{format_ast(r, s)}"
   def format_ast({:*, _, [l, r]}, s), do: "#{format_ast(l, s)} #{s.mul} #{format_ast(r, s)}"
+
+  # Integer division, modulo, exponentiation — TLA+ \div, %, ^ (all in Integers module)
+  def format_ast({:div, _, [l, r]}, s),
+    do: "#{format_ast(l, s)} #{s.div} #{format_ast(r, s)}"
+
+  def format_ast({:rem, _, [l, r]}, s),
+    do: "#{format_ast(l, s)} #{s.mod} #{format_ast(r, s)}"
+
+  def format_ast({:**, _, [l, r]}, s),
+    do: "#{format_ast(l, s)} #{s.pow} #{format_ast(r, s)}"
 
   # Quantifiers
   def format_ast({:forall, var, set, inner}, s) do

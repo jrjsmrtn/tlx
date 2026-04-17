@@ -301,11 +301,23 @@ defmodule TLX.Simulator do
   defp eval_ast({:+, _, [left, right]}, state),
     do: eval_ast(left, state) + eval_ast(right, state)
 
+  # Unary minus — 1-arg form must match before binary `-`
+  defp eval_ast({:-, _, [x]}, state), do: -eval_ast(x, state)
+
   defp eval_ast({:-, _, [left, right]}, state),
     do: eval_ast(left, state) - eval_ast(right, state)
 
   defp eval_ast({:*, _, [left, right]}, state),
     do: eval_ast(left, state) * eval_ast(right, state)
+
+  defp eval_ast({:div, _, [left, right]}, state),
+    do: div(eval_ast(left, state), eval_ast(right, state))
+
+  defp eval_ast({:rem, _, [left, right]}, state),
+    do: rem(eval_ast(left, state), eval_ast(right, state))
+
+  defp eval_ast({:**, _, [left, right]}, state),
+    do: integer_pow(eval_ast(left, state), eval_ast(right, state))
 
   # IF/THEN/ELSE — from ite/3 function call
   defp eval_ast({:ite, cond, then_expr, else_expr}, state) do
@@ -466,6 +478,14 @@ defmodule TLX.Simulator do
 
   defp to_mapset(%MapSet{} = s), do: s
   defp to_mapset(list) when is_list(list), do: MapSet.new(list)
+
+  # Integer exponentiation — keeps the result as an integer (TLA+ ^ is
+  # defined over Integers). `:math.pow/2` returns a float.
+  defp integer_pow(base, exp) when is_integer(base) and is_integer(exp) and exp >= 0,
+    do: do_integer_pow(base, exp, 1)
+
+  defp do_integer_pow(_base, 0, acc), do: acc
+  defp do_integer_pow(base, exp, acc), do: do_integer_pow(base, exp - 1, acc * base)
 
   defp eval_set_map(var, set, expr, state) do
     eval_ast(set, state)

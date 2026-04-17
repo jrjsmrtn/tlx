@@ -22,6 +22,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Simulator: ops written inside `e(...)` in guards or invariants now evaluate correctly. Previously `e(cardinality(set))`, `e(in_set(x, s))`, `e(len(q))`, and 20+ other set/sequence/function ops raised `FunctionClauseError` because only the direct-call IR form was handled. Added AST-capture clauses delegating to the existing direct-call logic.
 
+### Added (arithmetic)
+
+- Integer division: `e(div(x, y))` → `x \div y`
+- Modulo: `e(rem(x, y))` → `x % y`
+- Exponentiation: `e(x ** y)` → `x^y`
+- Unary negation: `e(-x)` → `-x`
+
+All four are AST-form only (inside `e()`) and use operators from the TLA+ `Integers` module (always extended). Simulator evaluates them via `Kernel.div/2`, `Kernel.rem/2`, and a tail-recursive `integer_pow/2` (avoids `:math.pow/2`'s float result).
+
 ## [0.4.5] - 2026-04-14
 
 ### Fixed
