@@ -229,9 +229,10 @@ Sprint 16 — Proper parsers and AST-based code gen:
 
 ## Proposed Sprints
 
-| Sprint | Phase   | Plan                                                                     |
-| ------ | ------- | ------------------------------------------------------------------------ |
-| 44     | Tooling | State/transition coverage — verify ExUnit tests exercise all spec states |
+| Sprint | Phase   | Plan                                                                      |
+| ------ | ------- | ------------------------------------------------------------------------- |
+| 44     | Tooling | State/transition coverage — verify ExUnit tests exercise all spec states  |
+| 53     | Quality | Fix docs build — 3 internal structs referenced in internals.md but hidden |
 
 ### Sprint 45: Elixir `case/do` inside `e()`
 
@@ -640,3 +641,35 @@ msg_type == in_flight \subseteq (nodes \X nodes)
 **Scope**: Medium. `fn_of` needs variable binding (like `filter`/`set_map`), `cross` requires tuple materialization in the simulator (tuples ship in Sprint 47). `fn_set` can be stubbed as a runtime pass-through since its role is type assertion.
 
 **Out of scope**: Multi-argument functions `[x \in S, y \in T |-> expr]` — rare in practice and users can nest `fn_of` if needed. Function composition — not common in state machine specs.
+
+### Sprint 53: Fix Docs Build Warnings
+
+**Source**: v0.4.6 Hex publish output flagged three warnings during `mix docs`:
+
+```
+warning: documentation references module "TLX.RefinementMapping" but it is hidden
+warning: documentation references module "TLX.InitConstraint" but it is hidden
+warning: documentation references module "TLX.WithChoice" but it is hidden
+```
+
+All three are referenced in `docs/explanation/internals.md` (the "Spark DSL entity structs" table) but are marked `@moduledoc false` in their source files, so ex_doc hides them and flags the broken links.
+
+**Goal**: Make the docs build warning-free.
+
+Two straightforward options — pick one:
+
+1. **Promote to documented structs**. Remove `@moduledoc false` from `TLX.RefinementMapping`, `TLX.InitConstraint`, `TLX.WithChoice`; add a one-line moduledoc matching the tone of `TLX.Variable`, `TLX.Action`, etc. Consistency win: the internals-table already references them as first-class sibling structs of the documented ones.
+
+2. **Strip the references**. Remove the three rows from the internals.md table. Keeps them private but loses contributor-facing documentation for three structs that ARE used by the DSL.
+
+**Recommendation**: option 1 — these structs are part of the internal IR, are peers of the already-documented structs, and are already listed in contributor docs. Promoting them is the minimum-surprise fix.
+
+**Scope**: Tiny. Three 1-line moduledoc additions OR three table row removals. No code behavior change.
+
+**Verification**:
+
+```bash
+mix docs 2>&1 | grep -c warning   # should be 0
+```
+
+**Why this matters**: Hex docs publish surfaces these on every release. Each release accumulates identical warnings in output. Fixing once closes that forever.
