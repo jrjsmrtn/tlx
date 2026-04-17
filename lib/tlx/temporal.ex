@@ -14,6 +14,8 @@ defmodule TLX.Temporal do
       eventually(expr)          # <>P
       always(eventually(expr))  # []<>P
       leads_to(p, q)            # P ~> Q (equivalent to [](P => <>Q))
+      until(p, q)               # P \U Q (strong — Q must eventually hold)
+      weak_until(p, q)          # P \W Q (weak — P may hold forever)
 
   ## Quantifiers
 
@@ -29,6 +31,13 @@ defmodule TLX.Temporal do
   def always(expr), do: {:always, expr}
   def eventually(expr), do: {:eventually, expr}
   def leads_to(p, q), do: {:leads_to, p, q}
+
+  @doc "Strong until. `P \\U Q` in TLA+. P holds until Q becomes true; Q must eventually hold."
+  def until(p, q), do: {:until, p, q}
+
+  @doc "Weak until. `P \\W Q` in TLA+. P holds until Q becomes true, or P holds forever."
+  def weak_until(p, q), do: {:weak_until, p, q}
+
   def forall(var, set, expr), do: {:forall, var, set, expr}
   def exists(var, set, expr), do: {:exists, var, set, expr}
 

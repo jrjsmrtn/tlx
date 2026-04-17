@@ -141,6 +141,8 @@ defmodule TLX.Emitter.Symbols do
   defp fmt_temporal({:always, inner}), do: "□(#{fmt_temporal(inner)})"
   defp fmt_temporal({:eventually, inner}), do: "◇(#{fmt_temporal(inner)})"
   defp fmt_temporal({:leads_to, p, q}), do: "#{fmt_temporal(p)} ↝ #{fmt_temporal(q)}"
+  defp fmt_temporal({:until, p, q}), do: "#{fmt_temporal(p)} U #{fmt_temporal(q)}"
+  defp fmt_temporal({:weak_until, p, q}), do: "#{fmt_temporal(p)} W #{fmt_temporal(q)}"
   defp fmt_temporal({:expr, ast}), do: fmt_ast(ast)
   defp fmt_temporal(other), do: fmt(other)
 

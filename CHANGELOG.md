@@ -7,6 +7,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.6] - 2026-04-18
+
+Eight sprints of expressiveness and simulator work: every sprint-retro follow-up from 45–47 is closed, every basic TLA+ primitive gap identified by codebase audit is shipped.
+
+### Added
+
+- `case/do` syntax inside `e()` — native Elixir `case` expressions transform at macro expansion into `{:case_of, clauses}` IR, emitting TLA+ `CASE ... [] OTHER -> ...`. Supports literal atom/integer/string patterns and `_` wildcard (mapped to `:otherwise` sentinel).
+- `:otherwise` sentinel in `case_of/1` clauses — emits TLA+ `OTHER` branch and is treated as always-truthy in the simulator.
+- Tests: `case/do` emission across TLA+, PlusCal-C, PlusCal-P; simulator evaluation with literal patterns + wildcard.
+- `until(p, q)` and `weak_until(p, q)` temporal operators — emit TLA+ `(p) \U (q)` (strong: q must eventually hold) and `(p) \W (q)` (weak: p may hold forever). Round-trip via Elixir emitter and Unicode `U`/`W` symbols via Symbols emitter.
+- Set ops: `difference(a, b)` (`a \ b`), `set_map(:var, :set, expr)` (`{expr : var \in set}`), `power_set(s)` (`SUBSET s`), `distributed_union(s)` (`UNION s`).
+- Sequence ops: `concat(s, t)` (`s \o t`), `seq_set(s)` (`Seq(s)` type constraint).
+- New `TLX.Tuples` module with `tuple([a, b, c])` → `<<a, b, c>>`. Imported into all DSL sections alongside Sets/Sequences/Temporal/Expr.
+- Simulator support for all new ops (both AST-capture and direct-call forms) — except `seq_set` (infinite type constraint, not materializable).
+
+### Fixed
+
+- Simulator: ops written inside `e(...)` in guards or invariants now evaluate correctly. Previously `e(cardinality(set))`, `e(in_set(x, s))`, `e(len(q))`, and 20+ other set/sequence/function ops raised `FunctionClauseError` because only the direct-call IR form was handled. Added AST-capture clauses delegating to the existing direct-call logic.
+- Simulator `case_of` eval no longer drops matched clauses whose body evaluates to `false` or `nil`. Previously used `Enum.find_value/2`, which treats any falsy callback return as "no match found" and falls through to later clauses. Switched to `Enum.reduce_while/3`.
+
+### Added (arithmetic)
+
+- Integer division: `e(div(x, y))` → `x \div y`
+- Modulo: `e(rem(x, y))` → `x % y`
+- Exponentiation: `e(x ** y)` → `x^y`
+- Unary negation: `e(-x)` → `-x`
+
+All four are AST-form only (inside `e()`) and use operators from the TLA+ `Integers` module (always extended). Simulator evaluates them via `Kernel.div/2`, `Kernel.rem/2`, and a tail-recursive `integer_pow/2` (avoids `:math.pow/2`'s float result).
+
+### Added (functions and Cartesian product)
+
+- Function constructor: `fn_of(:x, set, expr)` → `[x \in set |-> expr]`. Simulator materializes as an Elixir map.
+- Function set (type): `fn_set(domain, range)` → `[domain -> range]`. Emission-only — `[S -> T]` can be exponentially large; TLC handles it at model-check time.
+- Cartesian product: `cross(a, b)` → `(a \X b)`. Simulator builds a `MapSet` of 2-element lists.
+- New `TLX.Functions` module wired into all DSL section imports alongside `TLX.Sets`, `TLX.Sequences`, `TLX.Tuples`, `TLX.Temporal`, `TLX.Expr`.
+
+### Added (sequence filtering)
+
+- `select_seq(:var, seq, pred)` — sequence filter emitting TLA+ `SelectSeq(s, LAMBDA var: pred)`. First TLX construct to emit LAMBDA. Signature mirrors `filter/3`, `choose/3`, `set_map/3` (variable-first). Simulator filters using the bound variable, same semantics as `filter`.
+
 ## [0.4.5] - 2026-04-14
 
 ### Fixed

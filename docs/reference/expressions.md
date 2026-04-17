@@ -10,7 +10,11 @@ All standard Elixir operators work inside `e()`:
 | ------------------- | ----------- |
 | `x + 1`             | `x + 1`     |
 | `x - 1`             | `x - 1`     |
+| `-x` (unary)        | `-x`        |
 | `x * y`             | `x * y`     |
+| `div(x, y)`         | `x \div y`  |
+| `rem(x, y)`         | `x % y`     |
+| `x ** y`            | `x ^ y`     |
 | `x == y`            | `x = y`     |
 | `x != y`            | `x # y`     |
 | `x > y`             | `x > y`     |
@@ -20,6 +24,12 @@ All standard Elixir operators work inside `e()`:
 | `x and y`           | `(x /\ y)`  |
 | `x or y`            | `(x \\/ y)` |
 | `not x`             | `~(x)`      |
+
+`div`, `rem`, `**`, and unary `-` work only inside `e()` — they are
+Elixir's native arithmetic syntax captured as AST. There is no direct
+function form outside `e()` (using `Kernel.div/2` etc. would evaluate
+at Elixir runtime rather than building IR). All four map to operators
+from the `Integers` module, which TLX always extends.
 
 ## Conditionals
 
@@ -66,14 +76,18 @@ e(union(a, b))
 e(subset(items, all_items))
 ```
 
-| Elixir inside `e()` | TLA+ output        |
-| ------------------- | ------------------ |
-| `union(a, b)`       | `(a \union b)`     |
-| `intersect(a, b)`   | `(a \intersect b)` |
-| `subset(a, b)`      | `(a \subseteq b)`  |
-| `cardinality(s)`    | `Cardinality(s)`   |
-| `in_set(x, s)`      | `x \in s`          |
-| `set_of([a, b, c])` | `{a, b, c}`        |
+| Elixir inside `e()`       | TLA+ output          |
+| ------------------------- | -------------------- |
+| `union(a, b)`             | `(a \union b)`       |
+| `intersect(a, b)`         | `(a \intersect b)`   |
+| `difference(a, b)`        | `(a \ b)`            |
+| `subset(a, b)`            | `(a \subseteq b)`    |
+| `cardinality(s)`          | `Cardinality(s)`     |
+| `in_set(x, s)`            | `x \in s`            |
+| `set_of([a, b, c])`       | `{a, b, c}`          |
+| `set_map(:x, :set, expr)` | `{expr : x \in set}` |
+| `power_set(s)`            | `SUBSET s`           |
+| `distributed_union(s)`    | `UNION s`            |
 
 ## Function Application and Update
 
@@ -122,15 +136,42 @@ e(filter(:x, :items, x != :removed))
 
 ## CASE Expression
 
-Multi-way conditional:
+Multi-way conditional with explicit conditions:
 
 ```elixir
 case_of([{e(status == :critical), 1}, {e(status == :warning), 2}, {e(true), 3}])
 ```
 
-| Elixir                                    | TLA+ output                           |
-| ----------------------------------------- | ------------------------------------- |
-| `case_of([{cond1, val1}, {cond2, val2}])` | `CASE cond1 -> val1 [] cond2 -> val2` |
+| Elixir                                        | TLA+ output                           |
+| --------------------------------------------- | ------------------------------------- |
+| `case_of([{cond1, val1}, {cond2, val2}])`     | `CASE cond1 -> val1 [] cond2 -> val2` |
+| `case_of([{cond, val}, {:otherwise, other}])` | `CASE cond -> val [] OTHER -> other`  |
+
+### `case/do` inside `e()`
+
+Native Elixir `case` is supported inside `e()` and transforms into TLA+
+`CASE` at macro expansion. Scope: literal atom, integer, and string
+patterns, plus `_` wildcard (emitted as `OTHER`).
+
+```elixir
+e(case state do
+  :queued   -> :queued
+  :deployed -> :deployed
+  :failed   -> :failed
+  _         -> :deploying
+end)
+```
+
+Emits:
+
+```tla
+CASE state = queued   -> queued
+  [] state = deployed -> deployed
+  [] state = failed   -> failed
+  [] OTHER            -> deploying
+```
+
+For non-literal patterns (tuples, guards, ranges), use `case_of/1` directly.
 
 ## Implication and Equivalence
 
@@ -211,13 +252,64 @@ e(tail(queue))
 e(sub_seq(queue, 1, 3))
 ```
 
-| Elixir inside `e()` | TLA+ output       |
-| ------------------- | ----------------- |
-| `len(s)`            | `Len(s)`          |
-| `append(s, x)`      | `Append(s, x)`    |
-| `head(s)`           | `Head(s)`         |
-| `tail(s)`           | `Tail(s)`         |
-| `sub_seq(s, m, n)`  | `SubSeq(s, m, n)` |
+| Elixir inside `e()`         | TLA+ output                      |
+| --------------------------- | -------------------------------- |
+| `len(s)`                    | `Len(s)`                         |
+| `append(s, x)`              | `Append(s, x)`                   |
+| `head(s)`                   | `Head(s)`                        |
+| `tail(s)`                   | `Tail(s)`                        |
+| `sub_seq(s, m, n)`          | `SubSeq(s, m, n)`                |
+| `concat(s, t)`              | `(s \o t)`                       |
+| `seq_set(s)`                | `Seq(s)`                         |
+| `select_seq(:var, s, pred)` | `SelectSeq(s, LAMBDA var: pred)` |
+
+`select_seq` is the sequence analog of `filter` — it returns the
+subsequence of `s` whose elements satisfy the predicate. Signature
+mirrors `filter/3`/`choose/3`/`set_map/3` (variable-first). This is
+currently the only TLX construct that emits TLA+ `LAMBDA`.
+
+## Functions (maps) and Cartesian product
+
+| Elixir inside `e()`     | TLA+ output             | Use case                                   |
+| ----------------------- | ----------------------- | ------------------------------------------ |
+| `fn_of(:x, set, expr)`  | `[x \in set \|-> expr]` | Construct a function mapping               |
+| `fn_set(domain, range)` | `[domain -> range]`     | Type of all functions from domain to range |
+| `cross(a, b)`           | `(a \X b)`              | Cartesian product                          |
+
+Typical use in `TypeOK` invariants:
+
+```elixir
+invariant :type_ok,
+  e(in_set(flags, fn_set(nodes, set_of([true, false]))))
+
+# Initial function value
+initial do
+  constraint(e(vote_counts == fn_of(:n, nodes, 0)))
+end
+
+# Cartesian product for message channels
+invariant :msg_type, e(subset(in_flight, cross(nodes, nodes)))
+```
+
+Simulator support: `fn_of` materializes as an Elixir map; `cross` as a
+`MapSet` of 2-element lists (TLA+ tuples). `fn_set` is emission-only —
+`[S -> T]` is the set of all functions, which can be exponential and
+is rarely useful to enumerate; used in type invariants that are
+checked by TLC at model time, not by the Elixir simulator.
+
+## Tuples
+
+Tuple literals (`<<a, b, c>>` in TLA+) are finite sequences commonly used
+for multi-value transitions (e.g., message envelopes). Tuples do not require
+`extends [:Sequences]`.
+
+```elixir
+e(tuple([sender, receiver, payload]))
+```
+
+| Elixir inside `e()` | TLA+ output   |
+| ------------------- | ------------- |
+| `tuple([a, b, c])`  | `<<a, b, c>>` |
 
 ## Local Definitions
 
@@ -238,14 +330,18 @@ property :name, always(e(p))
 property :name, eventually(e(p))
 property :name, always(eventually(e(p)))
 property :name, leads_to(e(p), e(q))
+property :name, until(e(p), e(q))
+property :name, weak_until(e(p), e(q))
 ```
 
-| Function                | TLA+ output  | Meaning                                  |
-| ----------------------- | ------------ | ---------------------------------------- |
-| `always(p)`             | `[](p)`      | p holds in every state of every behavior |
-| `eventually(p)`         | `<>(p)`      | p holds in some future state             |
-| `always(eventually(p))` | `[]<>(p)`    | p holds infinitely often                 |
-| `leads_to(p, q)`        | `(p) ~> (q)` | whenever p holds, q eventually follows   |
+| Function                | TLA+ output  | Meaning                                             |
+| ----------------------- | ------------ | --------------------------------------------------- |
+| `always(p)`             | `[](p)`      | p holds in every state of every behavior            |
+| `eventually(p)`         | `<>(p)`      | p holds in some future state                        |
+| `always(eventually(p))` | `[]<>(p)`    | p holds infinitely often                            |
+| `leads_to(p, q)`        | `(p) ~> (q)` | whenever p holds, q eventually follows              |
+| `until(p, q)`           | `(p) \U (q)` | p holds until q becomes true; q **must** hold       |
+| `weak_until(p, q)`      | `(p) \W (q)` | p holds until q becomes true, **or** p holds always |
 
 ## Literals
 

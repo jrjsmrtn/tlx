@@ -169,7 +169,7 @@ defmodule TLX.Emitter.Elixir do
   defp fmt({:filter, var, set, expr}), do: "filter(:#{var}, :#{set}, #{fmt(expr)})"
 
   defp fmt({:case_of, clauses}),
-    do: "case_of([#{Enum.map_join(clauses, ", ", fn {c, e} -> "{#{fmt(c)}, #{fmt(e)}}" end)}])"
+    do: "case_of([#{Enum.map_join(clauses, ", ", &fmt_case_clause/1)}])"
 
   defp fmt({:domain, f}), do: "domain(#{fmt(f)})"
   defp fmt({:implies, p, q}), do: "implies(#{fmt(p)}, #{fmt(q)})"
@@ -180,6 +180,20 @@ defmodule TLX.Emitter.Elixir do
   defp fmt({:seq_head, s}), do: "head(#{fmt(s)})"
   defp fmt({:seq_tail, s}), do: "tail(#{fmt(s)})"
   defp fmt({:seq_sub_seq, s, m, n}), do: "sub_seq(#{fmt(s)}, #{fmt(m)}, #{fmt(n)})"
+  defp fmt({:seq_concat, a, b}), do: "concat(#{fmt(a)}, #{fmt(b)})"
+  defp fmt({:seq_set, s}), do: "seq_set(#{fmt(s)})"
+  defp fmt({:seq_select, var, s, pred}), do: "select_seq(:#{var}, #{fmt(s)}, #{fmt(pred)})"
+  defp fmt({:difference, a, b}), do: "difference(#{fmt(a)}, #{fmt(b)})"
+  defp fmt({:set_map, var, set, expr}), do: "set_map(:#{var}, :#{set}, #{fmt(expr)})"
+  defp fmt({:power_set, s}), do: "power_set(#{fmt(s)})"
+  defp fmt({:distributed_union, s}), do: "distributed_union(#{fmt(s)})"
+
+  defp fmt({:tuple, elements}) when is_list(elements),
+    do: "tuple([#{Enum.map_join(elements, ", ", &fmt/1)}])"
+
+  defp fmt({:fn_of, var, set, expr}), do: "fn_of(:#{var}, :#{set}, #{fmt(expr)})"
+  defp fmt({:fn_set, d, r}), do: "fn_set(#{fmt(d)}, #{fmt(r)})"
+  defp fmt({:cross, a, b}), do: "cross(#{fmt(a)}, #{fmt(b)})"
 
   defp fmt({:record, pairs}),
     do: "record(#{Enum.map_join(pairs, ", ", fn {k, v} -> "#{k}: #{fmt(v)}" end)})"
@@ -190,9 +204,17 @@ defmodule TLX.Emitter.Elixir do
 
   defp fmt(val), do: Format.format_expr(val, @symbols)
 
+  defp fmt_case_clause({:otherwise, e}), do: "{:otherwise, #{fmt(e)}}"
+  defp fmt_case_clause({c, e}), do: "{#{fmt(c)}, #{fmt(e)}}"
+
   defp fmt_temporal({:always, inner}), do: "always(#{fmt_temporal(inner)})"
   defp fmt_temporal({:eventually, inner}), do: "eventually(#{fmt_temporal(inner)})"
   defp fmt_temporal({:leads_to, p, q}), do: "leads_to(#{fmt_temporal(p)}, #{fmt_temporal(q)})"
+  defp fmt_temporal({:until, p, q}), do: "until(#{fmt_temporal(p)}, #{fmt_temporal(q)})"
+
+  defp fmt_temporal({:weak_until, p, q}),
+    do: "weak_until(#{fmt_temporal(p)}, #{fmt_temporal(q)})"
+
   defp fmt_temporal({:expr, ast}), do: "e(#{fmt_ast(ast)})"
   defp fmt_temporal(other), do: fmt(other)
 

@@ -24,6 +24,9 @@ defmodule TLX.Emitter.Format do
     plus: "+",
     minus: "-",
     mul: "*",
+    div: "\\div",
+    mod: "%",
+    pow: "^",
     true: "TRUE",
     false: "FALSE",
     atom: :unquoted,
@@ -52,6 +55,9 @@ defmodule TLX.Emitter.Format do
     plus: "+",
     minus: "-",
     mul: "×",
+    div: "÷",
+    mod: "mod",
+    pow: "^",
     true: "TRUE",
     false: "FALSE",
     atom: :unquoted,
@@ -75,6 +81,9 @@ defmodule TLX.Emitter.Format do
     plus: "+",
     minus: "-",
     mul: "*",
+    div: "div",
+    mod: "rem",
+    pow: "**",
     true: "true",
     false: "false",
     atom: :elixir,
@@ -123,8 +132,20 @@ defmodule TLX.Emitter.Format do
 
   # Arithmetic operators
   def format_ast({:+, _, [l, r]}, s), do: "#{format_ast(l, s)} #{s.plus} #{format_ast(r, s)}"
+  # Unary minus — 1-element args list; must match before binary `-`
+  def format_ast({:-, _, [x]}, s), do: "#{s.minus}#{format_ast(x, s)}"
   def format_ast({:-, _, [l, r]}, s), do: "#{format_ast(l, s)} #{s.minus} #{format_ast(r, s)}"
   def format_ast({:*, _, [l, r]}, s), do: "#{format_ast(l, s)} #{s.mul} #{format_ast(r, s)}"
+
+  # Integer division, modulo, exponentiation — TLA+ \div, %, ^ (all in Integers module)
+  def format_ast({:div, _, [l, r]}, s),
+    do: "#{format_ast(l, s)} #{s.div} #{format_ast(r, s)}"
+
+  def format_ast({:rem, _, [l, r]}, s),
+    do: "#{format_ast(l, s)} #{s.mod} #{format_ast(r, s)}"
+
+  def format_ast({:**, _, [l, r]}, s),
+    do: "#{format_ast(l, s)} #{s.pow} #{format_ast(r, s)}"
 
   # Quantifiers
   def format_ast({:forall, var, set, inner}, s) do
@@ -201,16 +222,16 @@ defmodule TLX.Emitter.Format do
 
   # CASE expression
   def format_ast({:case_of, clauses}, s) when is_list(clauses) do
-    Enum.map_join(clauses, " [] ", fn {cond, expr} ->
-      "#{format_expr(cond, s)} -> #{format_expr(expr, s)}"
-    end)
+    fmt = fn ast -> format_expr(ast, s) end
+
+    Enum.map_join(clauses, " [] ", &format_case_clause(&1, fmt))
     |> then(&"CASE #{&1}")
   end
 
   def format_ast({:case_of, meta, [clauses]}, s) when is_list(meta) and is_list(clauses) do
-    Enum.map_join(clauses, " [] ", fn {cond, expr} ->
-      "#{format_ast(cond, s)} -> #{format_ast(expr, s)}"
-    end)
+    fmt = fn ast -> format_ast(ast, s) end
+
+    Enum.map_join(clauses, " [] ", &format_case_clause(&1, fmt))
     |> then(&"CASE #{&1}")
   end
 
@@ -328,6 +349,81 @@ defmodule TLX.Emitter.Format do
   def format_ast({:set_of, elements}, s) when is_list(elements),
     do: "{#{Enum.map_join(elements, ", ", &format_expr(&1, s))}}"
 
+  # Set difference — AST form and direct call form
+  def format_ast({:difference, meta, [a, b]}, s) when is_list(meta),
+    do: "(#{format_ast(a, s)} \\ #{format_ast(b, s)})"
+
+  def format_ast({:difference, a, b}, s),
+    do: "(#{format_expr(a, s)} \\ #{format_expr(b, s)})"
+
+  # Set image / set_map — {expr : var \in set}
+  def format_ast({:set_map, meta, [var, set, inner]}, s) when is_list(meta),
+    do: "{#{format_ast(inner, s)} : #{Atom.to_string(var)} #{s.member} #{format_ast(set, s)}}"
+
+  def format_ast({:set_map, var, set, inner}, s),
+    do: "{#{format_expr(inner, s)} : #{Atom.to_string(var)} #{s.member} #{format_expr(set, s)}}"
+
+  # Power set — SUBSET s
+  def format_ast({:power_set, meta, [set]}, s) when is_list(meta),
+    do: "SUBSET #{format_ast(set, s)}"
+
+  def format_ast({:power_set, set}, s), do: "SUBSET #{format_expr(set, s)}"
+
+  # Distributed union — UNION s (flatten set of sets)
+  def format_ast({:distributed_union, meta, [set]}, s) when is_list(meta),
+    do: "UNION #{format_ast(set, s)}"
+
+  def format_ast({:distributed_union, set}, s), do: "UNION #{format_expr(set, s)}"
+
+  # Sequence concatenation — s \o t
+  def format_ast({:concat, meta, [l, r]}, s) when is_list(meta),
+    do: "(#{format_ast(l, s)} \\o #{format_ast(r, s)})"
+
+  def format_ast({:seq_concat, l, r}, s),
+    do: "(#{format_expr(l, s)} \\o #{format_expr(r, s)})"
+
+  # Seq(s) — type of finite sequences over s
+  def format_ast({:seq_set, meta, [set]}, s) when is_list(meta),
+    do: "Seq(#{format_ast(set, s)})"
+
+  def format_ast({:seq_set, set}, s), do: "Seq(#{format_expr(set, s)})"
+
+  # SelectSeq — filter a sequence via a LAMBDA predicate
+  def format_ast({:select_seq, meta, [var, seq, pred]}, s) when is_list(meta),
+    do: "SelectSeq(#{format_ast(seq, s)}, LAMBDA #{Atom.to_string(var)}: #{format_ast(pred, s)})"
+
+  def format_ast({:seq_select, var, seq, pred}, s),
+    do:
+      "SelectSeq(#{format_expr(seq, s)}, LAMBDA #{Atom.to_string(var)}: #{format_expr(pred, s)})"
+
+  # Tuple literal — <<a, b, c>>
+  def format_ast({:tuple, meta, [elements]}, s) when is_list(meta) and is_list(elements),
+    do: "<<#{Enum.map_join(elements, ", ", &format_ast(&1, s))}>>"
+
+  def format_ast({:tuple, elements}, s) when is_list(elements),
+    do: "<<#{Enum.map_join(elements, ", ", &format_expr(&1, s))}>>"
+
+  # Function constructor — [var \in set |-> expr]
+  def format_ast({:fn_of, meta, [var, set, expr]}, s) when is_list(meta),
+    do: "[#{Atom.to_string(var)} #{s.member} #{format_ast(set, s)} |-> #{format_ast(expr, s)}]"
+
+  def format_ast({:fn_of, var, set, expr}, s),
+    do: "[#{Atom.to_string(var)} #{s.member} #{format_expr(set, s)} |-> #{format_expr(expr, s)}]"
+
+  # Function set (type) — [domain -> range]
+  def format_ast({:fn_set, meta, [domain, range]}, s) when is_list(meta),
+    do: "[#{format_ast(domain, s)} -> #{format_ast(range, s)}]"
+
+  def format_ast({:fn_set, domain, range}, s),
+    do: "[#{format_expr(domain, s)} -> #{format_expr(range, s)}]"
+
+  # Cartesian product — (a \X b)
+  def format_ast({:cross, meta, [a, b]}, s) when is_list(meta),
+    do: "(#{format_ast(a, s)} \\X #{format_ast(b, s)})"
+
+  def format_ast({:cross, a, b}, s),
+    do: "(#{format_expr(a, s)} \\X #{format_expr(b, s)})"
+
   # Variable reference
   def format_ast({name, _meta, ctx}, _s) when is_atom(name) and is_atom(ctx),
     do: Atom.to_string(name)
@@ -338,6 +434,9 @@ defmodule TLX.Emitter.Format do
   def format_ast(false, s), do: s.false
   def format_ast(atom, s) when is_atom(atom), do: format_atom(atom, s)
   def format_ast(other, _s), do: inspect(other)
+
+  defp format_case_clause({:otherwise, expr}, fmt), do: "OTHER -> #{fmt.(expr)}"
+  defp format_case_clause({cond, expr}, fmt), do: "#{fmt.(cond)} -> #{fmt.(expr)}"
 
   @doc """
   Format a high-level expression (may contain `{:expr, ast}` wrappers,
@@ -364,6 +463,17 @@ defmodule TLX.Emitter.Format do
   def format_expr({:seq_head, _} = q, s), do: format_ast(q, s)
   def format_expr({:seq_tail, _} = q, s), do: format_ast(q, s)
   def format_expr({:seq_sub_seq, _, _, _} = q, s), do: format_ast(q, s)
+  def format_expr({:seq_concat, _, _} = q, s), do: format_ast(q, s)
+  def format_expr({:seq_set, _} = q, s), do: format_ast(q, s)
+  def format_expr({:seq_select, _, _, _} = q, s), do: format_ast(q, s)
+  def format_expr({:difference, _, _} = q, s), do: format_ast(q, s)
+  def format_expr({:set_map, _, _, _} = q, s), do: format_ast(q, s)
+  def format_expr({:power_set, _} = q, s), do: format_ast(q, s)
+  def format_expr({:distributed_union, _} = q, s), do: format_ast(q, s)
+  def format_expr({:tuple, _} = q, s), do: format_ast(q, s)
+  def format_expr({:fn_of, _, _, _} = q, s), do: format_ast(q, s)
+  def format_expr({:fn_set, _, _} = q, s), do: format_ast(q, s)
+  def format_expr({:cross, _, _} = q, s), do: format_ast(q, s)
   def format_expr({:union, a, b}, s), do: "(#{format_expr(a, s)} \\union #{format_expr(b, s)})"
 
   def format_expr({:intersect, a, b}, s),

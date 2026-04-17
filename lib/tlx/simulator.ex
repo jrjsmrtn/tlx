@@ -177,6 +177,100 @@ defmodule TLX.Simulator do
   # Unwrap {:expr, ast} — appears inside ite/case_of when children use e()
   defp eval_ast({:expr, ast}, state), do: eval_ast(ast, state)
 
+  # ========================================
+  # AST-capture forms (ops called inside e())
+  # ========================================
+  # When a user writes `e(union(a, b))`, Elixir parses the AST as
+  # `{:union, meta, [a, b]}` (3-tuple with meta list + args list) without
+  # evaluating the function. The simulator needs clauses that match this
+  # shape and delegate to the direct-call form (`{:union, a, b}`).
+  #
+  # Ordered pattern match: these must appear BEFORE the direct-call
+  # clauses below, since `{:union, a, b}` would otherwise swallow
+  # `{:union, meta, [a, b]}` inputs and treat `meta` as a set operand.
+
+  # Set ops
+  defp eval_ast({:union, meta, [a, b]}, state) when is_list(meta),
+    do: eval_ast({:union, a, b}, state)
+
+  defp eval_ast({:intersect, meta, [a, b]}, state) when is_list(meta),
+    do: eval_ast({:intersect, a, b}, state)
+
+  defp eval_ast({:subset, meta, [a, b]}, state) when is_list(meta),
+    do: eval_ast({:subset, a, b}, state)
+
+  defp eval_ast({:cardinality, meta, [set]}, state) when is_list(meta),
+    do: eval_ast({:cardinality, set}, state)
+
+  defp eval_ast({:in_set, meta, [elem, set]}, state) when is_list(meta),
+    do: eval_ast({:in_set, elem, set}, state)
+
+  defp eval_ast({:set_of, meta, [elements]}, state)
+       when is_list(meta) and is_list(elements),
+       do: eval_ast({:set_of, elements}, state)
+
+  # Function ops
+  defp eval_ast({:at, meta, [f, x]}, state) when is_list(meta),
+    do: eval_ast({:at, f, x}, state)
+
+  defp eval_ast({:except, meta, [f, x, v]}, state) when is_list(meta),
+    do: eval_ast({:except, f, x, v}, state)
+
+  defp eval_ast({:domain, meta, [f]}, state) when is_list(meta),
+    do: eval_ast({:domain, f}, state)
+
+  defp eval_ast({:record, meta, [pairs]}, state)
+       when is_list(meta) and is_list(pairs),
+       do: eval_ast({:record, pairs}, state)
+
+  defp eval_ast({:except_many, meta, [f, pairs]}, state)
+       when is_list(meta) and is_list(pairs),
+       do: eval_ast({:except_many, f, pairs}, state)
+
+  # Binding ops
+  defp eval_ast({:choose, meta, [var, set, expr]}, state) when is_list(meta),
+    do: eval_ast({:choose, var, set, expr}, state)
+
+  defp eval_ast({:filter, meta, [var, set, expr]}, state) when is_list(meta),
+    do: eval_ast({:filter, var, set, expr}, state)
+
+  defp eval_ast({:ite, meta, [cond, then_expr, else_expr]}, state) when is_list(meta),
+    do: eval_ast({:ite, cond, then_expr, else_expr}, state)
+
+  defp eval_ast({:let_in, meta, [var, binding, body]}, state) when is_list(meta),
+    do: eval_ast({:let_in, var, binding, body}, state)
+
+  defp eval_ast({:case_of, meta, [clauses]}, state)
+       when is_list(meta) and is_list(clauses),
+       do: eval_ast({:case_of, clauses}, state)
+
+  # Logic / numeric ops
+  defp eval_ast({:implies, meta, [p, q]}, state) when is_list(meta),
+    do: eval_ast({:implies, p, q}, state)
+
+  defp eval_ast({:equiv, meta, [p, q]}, state) when is_list(meta),
+    do: eval_ast({:equiv, p, q}, state)
+
+  defp eval_ast({:range, meta, [a, b]}, state) when is_list(meta),
+    do: eval_ast({:range, a, b}, state)
+
+  # Sequence ops — user writes len/append/head/tail/sub_seq inside e()
+  # but the direct-call tag is prefixed (:seq_len, etc.)
+  defp eval_ast({:len, meta, [s]}, state) when is_list(meta),
+    do: eval_ast({:seq_len, s}, state)
+
+  defp eval_ast({:append, meta, [s, x]}, state) when is_list(meta),
+    do: eval_ast({:seq_append, s, x}, state)
+
+  defp eval_ast({:head, meta, [s]}, state) when is_list(meta),
+    do: eval_ast({:seq_head, s}, state)
+
+  defp eval_ast({:tail, meta, [s]}, state) when is_list(meta),
+    do: eval_ast({:seq_tail, s}, state)
+
+  defp eval_ast({:sub_seq, meta, [s, m, n]}, state) when is_list(meta),
+    do: eval_ast({:seq_sub_seq, s, m, n}, state)
+
   defp eval_ast({:and, _, [left, right]}, state),
     do: eval_ast(left, state) and eval_ast(right, state)
 
@@ -207,11 +301,23 @@ defmodule TLX.Simulator do
   defp eval_ast({:+, _, [left, right]}, state),
     do: eval_ast(left, state) + eval_ast(right, state)
 
+  # Unary minus — 1-arg form must match before binary `-`
+  defp eval_ast({:-, _, [x]}, state), do: -eval_ast(x, state)
+
   defp eval_ast({:-, _, [left, right]}, state),
     do: eval_ast(left, state) - eval_ast(right, state)
 
   defp eval_ast({:*, _, [left, right]}, state),
     do: eval_ast(left, state) * eval_ast(right, state)
+
+  defp eval_ast({:div, _, [left, right]}, state),
+    do: div(eval_ast(left, state), eval_ast(right, state))
+
+  defp eval_ast({:rem, _, [left, right]}, state),
+    do: rem(eval_ast(left, state), eval_ast(right, state))
+
+  defp eval_ast({:**, _, [left, right]}, state),
+    do: integer_pow(eval_ast(left, state), eval_ast(right, state))
 
   # IF/THEN/ELSE — from ite/3 function call
   defp eval_ast({:ite, cond, then_expr, else_expr}, state) do
@@ -239,6 +345,31 @@ defmodule TLX.Simulator do
     do: MapSet.member?(to_mapset(eval_ast(set, state)), eval_ast(elem, state))
 
   defp eval_ast({:set_of, elements}, state), do: MapSet.new(elements, &eval_ast(&1, state))
+
+  # Set difference — AST form and direct form
+  defp eval_ast({:difference, meta, [a, b]}, state) when is_list(meta),
+    do: MapSet.difference(to_mapset(eval_ast(a, state)), to_mapset(eval_ast(b, state)))
+
+  defp eval_ast({:difference, a, b}, state),
+    do: MapSet.difference(to_mapset(eval_ast(a, state)), to_mapset(eval_ast(b, state)))
+
+  # Set image / set_map
+  defp eval_ast({:set_map, meta, [var, set, expr]}, state) when is_list(meta),
+    do: eval_set_map(var, set, expr, state)
+
+  defp eval_ast({:set_map, var, set, expr}, state), do: eval_set_map(var, set, expr, state)
+
+  # Power set — enumerates all subsets (exponential, caller responsibility)
+  defp eval_ast({:power_set, meta, [set]}, state) when is_list(meta),
+    do: eval_power_set(set, state)
+
+  defp eval_ast({:power_set, set}, state), do: eval_power_set(set, state)
+
+  # Distributed union — flatten a set of sets
+  defp eval_ast({:distributed_union, meta, [set]}, state) when is_list(meta),
+    do: eval_distributed_union(set, state)
+
+  defp eval_ast({:distributed_union, set}, state), do: eval_distributed_union(set, state)
 
   # Function application
   defp eval_ast({:at, f, x}, state) do
@@ -273,10 +404,17 @@ defmodule TLX.Simulator do
     |> MapSet.new()
   end
 
-  # CASE expression
+  # CASE expression — reduce_while (not find_value) so a matched clause
+  # with a falsy body (false/nil) still wins instead of falling through.
   defp eval_ast({:case_of, clauses}, state) do
-    Enum.find_value(clauses, fn {cond, expr} ->
-      if eval_ast(cond, state), do: eval_ast(expr, state)
+    Enum.reduce_while(clauses, nil, fn
+      {:otherwise, expr}, _acc ->
+        {:halt, eval_ast(expr, state)}
+
+      {cond, expr}, acc ->
+        if eval_ast(cond, state),
+          do: {:halt, eval_ast(expr, state)},
+          else: {:cont, acc}
     end)
   end
 
@@ -317,6 +455,37 @@ defmodule TLX.Simulator do
   defp eval_ast({:seq_sub_seq, s, m, n}, state),
     do: Enum.slice(eval_ast(s, state), (eval_ast(m, state) - 1)..(eval_ast(n, state) - 1)//1)
 
+  defp eval_ast({:concat, meta, [a, b]}, state) when is_list(meta),
+    do: eval_ast(a, state) ++ eval_ast(b, state)
+
+  defp eval_ast({:seq_concat, a, b}, state), do: eval_ast(a, state) ++ eval_ast(b, state)
+
+  # SelectSeq — filter a sequence by a predicate bound to `var`
+  defp eval_ast({:select_seq, meta, [var, seq, pred]}, state) when is_list(meta),
+    do: eval_select_seq(var, seq, pred, state)
+
+  defp eval_ast({:seq_select, var, seq, pred}, state),
+    do: eval_select_seq(var, seq, pred, state)
+
+  # Tuple — materialize as list (TLA+ tuples are finite sequences)
+  defp eval_ast({:tuple, meta, [elements]}, state) when is_list(meta) and is_list(elements),
+    do: Enum.map(elements, &eval_ast(&1, state))
+
+  defp eval_ast({:tuple, elements}, state) when is_list(elements),
+    do: Enum.map(elements, &eval_ast(&1, state))
+
+  # Function constructor — [x \in S |-> expr]
+  defp eval_ast({:fn_of, meta, [var, set, expr]}, state) when is_list(meta),
+    do: eval_fn_of(var, set, expr, state)
+
+  defp eval_ast({:fn_of, var, set, expr}, state), do: eval_fn_of(var, set, expr, state)
+
+  # Cartesian product — (a \X b)
+  defp eval_ast({:cross, meta, [a, b]}, state) when is_list(meta),
+    do: eval_cross(a, b, state)
+
+  defp eval_ast({:cross, a, b}, state), do: eval_cross(a, b, state)
+
   # LET/IN
   defp eval_ast({:let_in, var, binding, body}, state) do
     val = eval_ast(binding, state)
@@ -334,4 +503,67 @@ defmodule TLX.Simulator do
 
   defp to_mapset(%MapSet{} = s), do: s
   defp to_mapset(list) when is_list(list), do: MapSet.new(list)
+
+  # Integer exponentiation — keeps the result as an integer (TLA+ ^ is
+  # defined over Integers). `:math.pow/2` returns a float.
+  defp integer_pow(base, exp) when is_integer(base) and is_integer(exp) and exp >= 0,
+    do: do_integer_pow(base, exp, 1)
+
+  defp do_integer_pow(_base, 0, acc), do: acc
+  defp do_integer_pow(base, exp, acc), do: do_integer_pow(base, exp - 1, acc * base)
+
+  defp eval_set_map(var, set, expr, state) do
+    eval_ast(set, state)
+    |> to_mapset()
+    |> MapSet.to_list()
+    |> Enum.map(fn elem -> eval_ast(expr, Map.put(state, var, elem)) end)
+    |> MapSet.new()
+  end
+
+  defp eval_power_set(set, state) do
+    set
+    |> eval_ast(state)
+    |> to_mapset()
+    |> MapSet.to_list()
+    |> power_set_list()
+    |> Enum.map(&MapSet.new/1)
+    |> MapSet.new()
+  end
+
+  defp eval_distributed_union(set, state) do
+    set
+    |> eval_ast(state)
+    |> to_mapset()
+    |> Enum.reduce(MapSet.new(), fn inner, acc ->
+      MapSet.union(acc, to_mapset(inner))
+    end)
+  end
+
+  defp eval_fn_of(var, set, expr, state) do
+    set
+    |> eval_ast(state)
+    |> to_mapset()
+    |> MapSet.to_list()
+    |> Map.new(fn elem -> {elem, eval_ast(expr, Map.put(state, var, elem))} end)
+  end
+
+  defp eval_cross(a, b, state) do
+    la = a |> eval_ast(state) |> to_mapset() |> MapSet.to_list()
+    lb = b |> eval_ast(state) |> to_mapset() |> MapSet.to_list()
+    for x <- la, y <- lb, into: MapSet.new(), do: [x, y]
+  end
+
+  defp eval_select_seq(var, seq, pred, state) do
+    seq
+    |> eval_ast(state)
+    |> Enum.filter(fn elem -> eval_ast(pred, Map.put(state, var, elem)) end)
+  end
+
+  # Power set of a list — returns list of lists. Caller lifts to MapSet.
+  defp power_set_list([]), do: [[]]
+
+  defp power_set_list([h | t]) do
+    rest = power_set_list(t)
+    rest ++ Enum.map(rest, &[h | &1])
+  end
 end

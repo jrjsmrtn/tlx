@@ -2,13 +2,21 @@
 
 ## Current Status
 
-- **Latest Release**: v0.4.0
+- **Latest Release**: v0.4.6
 - **Status**: Active development
 
 ## Sprint Index
 
 | Sprint | Phase                 | Version | Status   | Plan                             | Retrospective                              |
 | ------ | --------------------- | ------- | -------- | -------------------------------- | ------------------------------------------ |
+| 52     | Expressiveness        | v0.4.6  | Complete | [Plan](sprint-0052-plan.md)      | [Retro](sprint-0052-retrospective.md)      |
+| 51     | Expressiveness        | v0.4.6  | Complete | [Plan](sprint-0051-plan.md)      | [Retro](sprint-0051-retrospective.md)      |
+| 50     | Simulator             | v0.4.6  | Complete | [Plan](sprint-0050-plan.md)      | [Retro](sprint-0050-retrospective.md)      |
+| 49     | Expressiveness        | v0.4.6  | Complete | [Plan](sprint-0049-plan.md)      | [Retro](sprint-0049-retrospective.md)      |
+| 48     | Simulator             | v0.4.6  | Complete | [Plan](sprint-0048-plan.md)      | [Retro](sprint-0048-retrospective.md)      |
+| 47     | Expressiveness        | v0.4.6  | Complete | [Plan](sprint-0047-plan.md)      | [Retro](sprint-0047-retrospective.md)      |
+| 46     | Expressiveness        | v0.4.6  | Complete | [Plan](sprint-0046-plan.md)      | [Retro](sprint-0046-retrospective.md)      |
+| 45     | Expressiveness        | v0.4.6  | Complete | [Plan](sprint-0045-plan.md)      | [Retro](sprint-0045-retrospective.md)      |
 | 43     | Documentation         | v0.4.1  | Complete | [Plan](sprint-0043-plan.md)      | [Retro](sprint-0043-retrospective.md)      |
 | 42     | Extractors            | v0.3.17 | Complete | [Plan](sprint-0042-plan.md)      | [Retro](sprint-0042-retrospective.md)      |
 | 41     | Extractors            | v0.3.16 | Complete | [Plan](sprint-0041-plan.md)      | [Retro](sprint-0041-retrospective.md)      |

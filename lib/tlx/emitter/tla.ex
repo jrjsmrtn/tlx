@@ -332,6 +332,12 @@ defmodule TLX.Emitter.TLA do
   defp format_temporal({:leads_to, p, q}),
     do: "(#{format_temporal(p)}) ~> (#{format_temporal(q)})"
 
+  defp format_temporal({:until, p, q}),
+    do: "(#{format_temporal(p)}) \\U (#{format_temporal(q)})"
+
+  defp format_temporal({:weak_until, p, q}),
+    do: "(#{format_temporal(p)}) \\W (#{format_temporal(q)})"
+
   defp format_temporal({:expr, ast}), do: format_ast(ast)
   defp format_temporal(other), do: format_expr(other)
 
