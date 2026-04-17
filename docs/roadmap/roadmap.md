@@ -230,6 +230,8 @@ Sprint 16 — Proper parsers and AST-based code gen:
 | 48     | Simulator      | AST-form eval audit — close the gap for set/sequence ops inside `e()`       |
 | 49     | Expressiveness | `select_seq` + LAMBDA emission for sequence filtering                       |
 | 50     | Simulator      | `case_of` `find_value` fix — don't drop clauses whose body is `false`/`nil` |
+| 51     | Expressiveness | Arithmetic completion: integer `div`, `mod`, `pow`, unary `-`               |
+| 52     | Expressiveness | Function constructor `[x \in S \|-> expr]`, function set `[S -> T]`, `\X`   |
 
 ### Sprint 45: Elixir `case/do` inside `e()`
 
@@ -558,3 +560,83 @@ case_of([{e(flag == true), false}, {:otherwise, true}])
 **Scope**: Tiny. Plus one regression test with a falsy-body clause.
 
 **When it matters**: users writing boolean-valued cases (refinement mappings between spec states that happen to align with `true`/`false`, or explicit `nil` sentinels).
+
+### Sprint 51: Arithmetic Completion
+
+**Source**: codebase audit — TLX emits `+`, `-`, `*` only. Integer division, modulo, exponentiation, and unary negation all unsupported.
+
+**Goal**: Close the arithmetic gap. Standard TLA+ has `\div`, `%`, `^`, and unary `-`; without them, even basic specs (round-robin indexing with modulo, power-of-two growth, etc.) require workarounds.
+
+**Operators to add**:
+
+| Elixir inside `e()` | TLA+       | Notes                                         |
+| ------------------- | ---------- | --------------------------------------------- |
+| `div(a, b)`         | `a \div b` | Integer division (TLA+ flooring semantics)    |
+| `rem(a, b)`         | `a % b`    | Modulo (maps to Elixir `rem/2` for simulator) |
+| `pow(a, b)`         | `a^b`      | Exponentiation (TLA+ `^` — Integers has this) |
+| `-x` (unary)        | `-x`       | Unary negation (currently `0 - x` workaround) |
+
+**Implementation**: same pattern as `+`/`-`/`*`. Each gets one `format_ast` clause, one `format_expr` dispatch, one `eval_ast` clause. Roughly 12 lines + tests per operator.
+
+**Naming decision**: use `div/rem` (Elixir built-ins) rather than `divide/modulo` for familiarity. `pow` chosen over `exp` since `exp` suggests `e^x`. Unary `-` is a parser consideration — may need dedicated handling since Elixir parses `-x` as `{:-, meta, [x]}` (1-arity) which overlaps with binary `-`. Check that the AST shapes disambiguate cleanly.
+
+**Scope**: Small. 4 operators, mechanical. No new machinery.
+
+### Sprint 52: Function Constructor, Function Set, and Cartesian Product
+
+**Source**: codebase audit — TLX has `at/2` (function application) and `except/3` (function update), plus `record/1` (string-keyed records), but no way to _construct_ a general function or express the _type of all functions_ from S to T. These are essential for realistic `TypeOK` invariants.
+
+**Goal**: Support the three remaining function/type constructs that show up in every non-trivial TLA+ spec.
+
+**Operators to add**:
+
+| Elixir inside `e()`     | TLA+       | Use case                              |
+| ----------------------- | ---------- | ------------------------------------- |
+| `fn_of(:x, :set, expr)` | `[x \in S  | -> expr]`                             |
+| `fn_set(domain, range)` | `[S -> T]` | Type of all functions from S to T     |
+| `cross(a, b)`           | `(a \X b)` | Cartesian product — tuples `<<x, y>>` |
+
+**Realistic `TypeOK` examples this unlocks**:
+
+```elixir
+# Before (current — can't express cleanly)
+invariant :type_ok, e(true)  # placeholder
+
+# After
+invariant :type_ok,
+  e(in_set(flags, fn_set(nodes, set_of([true, false]))))
+
+# Function constructor for Init
+initial do
+  constraint(e(vote_counts == fn_of(:n, nodes, 0)))
+end
+
+# Cartesian product for message channels
+variable :in_flight, MapSet.new()
+invariant :msg_type, e(subset(in_flight, cross(nodes, nodes)))
+```
+
+Emits:
+
+```tla
+type_ok == flags \in [nodes -> {TRUE, FALSE}]
+Init == vote_counts = [n \in nodes |-> 0]
+msg_type == in_flight \subseteq (nodes \X nodes)
+```
+
+**Implementation**:
+
+1. `TLX.Sets` (or new `TLX.Functions`): `fn_of/3`, `fn_set/2`, `cross/2`
+2. Format emitter: 6 clauses (3 ops × 2 forms — AST capture + direct call)
+3. Simulator: `fn_of` materializes as Elixir map; `fn_set` is a type predicate (return `true` or raise — like `seq_set`); `cross` returns MapSet of tuples
+4. Elixir round-trip emitter
+
+**Naming decisions**:
+
+- `fn_of` (not `function_of` or `map_of`) — short, matches Elixir's `Fn` convention
+- `fn_set` (not `function_set`) — consistent
+- `cross` (not `cartesian_product`, not `product`) — short, unambiguous; `product` collides with multiplication intuition
+
+**Scope**: Medium. `fn_of` needs variable binding (like `filter`/`set_map`), `cross` requires tuple materialization in the simulator (tuples ship in Sprint 47). `fn_set` can be stubbed as a runtime pass-through since its role is type assertion.
+
+**Out of scope**: Multi-argument functions `[x \in S, y \in T |-> expr]` — rare in practice and users can nest `fn_of` if needed. Function composition — not common in state machine specs.
