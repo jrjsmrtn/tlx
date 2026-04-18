@@ -2,59 +2,83 @@
 
 Comprehensive mapping of TLA+ concepts to their TLX DSL equivalents.
 
+## Importer coverage
+
+Each table includes an **Importer** column describing how well
+`TLX.Importer.TlaParser` recovers the construct when reading TLA+ back
+into the TLX IR. [ADR-0013](../adr/0013-importer-scope-lossless-for-tlx-output.md)
+scopes the importer to lossless round-trip for TLX-emitted output and
+best-effort for hand-written TLA+.
+
+Legend:
+
+| Symbol    | Meaning                                                                  |
+| --------- | ------------------------------------------------------------------------ |
+| `✓`       | Round-trips — `emit → parse → emit` preserves structure                  |
+| `partial` | Structural recognition only — body captured as an opaque string          |
+| `✗`       | Emit-only — parser has no rule; body falls to raw-string tier-2 fallback |
+| `—`       | Not applicable — emitter-only concern (automatic) or out of parser scope |
+
+Closing the `partial` / `✗` gap is the focus of [sprints 54–59](../roadmap/roadmap.md#sprints-5459-round-trip-track-adr-0013).
+
 ## Module Structure
 
-| TLA+                           | TLX                    | Notes                             |
-| ------------------------------ | ---------------------- | --------------------------------- |
-| `---- MODULE Name ----`        | `defspec Name do`      | Module header                     |
-| `EXTENDS Integers, FiniteSets` | Automatic              | Always included                   |
-| `EXTENDS Sequences`            | `extends [:Sequences]` | Opt-in                            |
-| `VARIABLES x, y`               | `variable :x, default` | One per declaration, with default |
-| `CONSTANTS Max`                | `constant :max`        | Bound in .cfg model values        |
-| `====`                         | `end`                  | Module footer                     |
+| TLA+                           | TLX                    | Importer | Notes                               |
+| ------------------------------ | ---------------------- | -------- | ----------------------------------- |
+| `---- MODULE Name ----`        | `defspec Name do`      | `✓`      | Module header                       |
+| `EXTENDS Integers, FiniteSets` | Automatic              | `✓`      | Always included                     |
+| `EXTENDS Sequences`            | `extends [:Sequences]` | `✓`      | Opt-in                              |
+| `VARIABLES x, y`               | `variable :x, default` | `✓`      | Names recover; defaults not in TLA+ |
+| `CONSTANTS Max`                | `constant :max`        | `✓`      | Bound in .cfg model values          |
+| `====`                         | `end`                  | `✓`      | Module footer                       |
 
 ## State and Transitions
 
-| TLA+                            | TLX                                            | Notes                                |
-| ------------------------------- | ---------------------------------------------- | ------------------------------------ |
-| `Init == x = 0 /\ y = 0`        | `variable :x, 0` + `variable :y, 0`            | Defaults define Init                 |
-| `Init == x = 0 /\ y \in {1, 2}` | `initial do constraint(...) end`               | Custom Init                          |
-| `Action == guard /\ x' = val`   | `action :name do guard(...); next :x, val end` | Named action                         |
-| `x' = x` (UNCHANGED x)          | Automatic                                      | Unmentioned variables stay unchanged |
-| `UNCHANGED << x, y >>`          | Automatic                                      | TLX emits UNCHANGED for you          |
-| `Next == A1 \/ A2 \/ A3`        | Automatic                                      | Disjunction of all actions           |
-| `Spec == Init /\ [][Next]_vars` | Automatic                                      | Generated with fairness              |
-| `vars == << x, y >>`            | Automatic                                      | Generated from variable declarations |
+| TLA+                            | TLX                                               | Importer  | Notes                                        |
+| ------------------------------- | ------------------------------------------------- | --------- | -------------------------------------------- |
+| `Init == x = 0 /\ y = 0`        | `variable :x, 0` + `variable :y, 0`               | `partial` | Init recognized; body captured as raw string |
+| `Init == x = 0 /\ y \in {1, 2}` | `initial do constraint(...) end`                  | `partial` | Custom Init; body not parsed to AST          |
+| `Action == guard /\ x' = val`   | `action :name do guard(e(...)); next :x, val end` | `partial` | Action shape recognized; guards/next raw     |
+| `x' = x` (UNCHANGED x)          | Automatic                                         | `—`       | Unmentioned variables stay unchanged         |
+| `UNCHANGED << x, y >>`          | Automatic                                         | `—`       | TLX emits UNCHANGED for you                  |
+| `Next == A1 \/ A2 \/ A3`        | Automatic                                         | `—`       | Disjunction of all actions                   |
+| `Spec == Init /\ [][Next]_vars` | Automatic                                         | `—`       | Generated with fairness                      |
+| `vars == << x, y >>`            | Automatic                                         | `—`       | Generated from variable declarations         |
 
 ## Actions and Guards
 
-| TLA+                          | TLX                                               | Notes                       |
-| ----------------------------- | ------------------------------------------------- | --------------------------- |
-| `/\ condition` (guard)        | `guard(e(condition))` or `await(e(condition))`    | `await` is an alias         |
-| `A == guard /\ x' = v`        | `action :a do guard(e(...)); next :x, v end`      |                             |
-| `A == P1 \/ P2` (disjunction) | `branch :p1 do ... end` + `branch :p2 do ... end` | Non-deterministic choice    |
-| `\E x \in S : action(x)`      | `pick :x, :s do ... end`                          | Non-deterministic selection |
+| TLA+                          | TLX                                               | Importer  | Notes                                   |
+| ----------------------------- | ------------------------------------------------- | --------- | --------------------------------------- |
+| `/\ condition` (guard)        | `guard(e(condition))` or `await(e(condition))`    | `✗`       | Condition body not parsed to AST        |
+| `A == guard /\ x' = v`        | `action :a do guard(e(...)); next :x, v end`      | `partial` | Structural split; individual bodies raw |
+| `A == P1 \/ P2` (disjunction) | `branch :p1 do ... end` + `branch :p2 do ... end` | `✗`       | Disjunction body captured as raw string |
+| `\E x \in S : action(x)`      | `pick :x, :s do ... end`                          | `✗`       | Body captured raw                       |
 
 ## Processes (PlusCal)
 
-| PlusCal             | TLX                                      | Notes             |
-| ------------------- | ---------------------------------------- | ----------------- |
-| `process (P \in S)` | `process :p do set(:s); ... end`         | Concurrent actors |
-| `fair process`      | `process :p, fairness: :weak do ... end` | WF/SF fairness    |
+| PlusCal             | TLX                                      | Importer  | Notes                                                     |
+| ------------------- | ---------------------------------------- | --------- | --------------------------------------------------------- |
+| `process (P \in S)` | `process :p do set(:s); ... end`         | `partial` | `pluscal_parser.ex` extracts structure; labels/bodies raw |
+| `fair process`      | `process :p, fairness: :weak do ... end` | `partial` | Fairness keyword survives; body raw                       |
 
 ## Invariants and Properties
 
-| TLA+                           | TLX                                        | Notes                 |
-| ------------------------------ | ------------------------------------------ | --------------------- |
-| `Inv == predicate` (INVARIANT) | `invariant :inv, e(predicate)`             | Safety property       |
-| `Prop == []P`                  | `property :prop, always(e(p))`             | Temporal — always     |
-| `Prop == <>P`                  | `property :prop, eventually(e(p))`         | Temporal — eventually |
-| `Prop == []<>P`                | `property :prop, always(eventually(e(p)))` | Infinitely often      |
-| `Prop == P ~> Q`               | `property :prop, leads_to(e(p), e(q))`     | Leads-to              |
-| `Prop == P \U Q`               | `property :prop, until(e(p), e(q))`        | Strong until          |
-| `Prop == P \W Q`               | `property :prop, weak_until(e(p), e(q))`   | Weak until            |
+| TLA+                           | TLX                                        | Importer  | Notes                                         |
+| ------------------------------ | ------------------------------------------ | --------- | --------------------------------------------- |
+| `Inv == predicate` (INVARIANT) | `invariant :inv, e(predicate)`             | `partial` | Name ✓, body captured raw                     |
+| `Prop == []P`                  | `property :prop, always(e(p))`             | `✗`       | `[]` actively excluded at `tla_parser.ex:273` |
+| `Prop == <>P`                  | `property :prop, eventually(e(p))`         | `✗`       | Temporal operators not parsed                 |
+| `Prop == []<>P`                | `property :prop, always(eventually(e(p)))` | `✗`       | Temporal nesting not parsed                   |
+| `Prop == P ~> Q`               | `property :prop, leads_to(e(p), e(q))`     | `✗`       | Leads-to not parsed                           |
+| `Prop == P \U Q`               | `property :prop, until(e(p), e(q))`        | `✗`       | Strong until not parsed                       |
+| `Prop == P \W Q`               | `property :prop, weak_until(e(p), e(q))`   | `✗`       | Weak until not parsed                         |
 
 ## Expressions
+
+> **Importer note**: Everything inside `e(...)` is currently `✗` — the
+> importer has no TLA+ expression grammar, so expression bodies survive
+> only as opaque strings attached to their enclosing operator. Sprint 54
+> introduces the foundation; sprints 55–58 cover specific constructs.
 
 | TLA+                      | TLX inside `e()`          | Notes            |
 | ------------------------- | ------------------------- | ---------------- |
@@ -74,6 +98,8 @@ Comprehensive mapping of TLA+ concepts to their TLX DSL equivalents.
 
 ## Sets
 
+> **Importer note**: All set operations are `✗` until Sprint 55.
+
 | TLA+               | TLX inside `e()`       | Notes                      |
 | ------------------ | ---------------------- | -------------------------- |
 | `{a, b, c}`        | `set_of([a, b, c])`    | Set literal                |
@@ -92,6 +118,8 @@ Comprehensive mapping of TLA+ concepts to their TLX DSL equivalents.
 
 ## Functions (Maps)
 
+> **Importer note**: All function operations are `✗` until Sprints 55–56.
+
 | TLA+                            | TLX                                  | Notes                                         |
 | ------------------------------- | ------------------------------------ | --------------------------------------------- |
 | `f[x]`                          | `at(f, x)`                           | Application                                   |
@@ -107,6 +135,9 @@ Comprehensive mapping of TLA+ concepts to their TLX DSL equivalents.
 
 Require `extends [:Sequences]`.
 
+> **Importer note**: All sequence operations are `✗` until Sprint 57.
+> The `EXTENDS Sequences` extension itself round-trips (`✓`).
+
 | TLA+                 | TLX inside `e()`          | Notes                                        |
 | -------------------- | ------------------------- | -------------------------------------------- |
 | `Len(s)`             | `len(s)`                  | Length                                       |
@@ -120,12 +151,16 @@ Require `extends [:Sequences]`.
 
 ## Tuples
 
+> **Importer note**: `✗` until Sprint 56.
+
 | TLA+          | TLX                | Notes                                                              |
 | ------------- | ------------------ | ------------------------------------------------------------------ |
 | `<<a, b, c>>` | `tuple([a, b, c])` | Explicit tuple constructor                                         |
 | `<<a, b, c>>` | `[a, b, c]`        | List literal as default variable value also emits as TLA+ sequence |
 
 ## Other Constructs
+
+> **Importer note**: `✗` until Sprints 55 (CHOOSE, LET/IN) and 58 (CASE).
 
 | TLA+                        | TLX                                                   | Notes                            |
 | --------------------------- | ----------------------------------------------------- | -------------------------------- |
@@ -136,9 +171,9 @@ Require `extends [:Sequences]`.
 
 ## Refinement
 
-| TLA+                                 | TLX                                             | Notes           |
-| ------------------------------------ | ----------------------------------------------- | --------------- |
-| `INSTANCE Abstract WITH var <- expr` | `refines Abstract do mapping :var, e(expr) end` | Spec refinement |
+| TLA+                                 | TLX                                             | Importer | Notes           |
+| ------------------------------------ | ----------------------------------------------- | -------- | --------------- |
+| `INSTANCE Abstract WITH var <- expr` | `refines Abstract do mapping :var, e(expr) end` | `✗`      | Not parsed back |
 
 ## Not Supported
 
