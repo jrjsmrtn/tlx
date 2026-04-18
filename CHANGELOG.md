@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (Sprint 57 — sequences and LAMBDA)
+
+- `TLX.Importer.ExprParser` extended: `Len`, `Head`, `Tail`, `Seq`, `Append`, `SubSeq` (function calls), `\o` (binary infix), and `SelectSeq(s, LAMBDA x: pred)` (with LAMBDA scoped to the SelectSeq context per ADR-0013). Standalone LAMBDA is rejected.
+- Builtin call dispatch reorganized into 1-/2-/3-arg buckets plus a dedicated `SelectSeq` combinator — new sequence ops slot into existing infrastructure without grammar rewrites.
+
 ### Added (Sprint 56 — arithmetic extensions, tuples, Cartesian, functions)
 
 - `TLX.Importer.ExprParser` extended: integer division `x \div y`, modulo `x % y`, exponentiation `x ^ y` (right-associative, higher precedence than `*`/`\div`/`%`), unary negation `-x`, tuple literal `<<a, b, c>>` (including empty and single-element), Cartesian product `A \X B` (left-associative binary, matching emitter shape), function constructor `[x \in S |-> expr]`, function set `[D -> R]`. Bracket-primary dispatch order: `fn_of` → record → `fn_set` → EXCEPT (fn_of tries first since both start with ident, but fn_of requires `\in` after while record requires `|->`).

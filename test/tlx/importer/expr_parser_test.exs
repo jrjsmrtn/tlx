@@ -454,6 +454,52 @@ defmodule TLX.Importer.ExprParserTest do
     end
   end
 
+  describe "sequences (Sprint 57)" do
+    test "parses Len(s)" do
+      assert {:ok, {:len, [], [{:s, [], nil}]}} = ExprParser.parse("Len(s)")
+    end
+
+    test "parses Head(s)" do
+      assert {:ok, {:head, [], [{:s, [], nil}]}} = ExprParser.parse("Head(s)")
+    end
+
+    test "parses Tail(s)" do
+      assert {:ok, {:tail, [], [{:s, [], nil}]}} = ExprParser.parse("Tail(s)")
+    end
+
+    test "parses Seq(S)" do
+      assert {:ok, {:seq_set, [], [{:s, [], nil}]}} = ExprParser.parse("Seq(s)")
+    end
+
+    test "parses Append(s, x)" do
+      expected = {:append, [], [{:s, [], nil}, {:x, [], nil}]}
+      assert {:ok, ^expected} = ExprParser.parse("Append(s, x)")
+    end
+
+    test "parses SubSeq(s, m, n)" do
+      expected = {:sub_seq, [], [{:s, [], nil}, {:m, [], nil}, {:n, [], nil}]}
+      assert {:ok, ^expected} = ExprParser.parse("SubSeq(s, m, n)")
+    end
+
+    test "parses s \\o t" do
+      expected = {:seq_concat, [], [{:s, [], nil}, {:t, [], nil}]}
+      assert {:ok, ^expected} = ExprParser.parse("s \\o t")
+    end
+  end
+
+  describe "SelectSeq with LAMBDA (Sprint 57)" do
+    test "parses SelectSeq(s, LAMBDA x: pred)" do
+      expected =
+        {:seq_select, [], [:x, {:s, [], nil}, {:>, [], [{:x, [], nil}, 0]}]}
+
+      assert {:ok, ^expected} = ExprParser.parse("SelectSeq(s, LAMBDA x: x > 0)")
+    end
+
+    test "LAMBDA outside SelectSeq is rejected" do
+      assert {:error, _} = ExprParser.parse("LAMBDA x: x")
+    end
+  end
+
   describe "Macro.to_string round-trip (Sprint 55)" do
     test "set literal round-trips" do
       {:ok, ast} = ExprParser.parse("{1, 2, 3}")

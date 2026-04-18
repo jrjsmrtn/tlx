@@ -28,9 +28,34 @@ This project follows [AI-Assisted Project Orchestration patterns](https://github
 ### 2. Semantic Versioning
 
 - Follow [SemVer 2.0.0](https://semver.org/)
-- During development: 0.1.x (increment patch per sprint/milestone)
-- No stable 1.0 until Phase 4 complete and Hex.pm publication ready
 - Version location: `@version` in `mix.exs`
+- Tag every release `vX.Y.Z` and push tags to all remotes; never reuse a version number
+- No stable 1.0 until the public API surface is deemed stable
+
+**0.x interpretation** (strict):
+
+- `0.MINOR.0` — any new feature, behavior change, deprecation, or removal of public API
+- `0.x.PATCH` — bug fixes and security patches only; no new public API
+- Breaking changes are marked inline in the CHANGELOG with `**Breaking**:` and called out in the release notes
+
+**CHANGELOG sections as the version-bump oracle**:
+
+The Keep-a-Changelog sections present in the `[Unreleased]` block mechanically determine the bump type. This removes judgment from the release moment and makes the bump reviewable by reading the CHANGELOG alone.
+
+| Section(s) present in `[Unreleased]`               | Required bump     |
+| -------------------------------------------------- | ----------------- |
+| Any of `Added`, `Changed`, `Deprecated`, `Removed` | MINOR (`0.x+1.0`) |
+| Only `Fixed` and/or `Security`                     | PATCH (`0.x.y+1`) |
+
+Release checklist:
+
+1. Freeze the `[Unreleased]` section — no further entries.
+2. Apply the oracle: any of the top four sections present → MINOR; otherwise PATCH.
+3. If the release contains a `**Breaking**:` entry, flag it prominently in the release notes.
+4. Update `@version` in `mix.exs` and rename the CHANGELOG header from `[Unreleased]` to `[X.Y.Z] - YYYY-MM-DD`.
+5. Commit, tag `vX.Y.Z`, push tags to all remotes.
+
+**Milestone exception**: a first public release, major rebrand, or equivalent milestone may justify a MINOR bump without a corresponding API change, provided the release notes explicitly state this is the reason. Never conflate a milestone bump with substantive API changes in the same release.
 
 ### 3. Git Workflow
 

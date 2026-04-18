@@ -139,8 +139,10 @@ Closing the `partial` / `✗` gap is the focus of [sprints 54–59](../roadmap/r
 
 Require `extends [:Sequences]`.
 
-> **Importer note**: All sequence operations are `✗` until Sprint 57.
-> The `EXTENDS Sequences` extension itself round-trips (`✓`).
+> **Importer note**: Sprint 57 — `Len`, `Append`, `Head`, `Tail`,
+> `SubSeq`, `\o`, `Seq`, and `SelectSeq` all round-trip as AST (`✓`).
+> LAMBDA is scoped to `SelectSeq`'s second argument only; standalone
+> LAMBDA remains `✗` per ADR-0013.
 
 | TLA+                 | TLX inside `e()`          | Notes                                        |
 | -------------------- | ------------------------- | -------------------------------------------- |

@@ -59,6 +59,7 @@ defmodule TLX.Importer.ExprParser do
     "\\intersect" => :intersect,
     "\\X" => :cross,
     "\\ " => :difference,
+    "\\o" => :seq_concat,
     ".." => :range
   }
 
@@ -148,10 +149,29 @@ defmodule TLX.Importer.ExprParser do
     |> reduce({__MODULE__, :build_quantifier, []})
   )
 
-  # Built-in call: Name(args) — Cardinality, and reserved for future use.
+  # Built-in calls: Name(args). Dispatched by known function name.
+  # 1-arg: Cardinality, Len, Head, Tail, Seq, DOMAIN (handled separately).
+  # 2-arg: Append.
+  # 3-arg: SubSeq. SelectSeq is handled by its own combinator (LAMBDA body).
   defcombinatorp(
     :builtin_call,
-    string("Cardinality")
+    choice([
+      parsec(:select_seq_call),
+      parsec(:builtin_1arg),
+      parsec(:builtin_2arg),
+      parsec(:builtin_3arg)
+    ])
+  )
+
+  defcombinatorp(
+    :builtin_1arg,
+    choice([
+      string("Cardinality"),
+      string("Len"),
+      string("Head"),
+      string("Tail"),
+      string("Seq")
+    ])
     |> concat(keyword_lookahead_not)
     |> concat(ws_opt)
     |> ignore(string("("))
@@ -159,7 +179,70 @@ defmodule TLX.Importer.ExprParser do
     |> parsec(:expr)
     |> concat(ws_opt)
     |> ignore(string(")"))
-    |> reduce({__MODULE__, :build_builtin_call, []})
+    |> reduce({__MODULE__, :build_builtin_1, []})
+  )
+
+  defcombinatorp(
+    :builtin_2arg,
+    string("Append")
+    |> concat(keyword_lookahead_not)
+    |> concat(ws_opt)
+    |> ignore(string("("))
+    |> concat(ws_opt)
+    |> parsec(:expr)
+    |> concat(ws_opt)
+    |> ignore(string(","))
+    |> concat(ws_opt)
+    |> parsec(:expr)
+    |> concat(ws_opt)
+    |> ignore(string(")"))
+    |> reduce({__MODULE__, :build_builtin_2, []})
+  )
+
+  defcombinatorp(
+    :builtin_3arg,
+    string("SubSeq")
+    |> concat(keyword_lookahead_not)
+    |> concat(ws_opt)
+    |> ignore(string("("))
+    |> concat(ws_opt)
+    |> parsec(:expr)
+    |> concat(ws_opt)
+    |> ignore(string(","))
+    |> concat(ws_opt)
+    |> parsec(:expr)
+    |> concat(ws_opt)
+    |> ignore(string(","))
+    |> concat(ws_opt)
+    |> parsec(:expr)
+    |> concat(ws_opt)
+    |> ignore(string(")"))
+    |> reduce({__MODULE__, :build_builtin_3, []})
+  )
+
+  # SelectSeq(s, LAMBDA x: pred)  →  {:seq_select, [], [:x, s, pred]}
+  defcombinatorp(
+    :select_seq_call,
+    ignore(string("SelectSeq"))
+    |> concat(keyword_lookahead_not)
+    |> concat(ws_opt)
+    |> ignore(string("("))
+    |> concat(ws_opt)
+    |> parsec(:expr)
+    |> concat(ws_opt)
+    |> ignore(string(","))
+    |> concat(ws_opt)
+    |> ignore(string("LAMBDA"))
+    |> concat(keyword_lookahead_not)
+    |> concat(ws_opt)
+    |> concat(ident_name)
+    |> concat(ws_opt)
+    |> ignore(string(":"))
+    |> concat(ws_opt)
+    |> parsec(:expr)
+    |> concat(ws_opt)
+    |> ignore(string(")"))
+    |> reduce({__MODULE__, :build_select_seq, []})
   )
 
   # Curly-brace expressions: set literal, filter, or set_map.
@@ -429,7 +512,7 @@ defmodule TLX.Importer.ExprParser do
     |> reduce({__MODULE__, :fold_left_binary, []})
   )
 
-  # Set-binary ops: \union, \intersect, \X, \ (difference). Left-associative.
+  # Set-binary ops: \union, \intersect, \X, \o, \ (difference). Left-associative.
   # The `\ ` difference operator is matched as `\` followed by whitespace.
   defcombinatorp(
     :set_binary,
@@ -441,6 +524,7 @@ defmodule TLX.Importer.ExprParser do
           string("\\union") |> concat(keyword_lookahead_not),
           string("\\intersect") |> concat(keyword_lookahead_not),
           string("\\X") |> concat(keyword_lookahead_not),
+          string("\\o") |> concat(keyword_lookahead_not),
           # difference: a bare `\` not followed by `/`, `i`, `u`, `s`, `X`, `o`
           # (to avoid conflict with \/, \in, \union, \subseteq, \X, \o)
           string("\\") |> lookahead(ascii_char([?\s, ?\t]))
@@ -549,7 +633,8 @@ defmodule TLX.Importer.ExprParser do
       TRUE FALSE IF THEN ELSE DOMAIN EXCEPT CHOOSE
       LET IN SUBSET UNION CASE OTHER LAMBDA ENABLED UNCHANGED
       EXTENDS INSTANCE MODULE VARIABLES VARIABLE CONSTANTS CONSTANT
-      ASSUME THEOREM PROOF RECURSIVE WITH Cardinality
+      ASSUME THEOREM PROOF RECURSIVE WITH
+      Cardinality Len Head Tail Seq Append SubSeq SelectSeq
     )
 
     if name in reserved do
@@ -598,8 +683,30 @@ defmodule TLX.Importer.ExprParser do
     {kind, [], [var, set, body]}
   end
 
+  @builtin_1_map %{
+    "Cardinality" => :cardinality,
+    "Len" => :len,
+    "Head" => :head,
+    "Tail" => :tail,
+    "Seq" => :seq_set
+  }
+
   @doc false
-  def build_builtin_call(["Cardinality", arg]), do: {:cardinality, [], [arg]}
+  def build_builtin_1([name, arg]) do
+    op = Map.fetch!(@builtin_1_map, name)
+    {op, [], [arg]}
+  end
+
+  @doc false
+  def build_builtin_2(["Append", a, b]), do: {:append, [], [a, b]}
+
+  @doc false
+  def build_builtin_3(["SubSeq", a, b, c]), do: {:sub_seq, [], [a, b, c]}
+
+  @doc false
+  def build_select_seq([seq, var, pred]) do
+    {:seq_select, [], [var, seq, pred]}
+  end
 
   @doc false
   def build_curly_result([]), do: {:set_of, [], [[]]}
