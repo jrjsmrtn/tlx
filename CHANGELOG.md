@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (Sprint 59 — round-trip matrix and CI gate)
+
+- `TLX.RoundTrip` test helper — asserts that every AST attachment point (action guard, transition RHS, invariant body, property body) receives a non-nil AST for TLX-emitted input. Raises with ADR-0013 violation messages when tier-2 fallback triggers.
+- `test/integration/round_trip_matrix_test.exs` — four fixture specs (arithmetic, sets, quantifier, temporal) each asserted lossless via `TLX.RoundTrip.assert_lossless/1`.
+- `test/integration/emitter_coverage_test.exs` — 63 canonical TLA+ expressions (every construct shipped in Sprints 54–58), each with expected AST root-node atom. Adding a new emitter rule without a parser rule breaks this test.
+
 ### Added (Sprint 58 — CASE and temporal operators)
 
 - `TLX.Importer.ExprParser` adds `CASE p1 -> e1 [] ... [] OTHER -> d` parsing (with `[]` as clause separator scoped inside CASE) and the full temporal-operator set: `[]P` (always), `<>P` (eventually) at the unary tier (tight binding per TLA+ precedence), and `~>`, `\U`, `\W` at a new top-level `temporal_binary` tier (loose binding).

@@ -170,6 +170,7 @@ Sprint 16 — Proper parsers and AST-based code gen:
 
 | Sprint | Phase                 | Version | Summary                                                                               |
 | ------ | --------------------- | ------- | ------------------------------------------------------------------------------------- |
+| 59     | Round-Trip            | —       | Round-trip matrix + CI gate — ADR-0013 CI tripwire on 63 curated emit-side constructs |
 | 58     | Round-Trip            | —       | CASE + temporal operators in property position — property classifier is AST-informed  |
 | 57     | Round-Trip            | —       | Sequences + LAMBDA (SelectSeq-scoped) — 8 sequence ops + contextual LAMBDA parse      |
 | 56     | Round-Trip            | —       | Arithmetic extensions, tuples, Cartesian, function ctor/set — 9 parse-side additions  |
@@ -234,11 +235,10 @@ Sprint 16 — Proper parsers and AST-based code gen:
 
 ## Proposed Sprints
 
-| Sprint | Phase      | Plan                                                                      |
-| ------ | ---------- | ------------------------------------------------------------------------- |
-| 44     | Tooling    | State/transition coverage — verify ExUnit tests exercise all spec states  |
-| 53     | Quality    | Fix docs build — 3 internal structs referenced in internals.md but hidden |
-| 59     | Round-Trip | Round-trip test matrix + CI gate — prevent future emitter/parser drift    |
+| Sprint | Phase   | Plan                                                                      |
+| ------ | ------- | ------------------------------------------------------------------------- |
+| 44     | Tooling | State/transition coverage — verify ExUnit tests exercise all spec states  |
+| 53     | Quality | Fix docs build — 3 internal structs referenced in internals.md but hidden |
 
 ### Sprint 44: State/Transition Coverage
 
@@ -356,21 +356,10 @@ mix docs 2>&1 | grep -c warning   # should be 0
 
 **Why this matters**: Hex docs publish surfaces these on every release. Each release accumulates identical warnings in output. Fixing once closes that forever.
 
-### Sprints 54–59: Round-Trip Track (ADR-0013)
+### Sprints 54–59: Round-Trip Track (ADR-0013) — shipped
 
-**Driver**: [ADR-0013](../adr/0013-importer-scope-lossless-for-tlx-output.md) — importer must round-trip TLX-emitted output losslessly; hand-written TLA+ stays best-effort.
+**Driver**: [ADR-0013](../adr/0013-importer-scope-lossless-for-tlx-output.md) — importer round-trips TLX-emitted output losslessly; hand-written TLA+ stays best-effort.
 
-Sprints 45–52 grew the emitter past what `TLX.Importer.TlaParser` can parse. The parser currently captures every expression body as a raw string, so round-trip through `mix tlx.import` loses structure. This track closes that gap construct-by-construct and locks the guarantee in with a CI gate.
+All six sprints landed. Importer now parses 63 TLA+ constructs to structured Elixir AST (foundation, sets, quantifiers, records, EXCEPT, arithmetic, tuples, Cartesian, functions, sequences, SelectSeq LAMBDA, CASE, temporal operators). `TLX.Importer.Codegen` emits real `e(...)` calls instead of raw-string comments. CI gate at `test/integration/emitter_coverage_test.exs` asserts every emitted construct has a matching parser rule.
 
-**Arc**:
-
-- **54** — NimbleParsec foundation. Primitives, parens, binary/logical ops, IF/THEN/ELSE. Raw-string fallback as tier-2 safety. Load-bearing for everything downstream.
-- **55** — Sets, quantifiers, records, EXCEPT, DOMAIN. Largest single chunk.
-- **56** — Arithmetic completion, tuples, Cartesian, function constructor/set.
-- **57** — Sequences and `SelectSeq`-scoped LAMBDA.
-- **58** — CASE and temporal operators in property position (`[]`, `<>`, `~>`, `\U`, `\W`).
-- **59** — Round-trip test matrix + CI gate that fails on new emitter rules without parser counterparts. Prevents the gap from recurring.
-
-**Ordering**: 54 is prerequisite for 55–58; the middle four could theoretically parallelise but sequencing avoids merge pain in `tla_parser.ex`. 59 ships last and locks the invariant going forward.
-
-See per-sprint plans in `docs/sprints/sprint-0054-plan.md` through `sprint-0059-plan.md` for scope, design decisions, and risks.
+See per-sprint plans and retrospectives in `docs/sprints/sprint-0054-*.md` through `sprint-0059-*.md` for scope, design decisions, surprises, and handoffs.
