@@ -99,7 +99,9 @@ Closing the `partial` / `✗` gap is the focus of [sprints 54–59](../roadmap/r
 
 ## Sets
 
-> **Importer note**: All set operations are `✗` until Sprint 55.
+> **Importer note**: Sprint 55 shipped — set literals/comprehensions,
+> `\in`/`\subseteq`/`\union`/`\intersect`/`\` (difference), `SUBSET`,
+> `UNION`, `Cardinality`, and `a..b` all round-trip as AST (`✓`).
 
 | TLA+               | TLX inside `e()`       | Notes                      |
 | ------------------ | ---------------------- | -------------------------- |
@@ -119,7 +121,10 @@ Closing the `partial` / `✗` gap is the focus of [sprints 54–59](../roadmap/r
 
 ## Functions (Maps)
 
-> **Importer note**: All function operations are `✗` until Sprints 55–56.
+> **Importer note**: Sprint 55 covers `f[x]`, `DOMAIN f`, EXCEPT
+> (single + multi-key), and records — all round-trip as AST (`✓`).
+> Function constructor (`[x \in S |-> expr]`) and function set
+> (`[S -> T]`) remain `✗` until Sprint 56.
 
 | TLA+                            | TLX                                  | Notes                                         |
 | ------------------------------- | ------------------------------------ | --------------------------------------------- |
@@ -161,7 +166,8 @@ Require `extends [:Sequences]`.
 
 ## Other Constructs
 
-> **Importer note**: `✗` until Sprints 55 (CHOOSE, LET/IN) and 58 (CASE).
+> **Importer note**: `CHOOSE` ships with Sprint 55 (`✓`). `CASE` is
+> Sprint 58; `LET/IN` remains `✗`.
 
 | TLA+                        | TLX                                                   | Notes                            |
 | --------------------------- | ----------------------------------------------------- | -------------------------------- |

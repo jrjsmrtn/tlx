@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (Sprint 55 — sets, quantifiers, records, EXCEPT)
+
+- `TLX.Importer.ExprParser` grows the grammar: set literal `{a, b, c}` and comprehensions (`{x \in S : P}` filter, `{expr : x \in S}` set_map), binary set ops (`\union`, `\intersect`, `\` difference, `\subseteq`, `\in`), unary set ops (`SUBSET`, `UNION`), integer range `a..b`, quantifiers (`\E`, `\A`, `CHOOSE`), function application (`f[x]` postfix, chained), `DOMAIN f`, EXCEPT (single- and multi-key), records (`[a |-> 1, b |-> 2]`), and `Cardinality(...)`.
+- Round-trip tests: real TLX spec with `in_set(flags, power_set(nodes))` and `cardinality(flags) >= 0` invariants re-emits as structured `e(...)` calls instead of raw-string comments.
+
 ### Added (Sprint 54 — expression parser foundation)
 
 - `TLX.Importer.ExprParser` — NimbleParsec-based TLA+ expression parser producing Elixir AST matching the form `TLX.Expr.e/1` builds at DSL compile time. Foundation subset: integer/boolean literals, identifiers, parenthesization, equality/comparison/arithmetic/logical operators, implication (`=>`), equivalence (`<=>`), and `IF ... THEN ... ELSE`.
