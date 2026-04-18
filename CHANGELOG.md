@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (Sprint 62 — TLA+ comment stripping)
+
+- `TLX.Importer.TlaParser.strip_comments/1` — preprocesses source to strip `\*` line comments and `(* ... *)` block comments (nestable) before parsing. Replaces comment content with spaces so parser error messages preserve line/column accuracy. Fixes the pre-existing false-positive in the Sprint 58 property classifier where `[]` inside a comment would misclassify an invariant as a property.
+
 ### Fixed (Sprint 60)
 
 - Nested `e(...)` inside quantifier/binder constructors — `e(forall(:v, set, e(inner)))` now emits correctly. Previously the inner `e()` left a `{:e, meta, [arg]}` macro-call AST that the emitter rendered as literal tuple text. Fixed with a `format_ast` clause unwrapping the `{:e, ...}` shape. (Pre-existing bug surfaced by Sprint 59's round-trip matrix.)

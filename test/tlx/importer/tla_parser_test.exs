@@ -76,6 +76,81 @@ defmodule TLX.Importer.TlaParserTest do
     end
   end
 
+  describe "comment stripping (Sprint 62)" do
+    test "strips line comments (\\*)" do
+      source = """
+      ---- MODULE C ----
+      VARIABLES x
+
+      foo == \\* this is a comment about foo
+          x = 0
+
+      ====
+      """
+
+      parsed = TlaParser.parse(source)
+      assert parsed.module_name == "C"
+      assert "x" in parsed.variables
+    end
+
+    test "strips simple block comments" do
+      source = """
+      ---- MODULE C ----
+      VARIABLES x
+
+      (* block comment *)
+
+      foo == x = 0
+
+      ====
+      """
+
+      parsed = TlaParser.parse(source)
+      assert parsed.module_name == "C"
+    end
+
+    test "strips nested block comments" do
+      source = """
+      ---- MODULE C ----
+      VARIABLES x
+
+      (* outer (* inner *) still-outer *)
+
+      foo == x = 0
+
+      ====
+      """
+
+      parsed = TlaParser.parse(source)
+      assert parsed.module_name == "C"
+    end
+
+    test "does NOT misclassify invariant when [] appears inside a comment" do
+      # Pre-fix: the `[]` in the comment would trigger the property
+      # classifier's string filter, dropping this from invariants.
+      source = """
+      ---- MODULE C ----
+      VARIABLES x
+
+      \\* TODO: add []P temporal property later
+      bounded == x >= 0
+
+      ====
+      """
+
+      parsed = TlaParser.parse(source)
+      assert Enum.any?(parsed.invariants, &(&1.name == "bounded"))
+      refute Enum.any?(parsed.properties, &(&1.name == "bounded"))
+    end
+
+    test "strip_comments preserves newlines so line numbers don't shift" do
+      source = "a\n(* multi\nline *)\nb"
+      cleaned = TlaParser.strip_comments(source)
+      # Newlines preserved — cleaned has same line count as source
+      assert String.split(cleaned, "\n") |> length() == String.split(source, "\n") |> length()
+    end
+  end
+
   describe "round-trip" do
     test "imports our own emitted TLA+" do
       # Read the mutex.tla we generated

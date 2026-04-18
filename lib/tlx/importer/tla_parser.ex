@@ -172,13 +172,55 @@ defmodule TLX.Importer.TlaParser do
   Parse a TLA+ string and return a map of extracted spec components.
   """
   def parse(tla_string) do
-    case parse_tla(tla_string) do
+    cleaned = strip_comments(tla_string)
+
+    case parse_tla(cleaned) do
       {:ok, tokens, _, _, _, _} ->
         build_parsed(tokens)
 
       {:error, reason, _, _, _, _} ->
         raise "TLA+ parse error: #{inspect(reason)}"
     end
+  end
+
+  @doc false
+  # Strip TLA+ `\*` line comments and `(* ... *)` block comments (nestable).
+  # Replaces comment content with spaces (or newlines for line-comment
+  # terminators) to preserve line/column offsets for parser error
+  # messages. Does not attempt to preserve string literals — TLA+ string
+  # literals containing `*)` are rare and not emitted by TLX.
+  def strip_comments(source) do
+    source
+    |> strip_block_comments([], 0)
+    |> strip_line_comments()
+  end
+
+  # Walk char-by-char, tracking block-comment nesting depth.
+  # Outside comments: emit char as-is. Inside: emit space (preserves
+  # newlines verbatim to keep line numbers).
+  defp strip_block_comments(<<>>, acc, _depth), do: acc |> Enum.reverse() |> IO.iodata_to_binary()
+
+  defp strip_block_comments(<<"(*", rest::binary>>, acc, depth) do
+    strip_block_comments(rest, ["  " | acc], depth + 1)
+  end
+
+  defp strip_block_comments(<<"*)", rest::binary>>, acc, depth) when depth > 0 do
+    strip_block_comments(rest, ["  " | acc], depth - 1)
+  end
+
+  defp strip_block_comments(<<ch::utf8, rest::binary>>, acc, depth) when depth > 0 do
+    replacement = if ch == ?\n, do: "\n", else: " "
+    strip_block_comments(rest, [replacement | acc], depth)
+  end
+
+  defp strip_block_comments(<<ch::utf8, rest::binary>>, acc, 0) do
+    strip_block_comments(rest, [<<ch::utf8>> | acc], 0)
+  end
+
+  defp strip_line_comments(source) do
+    String.replace(source, ~r/\\\*[^\n\r]*/, fn match ->
+      String.duplicate(" ", String.length(match))
+    end)
   end
 
   alias TLX.Importer.Codegen
