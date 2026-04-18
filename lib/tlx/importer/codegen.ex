@@ -542,14 +542,28 @@ defmodule TLX.Importer.Codegen do
   end
 
   defp emit_property(%{name: name, ast: ast}) when not is_nil(ast) do
-    # Wrap the entire property body in `e(...)` so the DSL macro captures
-    # the AST without evaluating bare identifiers at compile time. This
-    # matches the pattern users typically write for property bodies.
-    "  property :#{name}, e(#{Macro.to_string(ast)})"
+    "  property :#{name}, #{render_property_body(ast)}"
   end
 
   defp emit_property(%{name: name, expr: expr}) do
     "  property :#{name}, e(#{tla_to_elixir(expr)})"
+  end
+
+  # Render a property body in the canonical form: outer temporal
+  # constructors appear as direct calls, with `e(...)` wrapping the
+  # innermost non-temporal predicate. Matches the pattern users
+  # typically hand-write (`always(eventually(e(state == :done)))`).
+  defp render_property_body({op, [], [inner]}) when op in [:always, :eventually] do
+    "#{op}(#{render_property_body(inner)})"
+  end
+
+  defp render_property_body({op, [], [left, right]})
+       when op in [:leads_to, :until, :weak_until] do
+    "#{op}(#{render_property_body(left)}, #{render_property_body(right)})"
+  end
+
+  defp render_property_body(other) do
+    "e(#{Macro.to_string(other)})"
   end
 
   # --- Expression translation ---

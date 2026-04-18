@@ -13,6 +13,8 @@ defmodule TLX.Integration.RoundTripMatrixTest do
 
   use ExUnit.Case, async: true
 
+  alias TLX.Emitter.TLA
+  alias TLX.Importer.TlaParser
   alias TLX.RoundTrip
 
   defmodule ArithSpec do
@@ -92,6 +94,17 @@ defmodule TLX.Integration.RoundTripMatrixTest do
 
     test "TemporalSpec: all constructs round-trip to AST" do
       RoundTrip.assert_lossless(TemporalSpec)
+    end
+
+    test "Sprint 63 — TemporalSpec: property emits in canonical shape" do
+      # emit → parse → codegen should produce `always(eventually(e(...)))`
+      # NOT `e(always(eventually(...)))`.
+      tla = TLA.emit(TemporalSpec)
+      parsed = TlaParser.parse(tla)
+      source = TlaParser.to_tlx(parsed)
+
+      assert source =~ ~r/property\s*\(\s*:eventually_done,\s*always\(eventually\(e\(/
+      refute source =~ "property(:eventually_done, e(always"
     end
   end
 end

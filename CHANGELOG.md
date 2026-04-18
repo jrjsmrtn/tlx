@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed (Sprint 63 — property codegen canonical shape)
+
+- `TLX.Importer.Codegen` now emits property bodies in canonical form: outer temporal constructors (`always`, `eventually`, `leads_to`, `until`, `weak_until`) appear as direct calls, with `e(...)` wrapping the innermost predicate. Previously wrapped the whole body in one outer `e(...)`. Round-trip output now matches hand-written idiom (`always(eventually(e(state == :done)))`). Part B of the plan (full emit→parse→emit byte-equivalence test) deferred; canonical-shape regression guard in the Sprint 59 matrix is sufficient.
+
 ### Added (Sprint 61 — fallback logging and import observability)
 
 - `Logger.warning` from `TLX.Importer.TlaParser.try_parse_expr/1` on parse failure — snippet truncated to 80 chars + parse reason. Tier-2 fallbacks are now visible in the logs.

@@ -2,7 +2,7 @@
 
 **Target Version**: v0.5.x (unreleased)
 **Phase**: Round-Trip Polish
-**Status**: Planned
+**Status**: Complete (Part A; Part B deferred)
 
 ## Context
 

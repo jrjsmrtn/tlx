@@ -170,6 +170,7 @@ Sprint 16 — Proper parsers and AST-based code gen:
 
 | Sprint | Phase                 | Version | Summary                                                                               |
 | ------ | --------------------- | ------- | ------------------------------------------------------------------------------------- |
+| 63     | Round-Trip Polish     | —       | Property codegen canonical shape — outer temporal peeled, `e()` around predicate only |
 | 61     | DX                    | —       | Fallback logging + `mix tlx.import --verbose` — tier-2 parse gaps now visible         |
 | 62     | Round-Trip Polish     | —       | TLA+ comment stripping in TlaParser — `\*` and `(* *)` (nestable) handled             |
 | 60     | Quality               | —       | Fix nested `e()` emission — one `format_ast` clause unwraps `{:e, meta, [arg]}`       |
@@ -238,11 +239,10 @@ Sprint 16 — Proper parsers and AST-based code gen:
 
 ## Proposed Sprints
 
-| Sprint | Phase             | Plan                                                                      |
-| ------ | ----------------- | ------------------------------------------------------------------------- |
-| 44     | Tooling           | State/transition coverage — verify ExUnit tests exercise all spec states  |
-| 53     | Quality           | Fix docs build — 3 internal structs referenced in internals.md but hidden |
-| 63     | Round-Trip Polish | Property codegen shape alignment — canonical form + byte-equivalence test |
+| Sprint | Phase   | Plan                                                                      |
+| ------ | ------- | ------------------------------------------------------------------------- |
+| 44     | Tooling | State/transition coverage — verify ExUnit tests exercise all spec states  |
+| 53     | Quality | Fix docs build — 3 internal structs referenced in internals.md but hidden |
 
 ### Sprint 44: State/Transition Coverage
 
