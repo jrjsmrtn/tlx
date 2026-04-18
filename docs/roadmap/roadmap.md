@@ -235,10 +235,14 @@ Sprint 16 — Proper parsers and AST-based code gen:
 
 ## Proposed Sprints
 
-| Sprint | Phase   | Plan                                                                      |
-| ------ | ------- | ------------------------------------------------------------------------- |
-| 44     | Tooling | State/transition coverage — verify ExUnit tests exercise all spec states  |
-| 53     | Quality | Fix docs build — 3 internal structs referenced in internals.md but hidden |
+| Sprint | Phase             | Plan                                                                         |
+| ------ | ----------------- | ---------------------------------------------------------------------------- |
+| 44     | Tooling           | State/transition coverage — verify ExUnit tests exercise all spec states     |
+| 53     | Quality           | Fix docs build — 3 internal structs referenced in internals.md but hidden    |
+| 60     | Quality           | Fix forall/exists emitter for nested `e()` bodies — preexisting emitter bug  |
+| 61     | DX                | Fallback logging and import observability — tier-2 parse gaps become visible |
+| 62     | Round-Trip Polish | Comment stripping in TlaParser — `\*` and `(* *)` don't confuse classifier   |
+| 63     | Round-Trip Polish | Property codegen shape alignment — canonical form + byte-equivalence test    |
 
 ### Sprint 44: State/Transition Coverage
 
