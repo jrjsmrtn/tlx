@@ -229,10 +229,16 @@ Sprint 16 — Proper parsers and AST-based code gen:
 
 ## Proposed Sprints
 
-| Sprint | Phase   | Plan                                                                      |
-| ------ | ------- | ------------------------------------------------------------------------- |
-| 44     | Tooling | State/transition coverage — verify ExUnit tests exercise all spec states  |
-| 53     | Quality | Fix docs build — 3 internal structs referenced in internals.md but hidden |
+| Sprint | Phase      | Plan                                                                      |
+| ------ | ---------- | ------------------------------------------------------------------------- |
+| 44     | Tooling    | State/transition coverage — verify ExUnit tests exercise all spec states  |
+| 53     | Quality    | Fix docs build — 3 internal structs referenced in internals.md but hidden |
+| 54     | Round-Trip | Expression parser foundation — NimbleParsec producing `{:expr, ast}`      |
+| 55     | Round-Trip | Sets, quantifiers, records, EXCEPT — largest chunk of the parse gap       |
+| 56     | Round-Trip | Arithmetic, tuples, Cartesian, functions — Sprints 47/51/52 parse side    |
+| 57     | Round-Trip | Sequences + LAMBDA (SelectSeq-scoped) — Sprint 49 parse side              |
+| 58     | Round-Trip | CASE + temporal operators (`\U`, `\W`, `~>`, `[]`, `<>`) in properties    |
+| 59     | Round-Trip | Round-trip test matrix + CI gate — prevent future emitter/parser drift    |
 
 ### Sprint 44: State/Transition Coverage
 
@@ -349,3 +355,22 @@ mix docs 2>&1 | grep -c warning   # should be 0
 ```
 
 **Why this matters**: Hex docs publish surfaces these on every release. Each release accumulates identical warnings in output. Fixing once closes that forever.
+
+### Sprints 54–59: Round-Trip Track (ADR-0013)
+
+**Driver**: [ADR-0013](../adr/0013-importer-scope-lossless-for-tlx-output.md) — importer must round-trip TLX-emitted output losslessly; hand-written TLA+ stays best-effort.
+
+Sprints 45–52 grew the emitter past what `TLX.Importer.TlaParser` can parse. The parser currently captures every expression body as a raw string, so round-trip through `mix tlx.import` loses structure. This track closes that gap construct-by-construct and locks the guarantee in with a CI gate.
+
+**Arc**:
+
+- **54** — NimbleParsec foundation. Primitives, parens, binary/logical ops, IF/THEN/ELSE. Raw-string fallback as tier-2 safety. Load-bearing for everything downstream.
+- **55** — Sets, quantifiers, records, EXCEPT, DOMAIN. Largest single chunk.
+- **56** — Arithmetic completion, tuples, Cartesian, function constructor/set.
+- **57** — Sequences and `SelectSeq`-scoped LAMBDA.
+- **58** — CASE and temporal operators in property position (`[]`, `<>`, `~>`, `\U`, `\W`).
+- **59** — Round-trip test matrix + CI gate that fails on new emitter rules without parser counterparts. Prevents the gap from recurring.
+
+**Ordering**: 54 is prerequisite for 55–58; the middle four could theoretically parallelise but sequencing avoids merge pain in `tla_parser.ex`. 59 ships last and locks the invariant going forward.
+
+See per-sprint plans in `docs/sprints/sprint-0054-plan.md` through `sprint-0059-plan.md` for scope, design decisions, and risks.
