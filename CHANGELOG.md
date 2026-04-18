@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed (Sprint 60)
+
+- Nested `e(...)` inside quantifier/binder constructors — `e(forall(:v, set, e(inner)))` now emits correctly. Previously the inner `e()` left a `{:e, meta, [arg]}` macro-call AST that the emitter rendered as literal tuple text. Fixed with a `format_ast` clause unwrapping the `{:e, ...}` shape. (Pre-existing bug surfaced by Sprint 59's round-trip matrix.)
+
 ### Added (Sprint 59 — round-trip matrix and CI gate)
 
 - `TLX.RoundTrip` test helper — asserts that every AST attachment point (action guard, transition RHS, invariant body, property body) receives a non-nil AST for TLX-emitted input. Raises with ADR-0013 violation messages when tier-2 fallback triggers.

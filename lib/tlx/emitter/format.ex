@@ -109,6 +109,12 @@ defmodule TLX.Emitter.Format do
   @doc """
   Format an Elixir AST node into a string using the given symbol table.
   """
+  # `e(...)` macro call AST — appears when `e()` is nested inside another
+  # `e()` (e.g. `e(forall(:v, set, e(inner)))`). The outer `e/1` captures
+  # the whole body as escaped AST before the inner `e/1` expands, so at
+  # emit time the inner call is still `{:e, meta, [arg]}`. Unwrap it.
+  def format_ast({:e, _meta, [arg]}, s), do: format_ast(arg, s)
+
   # Binary logical operators
   def format_ast({:and, _, [l, r]}, s) do
     inner = "#{format_ast(l, s)} #{s.and} #{format_ast(r, s)}"

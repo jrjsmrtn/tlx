@@ -54,9 +54,9 @@ defmodule TLX.Integration.RoundTripMatrixTest do
       next(:votes, e(votes))
     end
 
-    # The emitter renders quantifiers when they appear inside `e()`
-    # around the whole expression.
-    invariant(:all_bounded, e(forall(:v, voters, cardinality(votes) >= 0)))
+    # Nested e() inside a quantifier body — exercises Sprint 60's fix
+    # for the `{:e, meta, [arg]}` macro-call AST shape.
+    invariant(:all_bounded, e(forall(:v, voters, e(in_set(v, voters)))))
   end
 
   defmodule TemporalSpec do

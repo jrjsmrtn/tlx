@@ -170,6 +170,7 @@ Sprint 16 — Proper parsers and AST-based code gen:
 
 | Sprint | Phase                 | Version | Summary                                                                               |
 | ------ | --------------------- | ------- | ------------------------------------------------------------------------------------- |
+| 60     | Quality               | —       | Fix nested `e()` emission — one `format_ast` clause unwraps `{:e, meta, [arg]}`       |
 | 59     | Round-Trip            | —       | Round-trip matrix + CI gate — ADR-0013 CI tripwire on 63 curated emit-side constructs |
 | 58     | Round-Trip            | —       | CASE + temporal operators in property position — property classifier is AST-informed  |
 | 57     | Round-Trip            | —       | Sequences + LAMBDA (SelectSeq-scoped) — 8 sequence ops + contextual LAMBDA parse      |
@@ -239,7 +240,6 @@ Sprint 16 — Proper parsers and AST-based code gen:
 | ------ | ----------------- | ---------------------------------------------------------------------------- |
 | 44     | Tooling           | State/transition coverage — verify ExUnit tests exercise all spec states     |
 | 53     | Quality           | Fix docs build — 3 internal structs referenced in internals.md but hidden    |
-| 60     | Quality           | Fix forall/exists emitter for nested `e()` bodies — preexisting emitter bug  |
 | 61     | DX                | Fallback logging and import observability — tier-2 parse gaps become visible |
 | 62     | Round-Trip Polish | Comment stripping in TlaParser — `\*` and `(* *)` don't confuse classifier   |
 | 63     | Round-Trip Polish | Property codegen shape alignment — canonical form + byte-equivalence test    |
