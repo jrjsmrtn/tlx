@@ -44,88 +44,95 @@ Comprehensive mapping of TLA+ concepts to their TLX DSL equivalents.
 
 ## Invariants and Properties
 
-| TLA+                           | TLX                                        | Notes                    |
-| ------------------------------ | ------------------------------------------ | ------------------------ |
-| `Inv == predicate` (INVARIANT) | `invariant :inv, e(predicate)`             | Safety property          |
-| `Prop == []P`                  | `property :prop, always(e(p))`             | Temporal — always        |
-| `Prop == <>P`                  | `property :prop, eventually(e(p))`         | Temporal — eventually    |
-| `Prop == []<>P`                | `property :prop, always(eventually(e(p)))` | Infinitely often         |
-| `Prop == P ~> Q`               | `property :prop, leads_to(e(p), e(q))`     | Leads-to                 |
-| `Prop == P \U Q`               | Not yet supported                          | Strong until — Sprint 46 |
-| `Prop == P \W Q`               | Not yet supported                          | Weak until — Sprint 46   |
+| TLA+                           | TLX                                        | Notes                 |
+| ------------------------------ | ------------------------------------------ | --------------------- |
+| `Inv == predicate` (INVARIANT) | `invariant :inv, e(predicate)`             | Safety property       |
+| `Prop == []P`                  | `property :prop, always(e(p))`             | Temporal — always     |
+| `Prop == <>P`                  | `property :prop, eventually(e(p))`         | Temporal — eventually |
+| `Prop == []<>P`                | `property :prop, always(eventually(e(p)))` | Infinitely often      |
+| `Prop == P ~> Q`               | `property :prop, leads_to(e(p), e(q))`     | Leads-to              |
+| `Prop == P \U Q`               | `property :prop, until(e(p), e(q))`        | Strong until          |
+| `Prop == P \W Q`               | `property :prop, weak_until(e(p), e(q))`   | Weak until            |
 
 ## Expressions
 
-| TLA+                      | TLX inside `e()`          | Notes       |
-| ------------------------- | ------------------------- | ----------- |
-| `x + 1`, `x - 1`, `x * y` | `x + 1`, `x - 1`, `x * y` | Arithmetic  |
-| `x = y`                   | `x == y`                  | Equality    |
-| `x # y` or `x /= y`       | `x != y`                  | Inequality  |
-| `x /\ y`                  | `x and y`                 | Conjunction |
-| `x \/ y`                  | `x or y`                  | Disjunction |
-| `~x`                      | `not x`                   | Negation    |
-| `IF c THEN a ELSE b`      | `if c, do: a, else: b`    | Conditional |
-| `p => q`                  | `implies(p, q)`           | Implication |
-| `p <=> q`                 | `equiv(p, q)`             | Equivalence |
+| TLA+                      | TLX inside `e()`          | Notes            |
+| ------------------------- | ------------------------- | ---------------- |
+| `x + 1`, `x - 1`, `x * y` | `x + 1`, `x - 1`, `x * y` | Arithmetic       |
+| `x \div y`                | `div(x, y)`               | Integer division |
+| `x % y`                   | `rem(x, y)`               | Modulo           |
+| `x^y`                     | `x ** y`                  | Exponentiation   |
+| `-x` (unary)              | `-x`                      | Unary negation   |
+| `x = y`                   | `x == y`                  | Equality         |
+| `x # y` or `x /= y`       | `x != y`                  | Inequality       |
+| `x /\ y`                  | `x and y`                 | Conjunction      |
+| `x \/ y`                  | `x or y`                  | Disjunction      |
+| `~x`                      | `not x`                   | Negation         |
+| `IF c THEN a ELSE b`      | `if c, do: a, else: b`    | Conditional      |
+| `p => q`                  | `implies(p, q)`           | Implication      |
+| `p <=> q`                 | `equiv(p, q)`             | Equivalence      |
 
 ## Sets
 
-| TLA+               | TLX inside `e()`       | Notes                         |
-| ------------------ | ---------------------- | ----------------------------- |
-| `{a, b, c}`        | `set_of([a, b, c])`    | Set literal                   |
-| `x \in S`          | `in_set(x, s)`         | Membership                    |
-| `S \union T`       | `union(s, t)`          | Union                         |
-| `S \intersect T`   | `intersect(s, t)`      | Intersection                  |
-| `S \subseteq T`    | `subset(s, t)`         | Subset                        |
-| `Cardinality(S)`   | `cardinality(s)`       | Size                          |
-| `{x \in S : P}`    | `filter(:x, :s, pred)` | Set comprehension (filter)    |
-| `a..b`             | `range(a, b)`          | Integer range                 |
-| `S \ T`            | Not yet supported      | Set difference — Sprint 47    |
-| `{expr : x \in S}` | Not yet supported      | Set map/image — Sprint 47     |
-| `SUBSET S`         | Not yet supported      | Power set — Sprint 47         |
-| `UNION S`          | Not yet supported      | Distributed union — Sprint 47 |
+| TLA+               | TLX inside `e()`       | Notes                      |
+| ------------------ | ---------------------- | -------------------------- |
+| `{a, b, c}`        | `set_of([a, b, c])`    | Set literal                |
+| `x \in S`          | `in_set(x, s)`         | Membership                 |
+| `S \union T`       | `union(s, t)`          | Union                      |
+| `S \intersect T`   | `intersect(s, t)`      | Intersection               |
+| `S \ T`            | `difference(s, t)`     | Set difference             |
+| `S \subseteq T`    | `subset(s, t)`         | Subset                     |
+| `Cardinality(S)`   | `cardinality(s)`       | Size                       |
+| `{x \in S : P}`    | `filter(:x, s, pred)`  | Set comprehension (filter) |
+| `{expr : x \in S}` | `set_map(:x, s, expr)` | Set image / map            |
+| `SUBSET S`         | `power_set(s)`         | Power set                  |
+| `UNION S`          | `distributed_union(s)` | Flatten a set of sets      |
+| `a..b`             | `range(a, b)`          | Integer range              |
+| `S \X T`           | `cross(s, t)`          | Cartesian product          |
 
 ## Functions (Maps)
 
-| TLA+                            | TLX                                  | Notes               |
-| ------------------------------- | ------------------------------------ | ------------------- |
-| `f[x]`                          | `at(f, x)`                           | Application         |
-| `[f EXCEPT ![x] = v]`           | `except(f, x, v)`                    | Single-key update   |
-| `[f EXCEPT ![k1]=v1, ![k2]=v2]` | `except_many(f, [{k1,v1}, {k2,v2}])` | Multi-key update    |
-| `DOMAIN f`                      | `domain(f)`                          | Keys                |
-| `[a \|-> 1, b \|-> 2]`          | `record(a: 1, b: 2)`                 | Record construction |
-| `[S -> T]`                      | Not yet supported                    | Function set        |
-| `LAMBDA x: expr`                | Not yet supported                    | Anonymous function  |
+| TLA+                            | TLX                                  | Notes                                         |
+| ------------------------------- | ------------------------------------ | --------------------------------------------- |
+| `f[x]`                          | `at(f, x)`                           | Application                                   |
+| `[f EXCEPT ![x] = v]`           | `except(f, x, v)`                    | Single-key update                             |
+| `[f EXCEPT ![k1]=v1, ![k2]=v2]` | `except_many(f, [{k1,v1}, {k2,v2}])` | Multi-key update                              |
+| `DOMAIN f`                      | `domain(f)`                          | Keys                                          |
+| `[a \|-> 1, b \|-> 2]`          | `record(a: 1, b: 2)`                 | Record construction                           |
+| `[x \in S \|-> expr]`           | `fn_of(:x, s, expr)`                 | Function constructor                          |
+| `[S -> T]`                      | `fn_set(s, t)`                       | Function set (emission-only, not simulator)   |
+| `LAMBDA x: expr`                | Inside `select_seq/3` only           | No standalone constructor (Sprint 49 partial) |
 
 ## Sequences
 
 Require `extends [:Sequences]`.
 
-| TLA+                 | TLX inside `e()`   | Notes                       |
-| -------------------- | ------------------ | --------------------------- |
-| `Len(s)`             | `len(s)`           | Length                      |
-| `Append(s, x)`       | `append(s, x)`     | Append                      |
-| `Head(s)`            | `head(s)`          | First element               |
-| `Tail(s)`            | `tail(s)`          | All but first               |
-| `SubSeq(s, m, n)`    | `sub_seq(s, m, n)` | Subsequence                 |
-| `s \o t`             | Not yet supported  | Concatenation — Sprint 47   |
-| `SelectSeq(s, Test)` | Not yet supported  | Filter sequence — Sprint 47 |
-| `Seq(S)`             | Not yet supported  | Sequence set — Sprint 47    |
+| TLA+                 | TLX inside `e()`          | Notes                                        |
+| -------------------- | ------------------------- | -------------------------------------------- |
+| `Len(s)`             | `len(s)`                  | Length                                       |
+| `Append(s, x)`       | `append(s, x)`            | Append                                       |
+| `Head(s)`            | `head(s)`                 | First element                                |
+| `Tail(s)`            | `tail(s)`                 | All but first                                |
+| `SubSeq(s, m, n)`    | `sub_seq(s, m, n)`        | Subsequence                                  |
+| `s \o t`             | `concat(s, t)`            | Concatenation                                |
+| `SelectSeq(s, Test)` | `select_seq(:x, s, pred)` | Filter sequence (emits LAMBDA)               |
+| `Seq(S)`             | `seq_set(s)`              | Sequence set (type assertion, emission-only) |
 
 ## Tuples
 
-| TLA+                      | TLX                         | Notes                        |
-| ------------------------- | --------------------------- | ---------------------------- |
-| `<<a, b, c>>`             | `[a, b, c]` as list literal | Lists emit as TLA+ sequences |
-| `<<a, b, c>>` constructor | Not yet supported           | Explicit tuple — Sprint 47   |
+| TLA+          | TLX                | Notes                                                              |
+| ------------- | ------------------ | ------------------------------------------------------------------ |
+| `<<a, b, c>>` | `tuple([a, b, c])` | Explicit tuple constructor                                         |
+| `<<a, b, c>>` | `[a, b, c]`        | List literal as default variable value also emits as TLA+ sequence |
 
 ## Other Constructs
 
-| TLA+                        | TLX                           | Notes                   |
-| --------------------------- | ----------------------------- | ----------------------- |
-| `CHOOSE x \in S : P`        | `choose(:x, :s, pred)`        | Deterministic selection |
-| `CASE p1 -> e1 [] p2 -> e2` | `case_of([{cond, val}, ...])` | Multi-way conditional   |
-| `LET x == expr IN body`     | `let_in(:x, binding, body)`   | Local definition        |
+| TLA+                        | TLX                                                   | Notes                            |
+| --------------------------- | ----------------------------------------------------- | -------------------------------- |
+| `CHOOSE x \in S : P`        | `choose(:x, s, pred)`                                 | Deterministic selection          |
+| `CASE p1 -> e1 [] p2 -> e2` | `case_of([{cond, val}, ...])`                         | Multi-way conditional (explicit) |
+| `CASE ... [] OTHER -> d`    | `{:otherwise, d}` in clauses, or `case/do inside`e()` | OTHER fallback                   |
+| `LET x == expr IN body`     | `let_in(:x, binding, body)`                           | Local definition                 |
 
 ## Refinement
 
