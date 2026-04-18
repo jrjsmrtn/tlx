@@ -35,6 +35,7 @@ defmodule TLX.Importer.Codegen do
         emit_processes(parsed[:processes] || []),
         emit_actions(parsed[:actions] || []),
         emit_invariants(parsed[:invariants] || []),
+        emit_properties(parsed[:properties] || []),
         "end"
       ]
       |> List.flatten()
@@ -530,6 +531,25 @@ defmodule TLX.Importer.Codegen do
 
   defp emit_invariant(%{name: name, expr: expr}) do
     "  invariant :#{name}, e(#{tla_to_elixir(expr)})"
+  end
+
+  # --- Property emission ---
+
+  defp emit_properties([]), do: nil
+
+  defp emit_properties(properties) do
+    Enum.map_join(properties, "\n", &emit_property/1) <> "\n"
+  end
+
+  defp emit_property(%{name: name, ast: ast}) when not is_nil(ast) do
+    # Wrap the entire property body in `e(...)` so the DSL macro captures
+    # the AST without evaluating bare identifiers at compile time. This
+    # matches the pattern users typically write for property bodies.
+    "  property :#{name}, e(#{Macro.to_string(ast)})"
+  end
+
+  defp emit_property(%{name: name, expr: expr}) do
+    "  property :#{name}, e(#{tla_to_elixir(expr)})"
   end
 
   # --- Expression translation ---

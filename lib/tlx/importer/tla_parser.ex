@@ -205,6 +205,7 @@ defmodule TLX.Importer.TlaParser do
       init: extract_init(operators),
       actions: extract_actions(operators),
       invariants: extract_invariants(operators),
+      properties: extract_properties(operators),
       next_actions: extract_next(operators)
     }
   end
@@ -271,14 +272,41 @@ defmodule TLX.Importer.TlaParser do
     |> Enum.filter(fn {name, body} ->
       name not in skip and
         not String.contains?(body, "'") and
-        not String.contains?(body, "[]") and
-        not String.contains?(body, "<>") and
         not String.contains?(body, "WF_") and
-        not String.contains?(body, "SF_")
+        not String.contains?(body, "SF_") and
+        not temporal_body?(body)
     end)
     |> Enum.map(fn {name, body} ->
       %{name: name, expr: body, ast: try_parse_expr(body)}
     end)
+  end
+
+  # Properties are operators whose bodies contain temporal operators
+  # (`[]`, `<>`, `~>`, `\U`, `\W`). This replaces the string-level
+  # filter that previously excluded temporal-bearing operators from
+  # invariants — now they're correctly classified as properties.
+  defp extract_properties(operators) do
+    skip = ~w(Init Next Spec Fairness vars type_ok TypeOK)
+
+    operators
+    |> Enum.filter(fn {name, body} ->
+      name not in skip and
+        not String.contains?(body, "'") and
+        not String.contains?(body, "WF_") and
+        not String.contains?(body, "SF_") and
+        temporal_body?(body)
+    end)
+    |> Enum.map(fn {name, body} ->
+      %{name: name, expr: body, ast: try_parse_expr(body)}
+    end)
+  end
+
+  defp temporal_body?(body) do
+    String.contains?(body, "[]") or
+      String.contains?(body, "<>") or
+      String.contains?(body, "~>") or
+      String.contains?(body, "\\U") or
+      String.contains?(body, "\\W")
   end
 
   defp try_parse_expr(body) when is_binary(body) do

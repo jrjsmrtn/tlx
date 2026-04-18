@@ -170,6 +170,7 @@ Sprint 16 — Proper parsers and AST-based code gen:
 
 | Sprint | Phase                 | Version | Summary                                                                               |
 | ------ | --------------------- | ------- | ------------------------------------------------------------------------------------- |
+| 58     | Round-Trip            | —       | CASE + temporal operators in property position — property classifier is AST-informed  |
 | 57     | Round-Trip            | —       | Sequences + LAMBDA (SelectSeq-scoped) — 8 sequence ops + contextual LAMBDA parse      |
 | 56     | Round-Trip            | —       | Arithmetic extensions, tuples, Cartesian, function ctor/set — 9 parse-side additions  |
 | 55     | Round-Trip            | —       | Sets, quantifiers, records, EXCEPT — 21 constructs parse to structured AST            |
@@ -237,7 +238,6 @@ Sprint 16 — Proper parsers and AST-based code gen:
 | ------ | ---------- | ------------------------------------------------------------------------- |
 | 44     | Tooling    | State/transition coverage — verify ExUnit tests exercise all spec states  |
 | 53     | Quality    | Fix docs build — 3 internal structs referenced in internals.md but hidden |
-| 58     | Round-Trip | CASE + temporal operators (`\U`, `\W`, `~>`, `[]`, `<>`) in properties    |
 | 59     | Round-Trip | Round-trip test matrix + CI gate — prevent future emitter/parser drift    |
 
 ### Sprint 44: State/Transition Coverage

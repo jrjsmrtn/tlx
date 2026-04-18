@@ -60,6 +60,9 @@ defmodule TLX.Importer.ExprParser do
     "\\X" => :cross,
     "\\ " => :difference,
     "\\o" => :seq_concat,
+    "~>" => :leads_to,
+    "\\U" => :until,
+    "\\W" => :weak_until,
     ".." => :range
   }
 
@@ -396,6 +399,7 @@ defmodule TLX.Importer.ExprParser do
     :atom_primary,
     choice([
       parsec(:if_expr),
+      parsec(:case_expr),
       parsec(:quantifier_expr),
       boolean_lit,
       integer_lit,
@@ -405,6 +409,44 @@ defmodule TLX.Importer.ExprParser do
       parsec(:bracket_expr),
       parsec(:tuple_expr),
       identifier
+    ])
+  )
+
+  # CASE expression: `CASE p1 -> e1 [] p2 -> e2 [] OTHER -> d`.
+  # Inside CASE, `[]` is a clause separator (not temporal always).
+  defcombinatorp(
+    :case_expr,
+    ignore(string("CASE"))
+    |> concat(keyword_lookahead_not)
+    |> concat(ws_opt)
+    |> concat(parsec(:case_clause))
+    |> repeat(
+      concat(ws_opt, ignore(string("[]")))
+      |> concat(ws_opt)
+      |> concat(parsec(:case_clause))
+    )
+    |> reduce({__MODULE__, :build_case, []})
+  )
+
+  defcombinatorp(
+    :case_clause,
+    choice([
+      # `OTHER -> expr`  →  {:otherwise, expr}
+      string("OTHER")
+      |> concat(keyword_lookahead_not)
+      |> replace(:otherwise)
+      |> concat(ws_opt)
+      |> ignore(string("->"))
+      |> concat(ws_opt)
+      |> parsec(:expr)
+      |> reduce({__MODULE__, :build_case_pair, []}),
+      # `cond -> expr`
+      parsec(:expr)
+      |> concat(ws_opt)
+      |> ignore(string("->"))
+      |> concat(ws_opt)
+      |> parsec(:expr)
+      |> reduce({__MODULE__, :build_case_pair, []})
     ])
   )
 
@@ -424,7 +466,10 @@ defmodule TLX.Importer.ExprParser do
     |> reduce({__MODULE__, :fold_postfix, []})
   )
 
-  # Unary: ~ (negation), - (arithmetic), SUBSET UNION DOMAIN
+  # Unary: ~ (negation), - (arithmetic), SUBSET UNION DOMAIN,
+  # plus temporal prefixes `[]` (always) and `<>` (eventually).
+  # Temporal prefixes bind tightly per TLA+ precedence: `[]P /\ Q` is
+  # `([]P) /\ Q`, not `[](P /\ Q)`.
   defcombinatorp(
     :unary,
     choice([
@@ -432,6 +477,16 @@ defmodule TLX.Importer.ExprParser do
       |> concat(ws_opt)
       |> parsec(:unary)
       |> reduce({__MODULE__, :build_unary_not, []}),
+      string("[]")
+      |> replace(:always)
+      |> concat(ws_opt)
+      |> parsec(:unary)
+      |> reduce({__MODULE__, :build_unary_named, []}),
+      string("<>")
+      |> replace(:eventually)
+      |> concat(ws_opt)
+      |> parsec(:unary)
+      |> reduce({__MODULE__, :build_unary_named, []}),
       ignore(string("-"))
       |> concat(ws_opt)
       |> parsec(:unary)
@@ -595,7 +650,27 @@ defmodule TLX.Importer.ExprParser do
     |> reduce({__MODULE__, :fold_left_binary, []})
   )
 
-  defcombinatorp(:expr, parsec(:implication))
+  # Temporal-binary tier: ~> (leads-to), \U (strong until),
+  # \W (weak until). Loosest-binding operators per TLA+ precedence.
+  defcombinatorp(
+    :temporal_binary,
+    parsec(:implication)
+    |> repeat(
+      concat(
+        ws_opt,
+        choice([
+          string("~>"),
+          string("\\U") |> concat(keyword_lookahead_not),
+          string("\\W") |> concat(keyword_lookahead_not)
+        ])
+      )
+      |> concat(ws_opt)
+      |> parsec(:implication)
+    )
+    |> reduce({__MODULE__, :fold_left_binary, []})
+  )
+
+  defcombinatorp(:expr, parsec(:temporal_binary))
 
   defparsec(
     :parse_expr,
@@ -659,6 +734,17 @@ defmodule TLX.Importer.ExprParser do
   def build_unary_named([:power_set, operand]), do: {:power_set, [], [operand]}
   def build_unary_named([:distributed_union, operand]), do: {:distributed_union, [], [operand]}
   def build_unary_named([:domain, operand]), do: {:domain, [], [operand]}
+  def build_unary_named([:always, operand]), do: {:always, [], [operand]}
+  def build_unary_named([:eventually, operand]), do: {:eventually, [], [operand]}
+
+  @doc false
+  def build_case(clauses) do
+    {:case_of, [], [clauses]}
+  end
+
+  @doc false
+  def build_case_pair([:otherwise, expr]), do: {:otherwise, expr}
+  def build_case_pair([cond, expr]), do: {cond, expr}
 
   @doc false
   def build_fn_of([var, set, body]), do: {:fn_of, [], [var, set, body]}

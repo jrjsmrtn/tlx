@@ -500,6 +500,107 @@ defmodule TLX.Importer.ExprParserTest do
     end
   end
 
+  describe "temporal operators (Sprint 58)" do
+    test "parses [] (always)" do
+      assert {:ok, {:always, [], [{:p, [], nil}]}} = ExprParser.parse("[]p")
+    end
+
+    test "parses <> (eventually)" do
+      assert {:ok, {:eventually, [], [{:p, [], nil}]}} = ExprParser.parse("<>p")
+    end
+
+    test "parses nested [] <> P as always(eventually(p))" do
+      expected = {:always, [], [{:eventually, [], [{:p, [], nil}]}]}
+      assert {:ok, ^expected} = ExprParser.parse("[]<>p")
+    end
+
+    test "parses ~> (leads_to)" do
+      expected = {:leads_to, [], [{:p, [], nil}, {:q, [], nil}]}
+      assert {:ok, ^expected} = ExprParser.parse("p ~> q")
+    end
+
+    test "parses \\U (until)" do
+      expected = {:until, [], [{:p, [], nil}, {:q, [], nil}]}
+      assert {:ok, ^expected} = ExprParser.parse("p \\U q")
+    end
+
+    test "parses \\W (weak_until)" do
+      expected = {:weak_until, [], [{:p, [], nil}, {:q, [], nil}]}
+      assert {:ok, ^expected} = ExprParser.parse("p \\W q")
+    end
+
+    test "[] binds tighter than /\\" do
+      # []p /\ q  →  ([]p) /\ q
+      expected =
+        {:and, [],
+         [
+           {:always, [], [{:p, [], nil}]},
+           {:q, [], nil}
+         ]}
+
+      assert {:ok, ^expected} = ExprParser.parse("[]p /\\ q")
+    end
+
+    test "~> binds looser than /\\" do
+      # p /\ q ~> r  →  (p /\ q) ~> r
+      expected =
+        {:leads_to, [],
+         [
+           {:and, [], [{:p, [], nil}, {:q, [], nil}]},
+           {:r, [], nil}
+         ]}
+
+      assert {:ok, ^expected} = ExprParser.parse("p /\\ q ~> r")
+    end
+  end
+
+  describe "CASE expression (Sprint 58)" do
+    test "parses simple CASE with two clauses" do
+      expected =
+        {:case_of, [],
+         [
+           [
+             {{:p, [], nil}, 1},
+             {{:q, [], nil}, 2}
+           ]
+         ]}
+
+      assert {:ok, ^expected} = ExprParser.parse("CASE p -> 1 [] q -> 2")
+    end
+
+    test "parses CASE with OTHER fallback" do
+      expected =
+        {:case_of, [],
+         [
+           [
+             {{:p, [], nil}, 1},
+             {:otherwise, 0}
+           ]
+         ]}
+
+      assert {:ok, ^expected} = ExprParser.parse("CASE p -> 1 [] OTHER -> 0")
+    end
+
+    test "parses CASE where body is inside a conjunction" do
+      # (CASE p -> 1 [] OTHER -> 0) /\ q
+      # Requires parens; without parens, the [] would be ambiguous.
+      expected =
+        {:and, [],
+         [
+           {:case_of, [],
+            [
+              [
+                {{:p, [], nil}, 1},
+                {:otherwise, 0}
+              ]
+            ]},
+           {:q, [], nil}
+         ]}
+
+      assert {:ok, ^expected} = ExprParser.parse("(CASE p -> 1 [] OTHER -> 0) /\\ q")
+    end
+  end
+
   describe "Macro.to_string round-trip (Sprint 55)" do
     test "set literal round-trips" do
       {:ok, ast} = ExprParser.parse("{1, 2, 3}")

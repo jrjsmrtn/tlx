@@ -66,12 +66,12 @@ Closing the `partial` / `✗` gap is the focus of [sprints 54–59](../roadmap/r
 | TLA+                           | TLX                                        | Importer | Notes                                             |
 | ------------------------------ | ------------------------------------------ | -------- | ------------------------------------------------- |
 | `Inv == predicate` (INVARIANT) | `invariant :inv, e(predicate)`             | `✓`      | Sprint 54: body parses to AST (foundation subset) |
-| `Prop == []P`                  | `property :prop, always(e(p))`             | `✗`      | `[]` actively excluded at `tla_parser.ex:273`     |
-| `Prop == <>P`                  | `property :prop, eventually(e(p))`         | `✗`      | Temporal operators not parsed                     |
-| `Prop == []<>P`                | `property :prop, always(eventually(e(p)))` | `✗`      | Temporal nesting not parsed                       |
-| `Prop == P ~> Q`               | `property :prop, leads_to(e(p), e(q))`     | `✗`      | Leads-to not parsed                               |
-| `Prop == P \U Q`               | `property :prop, until(e(p), e(q))`        | `✗`      | Strong until not parsed                           |
-| `Prop == P \W Q`               | `property :prop, weak_until(e(p), e(q))`   | `✗`      | Weak until not parsed                             |
+| `Prop == []P`                  | `property :prop, always(e(p))`             | `✓`      | Sprint 58: temporal operators round-trip          |
+| `Prop == <>P`                  | `property :prop, eventually(e(p))`         | `✓`      | Sprint 58                                         |
+| `Prop == []<>P`                | `property :prop, always(eventually(e(p)))` | `✓`      | Sprint 58 — nesting supported                     |
+| `Prop == P ~> Q`               | `property :prop, leads_to(e(p), e(q))`     | `✓`      | Sprint 58                                         |
+| `Prop == P \U Q`               | `property :prop, until(e(p), e(q))`        | `✓`      | Sprint 58                                         |
+| `Prop == P \W Q`               | `property :prop, weak_until(e(p), e(q))`   | `✓`      | Sprint 58                                         |
 
 ## Expressions
 
@@ -166,8 +166,8 @@ Require `extends [:Sequences]`.
 
 ## Other Constructs
 
-> **Importer note**: `CHOOSE` ships with Sprint 55 (`✓`). `CASE` is
-> Sprint 58; `LET/IN` remains `✗`.
+> **Importer note**: `CHOOSE` (Sprint 55) and `CASE` (Sprint 58) both
+> round-trip as AST (`✓`). `LET/IN` remains `✗`.
 
 | TLA+                        | TLX                                                   | Notes                            |
 | --------------------------- | ----------------------------------------------------- | -------------------------------- |

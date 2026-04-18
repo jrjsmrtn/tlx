@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (Sprint 58 — CASE and temporal operators)
+
+- `TLX.Importer.ExprParser` adds `CASE p1 -> e1 [] ... [] OTHER -> d` parsing (with `[]` as clause separator scoped inside CASE) and the full temporal-operator set: `[]P` (always), `<>P` (eventually) at the unary tier (tight binding per TLA+ precedence), and `~>`, `\U`, `\W` at a new top-level `temporal_binary` tier (loose binding).
+- `TLX.Importer.TlaParser` gains `extract_properties/1`: operators whose bodies contain temporal operators are classified as properties; non-temporal operators remain invariants. Replaces the string-level `body contains "[]"` filter that previously dropped properties entirely.
+- `TLX.Importer.Codegen` emits `property :name, e(<ast>)` for temporal-bearing operators, wrapping in `e(...)` so the DSL captures the AST without compile-time evaluation of bare identifiers.
+
 ### Added (Sprint 57 — sequences and LAMBDA)
 
 - `TLX.Importer.ExprParser` extended: `Len`, `Head`, `Tail`, `Seq`, `Append`, `SubSeq` (function calls), `\o` (binary infix), and `SelectSeq(s, LAMBDA x: pred)` (with LAMBDA scoped to the SelectSeq context per ADR-0013). Standalone LAMBDA is rejected.

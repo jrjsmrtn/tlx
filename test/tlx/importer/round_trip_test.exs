@@ -148,6 +148,45 @@ defmodule TLX.Importer.RoundTripTest do
     end
   end
 
+  defmodule TemporalSpec do
+    use TLX.Spec
+
+    variable(:state, :idle)
+
+    action :start do
+      guard(e(state == :idle))
+      next(:state, :running)
+    end
+
+    action :finish do
+      guard(e(state == :running))
+      next(:state, :done)
+    end
+
+    property(:eventually_done, always(eventually(e(state == :done))))
+  end
+
+  describe "Sprint 58 — temporal / CASE round-trip" do
+    test "TemporalSpec: property parses to temporal AST" do
+      tla = TLA.emit(TemporalSpec)
+      parsed = TlaParser.parse(tla)
+
+      assert parsed.properties != []
+      prop = Enum.find(parsed.properties, &(&1.name == "eventually_done"))
+      assert prop != nil
+      assert prop.ast != nil
+      # Shape: always(eventually(state == :done))
+      assert {:always, [], [{:eventually, [], [_inner]}]} = prop.ast
+    end
+
+    test "TemporalSpec: property NOT classified as invariant" do
+      tla = TLA.emit(TemporalSpec)
+      parsed = TlaParser.parse(tla)
+
+      refute Enum.any?(parsed.invariants, &(&1.name == "eventually_done"))
+    end
+  end
+
   describe "Sprint 54 — AST-driven round-trip" do
     test "Counter: guard body round-trips as structured AST, not raw string" do
       tla = TLA.emit(Counter)
