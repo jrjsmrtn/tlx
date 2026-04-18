@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT
 
 defmodule TLX.Transformers.TypeOK do
-  @moduledoc false
+  @moduledoc "Spark transformer that auto-generates a `TypeOK` invariant from variable usage when the user hasn't declared one."
   use Spark.Dsl.Transformer
 
   alias Spark.Dsl.Transformer

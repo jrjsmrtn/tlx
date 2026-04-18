@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT
 
 defmodule TLX.Action do
-  @moduledoc false
+  @moduledoc "IR struct for an `action` DSL entity — holds guard, transitions, branches, and fairness."
   defstruct [
     :name,
     :guard,

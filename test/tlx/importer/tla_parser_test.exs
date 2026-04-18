@@ -76,6 +76,114 @@ defmodule TLX.Importer.TlaParserTest do
     end
   end
 
+  describe "comment stripping (Sprint 62)" do
+    test "strips line comments (\\*)" do
+      source = """
+      ---- MODULE C ----
+      VARIABLES x
+
+      foo == \\* this is a comment about foo
+          x = 0
+
+      ====
+      """
+
+      parsed = TlaParser.parse(source)
+      assert parsed.module_name == "C"
+      assert "x" in parsed.variables
+    end
+
+    test "strips simple block comments" do
+      source = """
+      ---- MODULE C ----
+      VARIABLES x
+
+      (* block comment *)
+
+      foo == x = 0
+
+      ====
+      """
+
+      parsed = TlaParser.parse(source)
+      assert parsed.module_name == "C"
+    end
+
+    test "strips nested block comments" do
+      source = """
+      ---- MODULE C ----
+      VARIABLES x
+
+      (* outer (* inner *) still-outer *)
+
+      foo == x = 0
+
+      ====
+      """
+
+      parsed = TlaParser.parse(source)
+      assert parsed.module_name == "C"
+    end
+
+    test "does NOT misclassify invariant when [] appears inside a comment" do
+      # Pre-fix: the `[]` in the comment would trigger the property
+      # classifier's string filter, dropping this from invariants.
+      source = """
+      ---- MODULE C ----
+      VARIABLES x
+
+      \\* TODO: add []P temporal property later
+      bounded == x >= 0
+
+      ====
+      """
+
+      parsed = TlaParser.parse(source)
+      assert Enum.any?(parsed.invariants, &(&1.name == "bounded"))
+      refute Enum.any?(parsed.properties, &(&1.name == "bounded"))
+    end
+
+    test "strip_comments preserves newlines so line numbers don't shift" do
+      source = "a\n(* multi\nline *)\nb"
+      cleaned = TlaParser.strip_comments(source)
+      # Newlines preserved — cleaned has same line count as source
+      assert String.split(cleaned, "\n") |> length() == String.split(source, "\n") |> length()
+    end
+  end
+
+  describe "parse coverage (Sprint 61)" do
+    test "computes coverage stats on parse" do
+      parsed = TlaParser.parse(@simple_tla)
+      assert parsed.coverage
+      assert parsed.coverage.total.attempted > 0
+      # Simple counter spec has no fallbacks
+      assert parsed.coverage.total.fallbacks == 0
+    end
+
+    test "logs a warning when try_parse_expr falls back" do
+      # Construct a TLA+ spec whose invariant body contains something
+      # our parser can't handle (e.g. an unknown infix operator).
+      malformed = """
+      ---- MODULE M ----
+      VARIABLES x
+
+      bad == x @@@ 5
+
+      ====
+      """
+
+      import ExUnit.CaptureLog
+
+      log =
+        capture_log(fn ->
+          parsed = TlaParser.parse(malformed)
+          assert parsed.coverage.total.fallbacks >= 1
+        end)
+
+      assert log =~ "TlaParser fallback"
+    end
+  end
+
   describe "round-trip" do
     test "imports our own emitted TLA+" do
       # Read the mutex.tla we generated

@@ -78,7 +78,7 @@ Both workflows use the same mix tasks:
 
 ```elixir
 def deps do
-  [{:tlx, "~> 0.4.0", only: [:dev, :test]}]
+  [{:tlx, "~> 0.5.0", only: [:dev, :test]}]
 end
 ```
 

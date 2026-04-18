@@ -100,6 +100,131 @@ defmodule TLX.Importer.RoundTripTest do
     end
   end
 
+  defmodule SetSpec do
+    use TLX.Spec
+
+    variable(:flags, [])
+
+    constant(:nodes)
+
+    action :noop do
+      next(:flags, e(flags))
+    end
+
+    invariant(:flags_bounded, e(in_set(flags, power_set(nodes))))
+    invariant(:empty_or_subset, e(cardinality(flags) >= 0))
+  end
+
+  describe "Sprint 55 — set/quantifier round-trip" do
+    test "SetSpec: invariant with in_set + power_set round-trips to AST" do
+      tla = TLA.emit(SetSpec)
+      parsed = TlaParser.parse(tla)
+
+      flags_bounded = Enum.find(parsed.invariants, &(&1.name == "flags_bounded"))
+      assert flags_bounded != nil
+      assert flags_bounded.ast != nil
+      # Must be in_set(flags, power_set(nodes))
+      assert {:in_set, [], [{:flags, [], nil}, {:power_set, [], [{:nodes, [], nil}]}]} =
+               flags_bounded.ast
+    end
+
+    test "SetSpec: cardinality invariant round-trips" do
+      tla = TLA.emit(SetSpec)
+      parsed = TlaParser.parse(tla)
+
+      inv = Enum.find(parsed.invariants, &(&1.name == "empty_or_subset"))
+      assert inv.ast == {:>=, [], [{:cardinality, [], [{:flags, [], nil}]}, 0]}
+    end
+
+    test "SetSpec: codegen emits structured e() calls for set invariants" do
+      tla = TLA.emit(SetSpec)
+      parsed = TlaParser.parse(tla)
+      source = TlaParser.to_tlx(parsed)
+
+      assert source =~
+               ~r/invariant\s*\(\s*:flags_bounded,\s*e\(in_set\(flags, power_set\(:nodes\)\)\)/
+
+      assert source =~ ~r/invariant\s*\(\s*:empty_or_subset,\s*e\(cardinality\(flags\) >= 0\)/
+    end
+  end
+
+  defmodule TemporalSpec do
+    use TLX.Spec
+
+    variable(:state, :idle)
+
+    action :start do
+      guard(e(state == :idle))
+      next(:state, :running)
+    end
+
+    action :finish do
+      guard(e(state == :running))
+      next(:state, :done)
+    end
+
+    property(:eventually_done, always(eventually(e(state == :done))))
+  end
+
+  describe "Sprint 58 — temporal / CASE round-trip" do
+    test "TemporalSpec: property parses to temporal AST" do
+      tla = TLA.emit(TemporalSpec)
+      parsed = TlaParser.parse(tla)
+
+      assert parsed.properties != []
+      prop = Enum.find(parsed.properties, &(&1.name == "eventually_done"))
+      assert prop != nil
+      assert prop.ast != nil
+      # Shape: always(eventually(state == :done))
+      assert {:always, [], [{:eventually, [], [_inner]}]} = prop.ast
+    end
+
+    test "TemporalSpec: property NOT classified as invariant" do
+      tla = TLA.emit(TemporalSpec)
+      parsed = TlaParser.parse(tla)
+
+      refute Enum.any?(parsed.invariants, &(&1.name == "eventually_done"))
+    end
+  end
+
+  describe "Sprint 54 — AST-driven round-trip" do
+    test "Counter: guard body round-trips as structured AST, not raw string" do
+      tla = TLA.emit(Counter)
+      parsed = TlaParser.parse(tla)
+
+      inc = Enum.find(parsed.actions, &(&1.name == "increment"))
+      assert inc.guard_ast != nil
+      assert inc.guard_ast == {:<, [], [{:x, [], nil}, {:max, [], nil}]}
+    end
+
+    test "Counter: transition RHS round-trips as AST" do
+      tla = TLA.emit(Counter)
+      parsed = TlaParser.parse(tla)
+
+      inc = Enum.find(parsed.actions, &(&1.name == "increment"))
+      [t] = inc.transitions
+      assert t.ast == {:+, [], [{:x, [], nil}, 1]}
+    end
+
+    test "Counter: invariant body round-trips as AST" do
+      tla = TLA.emit(Counter)
+      parsed = TlaParser.parse(tla)
+
+      nn = Enum.find(parsed.invariants, &(&1.name == "non_negative"))
+      assert nn.ast == {:>=, [], [{:x, [], nil}, 0]}
+    end
+
+    test "Counter: codegen emits structured e() calls, not tla_to_elixir strings" do
+      tla = TLA.emit(Counter)
+      parsed = TlaParser.parse(tla)
+      source = TlaParser.to_tlx(parsed)
+
+      assert source =~ ~r/await\s*\(\s*e\(x < :max\)/
+      assert source =~ ~r/next\s*\(\s*:x,\s*e\(x \+ 1\)/
+      assert source =~ ~r/invariant\s*\(\s*:non_negative,\s*e\(x >= 0\)/
+    end
+  end
+
   describe "PlusCal C-syntax round-trip" do
     test "Counter: emit → parse → preserves structure" do
       pluscal = PlusCalC.emit(Counter)

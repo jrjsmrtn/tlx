@@ -148,9 +148,17 @@ Limitations: the simulator cannot check temporal properties (always/eventually),
 
 ## The Importers
 
-`TLX.Importer.TlaParser` and `TLX.Importer.PlusCalParser` parse TLA+ and PlusCal back into structured maps using NimbleParsec. `TLX.Importer.Codegen` generates TLX DSL source from parsed structures via `Code.format_string!/1`.
+TLX imports go through a three-module pipeline: structural parsing, expression parsing, codegen.
 
-The parsers handle a subset of TLA+ — primarily output from TLX's own emitters and simple hand-written specs. See the [TlaParser moduledoc](../../lib/tlx/importer/tla_parser.ex) for the supported subset.
+**`TLX.Importer.TlaParser`** handles the module structure — header, `EXTENDS`, `VARIABLES`, `CONSTANTS`, operator definitions — via NimbleParsec. It also pre-strips TLA+ comments (`\*` line, `(* *)` block, nestable) so downstream classifiers don't false-positive on temporal tokens inside comments.
+
+**`TLX.Importer.ExprParser`** parses each operator body into Elixir AST matching what `TLX.Expr.e/1` produces at DSL compile time. Covers 63 TLA+ constructs: literals, arithmetic, comparison, logical, implication, IF/THEN/ELSE, sets (literal, comprehension, union/intersect/difference, SUBSET/UNION, Cardinality, range), quantifiers (bounded and unbounded), functions (application, DOMAIN, EXCEPT, records, constructor, function set), sequences, LAMBDA (SelectSeq-scoped), CASE, and temporal operators. `TlaParser` attaches the resulting ASTs to actions (`guard_ast`, transition `ast`), invariants (`ast`), and properties (`ast`). Operators containing temporal tokens are classified as properties; others as invariants.
+
+**`TLX.Importer.Codegen`** generates TLX DSL source from the parsed map. Uses `Code.format_string!/1` for syntactic correctness. Pre-processes the parsed map to restore `:atom` form for identifiers matching declared CONSTANTS. Property bodies emit in canonical shape (outer temporal/binder peeled, `e(...)` around the innermost predicate).
+
+Per [ADR-0013](../adr/0013-importer-scope-lossless-for-tlx-output.md), the importer guarantees **lossless round-trip for TLX-emitted output** — every AST attachment point is non-nil for emitter output. Hand-written TLA+ is **best-effort tier-2**: the expression parser falls back to raw-string capture on failure, logs a `Logger.warning`, and the codegen comment path keeps the text intact. `TlaParser.parse/1` returns a `:coverage` map with attempted/fallback counts; `mix tlx.import --verbose` prints the summary.
+
+A CI gate at `test/integration/emitter_coverage_test.exs` asserts parser coverage for every construct the emitter produces — adding a new emitter rule without a parser counterpart fails the build.
 
 ## Key Files
 
@@ -168,9 +176,10 @@ The parsers handle a subset of TLA+ — primarily output from TLX's own emitters
 | `lib/tlx/emitter/atoms.ex`                | Atom literal collector for CONSTANTS             |
 | `lib/tlx/simulator.ex`                    | Elixir random walk simulator                     |
 | `lib/tlx/tlc.ex`                          | TLC subprocess invocation                        |
-| `lib/tlx/importer/tla_parser.ex`          | NimbleParsec TLA+ parser                         |
+| `lib/tlx/importer/tla_parser.ex`          | NimbleParsec TLA+ parser (structure + comments)  |
+| `lib/tlx/importer/expr_parser.ex`         | NimbleParsec TLA+ expression parser → Elixir AST |
 | `lib/tlx/importer/pluscal_parser.ex`      | NimbleParsec PlusCal parser                      |
-| `lib/tlx/importer/codegen.ex`             | AST-based TLX source generation                  |
+| `lib/tlx/importer/codegen.ex`             | AST-driven TLX source generation                 |
 | `lib/tlx/transformers/type_ok.ex`         | Auto-TypeOK invariant generator                  |
 | `lib/tlx/verifiers/transition_targets.ex` | Undeclared variable checker                      |
 | `lib/tlx/verifiers/empty_action.ex`       | Empty action warning                             |
@@ -182,3 +191,4 @@ The parsers handle a subset of TLA+ — primarily output from TLX's own emitters
 - [ADR-0004: Emit TLA+, don't reimplement TLC](../adr/0004-emit-tla-not-reimplement-tlc.md) — the fundamental boundary
 - [ADR-0005: {:expr, quoted} wrapper](../adr/0005-expr-wrapper-for-ast-passthrough.md) — how expressions flow through the pipeline
 - [ADR-0006: Shared Format module](../adr/0006-shared-format-module-with-symbol-tables.md) — how emitters share formatting
+- [ADR-0013: Importer scope](../adr/0013-importer-scope-lossless-for-tlx-output.md) — lossless round-trip for TLX-emitted output, best-effort for hand-written

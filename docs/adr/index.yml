@@ -56,3 +56,8 @@ architectural:
     file: 0012-otp-extraction-strategy.md
     title: OTP Extraction Strategy
     status: Accepted
+
+  - id: 13
+    file: 0013-importer-scope-lossless-for-tlx-output.md
+    title: "Importer Scope: Lossless for TLX-Emitted Output, Best-Effort for Hand-Written"
+    status: Accepted

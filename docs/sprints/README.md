@@ -2,13 +2,27 @@
 
 ## Current Status
 
-- **Latest Release**: v0.4.6
+- **Latest Release**: v0.5.0
 - **Status**: Active development
 
 ## Sprint Index
 
 | Sprint | Phase                 | Version | Status   | Plan                             | Retrospective                              |
 | ------ | --------------------- | ------- | -------- | -------------------------------- | ------------------------------------------ |
+| 67     | Round-Trip Polish     | v0.5.0  | Complete | [Plan](sprint-0067-plan.md)      | [Retro](sprint-0067-retrospective.md)      |
+| 66     | Round-Trip Polish     | v0.5.0  | Complete | [Plan](sprint-0066-plan.md)      | [Retro](sprint-0066-retrospective.md)      |
+| 64     | Round-Trip Polish     | v0.5.0  | Complete | [Plan](sprint-0064-plan.md)      | [Retro](sprint-0064-retrospective.md)      |
+| 63     | Round-Trip Polish     | v0.5.0  | Complete | [Plan](sprint-0063-plan.md)      | [Retro](sprint-0063-retrospective.md)      |
+| 62     | Round-Trip Polish     | v0.5.0  | Complete | [Plan](sprint-0062-plan.md)      | [Retro](sprint-0062-retrospective.md)      |
+| 61     | DX                    | v0.5.0  | Complete | [Plan](sprint-0061-plan.md)      | [Retro](sprint-0061-retrospective.md)      |
+| 60     | Quality               | v0.5.0  | Complete | [Plan](sprint-0060-plan.md)      | [Retro](sprint-0060-retrospective.md)      |
+| 59     | Round-Trip            | v0.5.0  | Complete | [Plan](sprint-0059-plan.md)      | [Retro](sprint-0059-retrospective.md)      |
+| 58     | Round-Trip            | v0.5.0  | Complete | [Plan](sprint-0058-plan.md)      | [Retro](sprint-0058-retrospective.md)      |
+| 57     | Round-Trip            | v0.5.0  | Complete | [Plan](sprint-0057-plan.md)      | [Retro](sprint-0057-retrospective.md)      |
+| 56     | Round-Trip            | v0.5.0  | Complete | [Plan](sprint-0056-plan.md)      | [Retro](sprint-0056-retrospective.md)      |
+| 55     | Round-Trip            | v0.5.0  | Complete | [Plan](sprint-0055-plan.md)      | [Retro](sprint-0055-retrospective.md)      |
+| 54     | Round-Trip            | v0.5.0  | Complete | [Plan](sprint-0054-plan.md)      | [Retro](sprint-0054-retrospective.md)      |
+| 53     | Quality               | v0.5.0  | Complete | —                                | [Retro](sprint-0053-retrospective.md)      |
 | 52     | Expressiveness        | v0.4.6  | Complete | [Plan](sprint-0052-plan.md)      | [Retro](sprint-0052-retrospective.md)      |
 | 51     | Expressiveness        | v0.4.6  | Complete | [Plan](sprint-0051-plan.md)      | [Retro](sprint-0051-retrospective.md)      |
 | 50     | Simulator             | v0.4.6  | Complete | [Plan](sprint-0050-plan.md)      | [Retro](sprint-0050-retrospective.md)      |

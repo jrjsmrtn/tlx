@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT
 
 defmodule TLX.Dsl do
-  @moduledoc false
+  @moduledoc "Spark DSL extension defining the TLX surface — entities, sections, transformers, and verifiers that compile a `defspec` block into the internal IR."
 
   @transition %Spark.Dsl.Entity{
     name: :next,

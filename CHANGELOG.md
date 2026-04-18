@@ -7,6 +7,88 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-04-18
+
+Minor release per the ADR-0002 CHANGELOG-oracle rule. Closes the round-trip track (sprints 54–59) that ADR-0013 scoped, plus seven follow-up sprints polishing the surface.
+
+**Highlights**:
+
+- Importer round-trips TLA+ to structured AST for 63 constructs (every emit-side construct from sprints 45–52 plus the foundation).
+- CI gate prevents future emitter/parser drift.
+- Property classifier is AST-informed, not string-heuristic.
+- Atom round-trip fidelity: re-imported specs preserve `:atom` form.
+- Canonical codegen shape for properties (temporal + binder peel).
+- TLA+ comment stripping.
+- Observability: `Logger.warning` on fallback + `mix tlx.import --verbose`.
+- Zero `mix docs` warnings (16 modules documented + 3 prose fixes).
+
+### Fixed (Sprint 53 — zero `mix docs` warnings)
+
+- `mix docs` now runs warning-free. Added one-line moduledocs to 12 IR struct modules (`TLX.Variable`, `Constant`, `Action`, `Transition`, `Branch`, `Invariant`, `Property`, `Process`, `Refinement`, `RefinementMapping`, `InitConstraint`, `WithChoice`) and to 4 DSL internals (`TLX.Dsl`, `Transformers.TypeOK`, `Verifiers.EmptyAction`, `Verifiers.TransitionTargets`). Rewrote 3 prose references (CHANGELOG + roadmap) that pointed to private or non-existent functions. Scope grew from the original plan's 3 structs once `mix docs` revealed the full 52-warning picture.
+
+### Added (Sprint 64 — quantifier short forms)
+
+- `TLX.Importer.ExprParser` accepts unbounded forms: `\E x : P`, `\A x : P`, `CHOOSE x : P`. AST uses `nil` in the set position. Emitter gains matching clauses for the `nil`-set shape. TLX doesn't emit these shapes; import path for hand-written TLA+ (ADR-0013 tier-2).
+
+### Changed (Sprint 66 — atom round-trip fidelity)
+
+- `TLX.Importer.Codegen.to_tlx/1` now preprocesses the parsed map, walking every AST attachment and replacing bare-identifier nodes whose names match declared CONSTANTS with atom literals. Round-tripping a spec with `state == :done` no longer drops the `:` prefix.
+
+### Changed (Sprint 67 — binder canonical shape)
+
+- Properties with `forall`/`exists`/`choose` at the AST root now emit in canonical peeled form: `forall(:x, <recurse set>, <recurse body>)` instead of `e(forall(:x, set, body))`. Mirrors Sprint 63's temporal peel. Unbounded form falls back to `e(...)` wrapping since there's no DSL 2-arg binder.
+
+### Changed (Sprint 63 — property codegen canonical shape)
+
+- `TLX.Importer.Codegen` now emits property bodies in canonical form: outer temporal constructors (`always`, `eventually`, `leads_to`, `until`, `weak_until`) appear as direct calls, with `e(...)` wrapping the innermost predicate. Previously wrapped the whole body in one outer `e(...)`. Round-trip output now matches hand-written idiom (`always(eventually(e(state == :done)))`). Part B of the plan (full emit→parse→emit byte-equivalence test) deferred; canonical-shape regression guard in the Sprint 59 matrix is sufficient.
+
+### Added (Sprint 61 — fallback logging and import observability)
+
+- `Logger.warning` when the expression parser falls back to raw-string capture — snippet truncated to 80 chars + parse reason. Tier-2 fallbacks are now visible in the logs.
+- `:coverage` map in `TlaParser.parse/1` output — attempted vs fallback counts per category (invariants, properties, guards, transitions) plus a total. Additive field; existing consumers unaffected.
+- `mix tlx.import --verbose` (alias `-v`) — prints parse-coverage summary after import. Zero noise for TLX-emitted input (which round-trips losslessly per ADR-0013).
+
+### Added (Sprint 62 — TLA+ comment stripping)
+
+- `TlaParser.parse/1` now strips `\*` line comments and `(* ... *)` block comments (nestable) before parsing. Replaces comment content with spaces so parser error messages preserve line/column accuracy. Fixes the pre-existing false-positive in the Sprint 58 property classifier where `[]` inside a comment would misclassify an invariant as a property.
+
+### Fixed (Sprint 60)
+
+- Nested `e(...)` inside quantifier/binder constructors — `e(forall(:v, set, e(inner)))` now emits correctly. Previously the inner `e()` left a `{:e, meta, [arg]}` macro-call AST that the emitter rendered as literal tuple text. Fixed with a `format_ast` clause unwrapping the `{:e, ...}` shape. (Pre-existing bug surfaced by Sprint 59's round-trip matrix.)
+
+### Added (Sprint 59 — round-trip matrix and CI gate)
+
+- `TLX.RoundTrip` test helper — asserts that every AST attachment point (action guard, transition RHS, invariant body, property body) receives a non-nil AST for TLX-emitted input. Raises with ADR-0013 violation messages when tier-2 fallback triggers.
+- `test/integration/round_trip_matrix_test.exs` — four fixture specs (arithmetic, sets, quantifier, temporal) each asserted lossless via `TLX.RoundTrip.assert_lossless/1`.
+- `test/integration/emitter_coverage_test.exs` — 63 canonical TLA+ expressions (every construct shipped in Sprints 54–58), each with expected AST root-node atom. Adding a new emitter rule without a parser rule breaks this test.
+
+### Added (Sprint 58 — CASE and temporal operators)
+
+- `TLX.Importer.ExprParser` adds `CASE p1 -> e1 [] ... [] OTHER -> d` parsing (with `[]` as clause separator scoped inside CASE) and the full temporal-operator set: `[]P` (always), `<>P` (eventually) at the unary tier (tight binding per TLA+ precedence), and `~>`, `\U`, `\W` at a new top-level `temporal_binary` tier (loose binding).
+- `TLX.Importer.TlaParser` gains `extract_properties/1`: operators whose bodies contain temporal operators are classified as properties; non-temporal operators remain invariants. Replaces the string-level `body contains "[]"` filter that previously dropped properties entirely.
+- `TLX.Importer.Codegen` emits `property :name, e(<ast>)` for temporal-bearing operators, wrapping in `e(...)` so the DSL captures the AST without compile-time evaluation of bare identifiers.
+
+### Added (Sprint 57 — sequences and LAMBDA)
+
+- `TLX.Importer.ExprParser` extended: `Len`, `Head`, `Tail`, `Seq`, `Append`, `SubSeq` (function calls), `\o` (binary infix), and `SelectSeq(s, LAMBDA x: pred)` (with LAMBDA scoped to the SelectSeq context per ADR-0013). Standalone LAMBDA is rejected.
+- Builtin call dispatch reorganized into 1-/2-/3-arg buckets plus a dedicated `SelectSeq` combinator — new sequence ops slot into existing infrastructure without grammar rewrites.
+
+### Added (Sprint 56 — arithmetic extensions, tuples, Cartesian, functions)
+
+- `TLX.Importer.ExprParser` extended: integer division `x \div y`, modulo `x % y`, exponentiation `x ^ y` (right-associative, higher precedence than `*`/`\div`/`%`), unary negation `-x`, tuple literal `<<a, b, c>>` (including empty and single-element), Cartesian product `A \X B` (left-associative binary, matching emitter shape), function constructor `[x \in S |-> expr]`, function set `[D -> R]`. Bracket-primary dispatch order: `fn_of` → record → `fn_set` → EXCEPT (fn_of tries first since both start with ident, but fn_of requires `\in` after while record requires `|->`).
+
+### Added (Sprint 55 — sets, quantifiers, records, EXCEPT)
+
+- `TLX.Importer.ExprParser` grows the grammar: set literal `{a, b, c}` and comprehensions (`{x \in S : P}` filter, `{expr : x \in S}` set_map), binary set ops (`\union`, `\intersect`, `\` difference, `\subseteq`, `\in`), unary set ops (`SUBSET`, `UNION`), integer range `a..b`, quantifiers (`\E`, `\A`, `CHOOSE`), function application (`f[x]` postfix, chained), `DOMAIN f`, EXCEPT (single- and multi-key), records (`[a |-> 1, b |-> 2]`), and `Cardinality(...)`.
+- Round-trip tests: real TLX spec with `in_set(flags, power_set(nodes))` and `cardinality(flags) >= 0` invariants re-emits as structured `e(...)` calls instead of raw-string comments.
+
+### Added (Sprint 54 — expression parser foundation)
+
+- `TLX.Importer.ExprParser` — NimbleParsec-based TLA+ expression parser producing Elixir AST matching the form `TLX.Expr.e/1` builds at DSL compile time. Foundation subset: integer/boolean literals, identifiers, parenthesization, equality/comparison/arithmetic/logical operators, implication (`=>`), equivalence (`<=>`), and `IF ... THEN ... ELSE`.
+- `TLX.Importer.TlaParser` now attaches structured ASTs to actions (`:guard_ast`), transitions (`:ast`), and invariants (`:ast`) when bodies parse successfully. Raw-string fields preserved for tier-2 best-effort fallback per [ADR-0013](docs/adr/0013-importer-scope-lossless-for-tlx-output.md).
+- `TLX.Importer.Codegen` emits structured `e(<Macro.to_string(ast)>)` calls when an AST is available, falling back to the string-replacement `tla_to_elixir/1` path otherwise. Round-trip through `mix tlx.import` now produces real Elixir expressions, not comment-wrapped raw TLA+.
+- Tests: 35 ExprParser unit tests (literals, operators, precedence, parens, IF/THEN/ELSE, error cases, `Macro.to_string` round-trip) + 4 Sprint-54-specific round-trip assertions on Counter spec.
+
 ## [0.4.6] - 2026-04-18
 
 Eight sprints of expressiveness and simulator work: every sprint-retro follow-up from 45–47 is closed, every basic TLA+ primitive gap identified by codebase audit is shipped.

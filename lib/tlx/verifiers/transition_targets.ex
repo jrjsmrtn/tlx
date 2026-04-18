@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT
 
 defmodule TLX.Verifiers.TransitionTargets do
-  @moduledoc false
+  @moduledoc "Spark verifier that rejects `next :var, ...` transitions targeting an undeclared variable."
   use Spark.Dsl.Verifier
 
   alias Spark.Dsl.{Entity, Verifier}
