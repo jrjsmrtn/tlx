@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (Sprint 56 — arithmetic extensions, tuples, Cartesian, functions)
+
+- `TLX.Importer.ExprParser` extended: integer division `x \div y`, modulo `x % y`, exponentiation `x ^ y` (right-associative, higher precedence than `*`/`\div`/`%`), unary negation `-x`, tuple literal `<<a, b, c>>` (including empty and single-element), Cartesian product `A \X B` (left-associative binary, matching emitter shape), function constructor `[x \in S |-> expr]`, function set `[D -> R]`. Bracket-primary dispatch order: `fn_of` → record → `fn_set` → EXCEPT (fn_of tries first since both start with ident, but fn_of requires `\in` after while record requires `|->`).
+
 ### Added (Sprint 55 — sets, quantifiers, records, EXCEPT)
 
 - `TLX.Importer.ExprParser` grows the grammar: set literal `{a, b, c}` and comprehensions (`{x \in S : P}` filter, `{expr : x \in S}` set_map), binary set ops (`\union`, `\intersect`, `\` difference, `\subseteq`, `\in`), unary set ops (`SUBSET`, `UNION`), integer range `a..b`, quantifiers (`\E`, `\A`, `CHOOSE`), function application (`f[x]` postfix, chained), `DOMAIN f`, EXCEPT (single- and multi-key), records (`[a |-> 1, b |-> 2]`), and `Cardinality(...)`.

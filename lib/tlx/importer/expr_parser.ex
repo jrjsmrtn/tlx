@@ -46,6 +46,9 @@ defmodule TLX.Importer.ExprParser do
     "+" => :+,
     "-" => :-,
     "*" => :*,
+    "\\div" => :div,
+    "%" => :rem,
+    "^" => :**,
     "/\\" => :and,
     "\\/" => :or,
     "=>" => :implies,
@@ -54,6 +57,7 @@ defmodule TLX.Importer.ExprParser do
     "\\subseteq" => :subset,
     "\\union" => :union,
     "\\intersect" => :intersect,
+    "\\X" => :cross,
     "\\ " => :difference,
     ".." => :range
   }
@@ -193,18 +197,66 @@ defmodule TLX.Importer.ExprParser do
     |> reduce({__MODULE__, :build_curly_result, []})
   )
 
-  # Bracket expressions: records `[a |-> 1, b |-> 2]` or EXCEPT
-  # `[f EXCEPT ![k]=v, ...]`. Function constructor/set are Sprint 56.
+  # Bracket expressions: records `[a |-> 1, b |-> 2]`, function
+  # constructor `[x \in S |-> expr]`, function set `[D -> R]`, or EXCEPT
+  # `[f EXCEPT ![k]=v, ...]`.
   defcombinatorp(
     :bracket_expr,
     ignore(string("["))
     |> concat(ws_opt)
     |> choice([
+      parsec(:fn_of_body),
       parsec(:record_body),
+      parsec(:fn_set_body),
       parsec(:except_body)
     ])
     |> concat(ws_opt)
     |> ignore(string("]"))
+  )
+
+  defcombinatorp(
+    :fn_of_body,
+    ident_name
+    |> concat(ws_opt)
+    |> ignore(string("\\in"))
+    |> concat(keyword_lookahead_not)
+    |> concat(ws_opt)
+    |> parsec(:expr)
+    |> concat(ws_opt)
+    |> ignore(string("|->"))
+    |> concat(ws_opt)
+    |> parsec(:expr)
+    |> reduce({__MODULE__, :build_fn_of, []})
+  )
+
+  defcombinatorp(
+    :fn_set_body,
+    parsec(:expr)
+    |> concat(ws_opt)
+    |> ignore(string("->"))
+    |> concat(ws_opt)
+    |> parsec(:expr)
+    |> reduce({__MODULE__, :build_fn_set, []})
+  )
+
+  # Tuple literal: <<a, b, c>>  or  <<>>  (empty)
+  defcombinatorp(
+    :tuple_expr,
+    ignore(string("<<"))
+    |> concat(ws_opt)
+    |> choice([
+      ignore(string(">>")),
+      parsec(:expr)
+      |> concat(ws_opt)
+      |> repeat(
+        ignore(string(","))
+        |> concat(ws_opt)
+        |> parsec(:expr)
+        |> concat(ws_opt)
+      )
+      |> ignore(string(">>"))
+    ])
+    |> reduce({__MODULE__, :build_tuple, []})
   )
 
   defcombinatorp(
@@ -268,6 +320,7 @@ defmodule TLX.Importer.ExprParser do
       parsec(:paren_expr),
       parsec(:curly_expr),
       parsec(:bracket_expr),
+      parsec(:tuple_expr),
       identifier
     ])
   )
@@ -288,7 +341,7 @@ defmodule TLX.Importer.ExprParser do
     |> reduce({__MODULE__, :fold_postfix, []})
   )
 
-  # Unary: ~ SUBSET UNION DOMAIN
+  # Unary: ~ (negation), - (arithmetic), SUBSET UNION DOMAIN
   defcombinatorp(
     :unary,
     choice([
@@ -296,6 +349,10 @@ defmodule TLX.Importer.ExprParser do
       |> concat(ws_opt)
       |> parsec(:unary)
       |> reduce({__MODULE__, :build_unary_not, []}),
+      ignore(string("-"))
+      |> concat(ws_opt)
+      |> parsec(:unary)
+      |> reduce({__MODULE__, :build_unary_minus, []}),
       string("SUBSET")
       |> concat(keyword_lookahead_not)
       |> replace(:power_set)
@@ -314,16 +371,35 @@ defmodule TLX.Importer.ExprParser do
       |> concat(ws_opt)
       |> parsec(:unary)
       |> reduce({__MODULE__, :build_unary_named, []}),
-      parsec(:primary)
+      parsec(:power_tier)
     ])
   )
 
-  # Left-associative binary operator combinators
+  # `^` (exponentiation) — right-associative, higher than * and \div.
+  defcombinatorp(
+    :power_tier,
+    parsec(:primary)
+    |> optional(
+      concat(ws_opt, string("^"))
+      |> concat(ws_opt)
+      |> parsec(:unary)
+    )
+    |> reduce({__MODULE__, :fold_left_binary, []})
+  )
+
+  # Multiplication-tier: `*`, `\div`, `%` — left-associative
   defcombinatorp(
     :multiplication,
     parsec(:unary)
     |> repeat(
-      concat(ws_opt, string("*"))
+      concat(
+        ws_opt,
+        choice([
+          string("\\div") |> concat(keyword_lookahead_not),
+          string("*"),
+          string("%")
+        ])
+      )
       |> concat(ws_opt)
       |> parsec(:unary)
     )
@@ -353,7 +429,7 @@ defmodule TLX.Importer.ExprParser do
     |> reduce({__MODULE__, :fold_left_binary, []})
   )
 
-  # Set-binary ops: \union, \intersect, \ (difference). Left-associative.
+  # Set-binary ops: \union, \intersect, \X, \ (difference). Left-associative.
   # The `\ ` difference operator is matched as `\` followed by whitespace.
   defcombinatorp(
     :set_binary,
@@ -364,8 +440,9 @@ defmodule TLX.Importer.ExprParser do
         choice([
           string("\\union") |> concat(keyword_lookahead_not),
           string("\\intersect") |> concat(keyword_lookahead_not),
-          # difference: a bare `\` not followed by `/`, `i`, `u`, `s`, or `o`
-          # (to avoid conflict with \/, \in, \union, \subseteq, \o)
+          string("\\X") |> concat(keyword_lookahead_not),
+          # difference: a bare `\` not followed by `/`, `i`, `u`, `s`, `X`, `o`
+          # (to avoid conflict with \/, \in, \union, \subseteq, \X, \o)
           string("\\") |> lookahead(ascii_char([?\s, ?\t]))
         ])
       )
@@ -491,9 +568,25 @@ defmodule TLX.Importer.ExprParser do
   def build_unary_not([operand]), do: {:not, [], [operand]}
 
   @doc false
+  def build_unary_minus([operand]), do: {:-, [], [operand]}
+
+  @doc false
   def build_unary_named([:power_set, operand]), do: {:power_set, [], [operand]}
   def build_unary_named([:distributed_union, operand]), do: {:distributed_union, [], [operand]}
   def build_unary_named([:domain, operand]), do: {:domain, [], [operand]}
+
+  @doc false
+  def build_fn_of([var, set, body]), do: {:fn_of, [], [var, set, body]}
+
+  @doc false
+  def build_fn_set([domain, range]), do: {:fn_set, [], [domain, range]}
+
+  @doc false
+  def build_tuple([]), do: {:tuple, [], [[]]}
+
+  def build_tuple(elements) when is_list(elements) do
+    {:tuple, [], [elements]}
+  end
 
   @doc false
   def build_if([cond, then_branch, else_branch]) do

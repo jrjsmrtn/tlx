@@ -75,11 +75,9 @@ Closing the `partial` / `✗` gap is the focus of [sprints 54–59](../roadmap/r
 
 ## Expressions
 
-> **Importer note**: Sprint 54 ships the foundation — integer/boolean
-> literals, identifiers, parens, `+`/`-`/`*`, equality and comparison,
-> `/\`/`\/`/`~`, `=>`/`<=>`, and IF/THEN/ELSE round-trip as AST (`✓`).
-> Extended arithmetic (`\div`, `%`, `^`, unary `-`) remains `✗` until
-> Sprint 56.
+> **Importer note**: Sprint 54 + 56 — all listed expression primitives
+> round-trip as AST (`✓`), including extended arithmetic (`\div`, `%`,
+> `^`, unary `-`).
 
 | TLA+                      | TLX inside `e()`          | Notes            |
 | ------------------------- | ------------------------- | ---------------- |
@@ -121,10 +119,10 @@ Closing the `partial` / `✗` gap is the focus of [sprints 54–59](../roadmap/r
 
 ## Functions (Maps)
 
-> **Importer note**: Sprint 55 covers `f[x]`, `DOMAIN f`, EXCEPT
-> (single + multi-key), and records — all round-trip as AST (`✓`).
-> Function constructor (`[x \in S |-> expr]`) and function set
-> (`[S -> T]`) remain `✗` until Sprint 56.
+> **Importer note**: Sprint 55 + 56 — `f[x]`, `DOMAIN f`, EXCEPT
+> (single + multi-key), records, function constructor
+> (`[x \in S |-> expr]`), and function set (`[S -> T]`) all round-trip
+> as AST (`✓`). LAMBDA remains `✗` until Sprint 57.
 
 | TLA+                            | TLX                                  | Notes                                         |
 | ------------------------------- | ------------------------------------ | --------------------------------------------- |
@@ -157,7 +155,7 @@ Require `extends [:Sequences]`.
 
 ## Tuples
 
-> **Importer note**: `✗` until Sprint 56.
+> **Importer note**: Sprint 56 — `<<a, b, c>>` round-trips as AST (`✓`).
 
 | TLA+          | TLX                | Notes                                                              |
 | ------------- | ------------------ | ------------------------------------------------------------------ |

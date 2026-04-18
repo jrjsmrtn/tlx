@@ -367,6 +367,93 @@ defmodule TLX.Importer.ExprParserTest do
     end
   end
 
+  describe "arithmetic extensions (Sprint 56)" do
+    test "parses \\div" do
+      expected = {:div, [], [{:x, [], nil}, {:y, [], nil}]}
+      assert {:ok, ^expected} = ExprParser.parse("x \\div y")
+    end
+
+    test "parses %" do
+      expected = {:rem, [], [{:x, [], nil}, {:y, [], nil}]}
+      assert {:ok, ^expected} = ExprParser.parse("x % y")
+    end
+
+    test "parses ^" do
+      expected = {:**, [], [{:x, [], nil}, {:y, [], nil}]}
+      assert {:ok, ^expected} = ExprParser.parse("x ^ y")
+    end
+
+    test "^ binds tighter than *" do
+      # 2 * x ^ 3  →  2 * (x ^ 3)
+      expected = {:*, [], [2, {:**, [], [{:x, [], nil}, 3]}]}
+      assert {:ok, ^expected} = ExprParser.parse("2 * x ^ 3")
+    end
+
+    test "parses unary -" do
+      assert {:ok, {:-, [], [{:x, [], nil}]}} = ExprParser.parse("-x")
+    end
+
+    test "unary - binds tighter than binary +" do
+      # a + -b  →  a + (-b) = {:+, [], [a, {:-, [], [b]}]}
+      expected = {:+, [], [{:a, [], nil}, {:-, [], [{:b, [], nil}]}]}
+      assert {:ok, ^expected} = ExprParser.parse("a + -b")
+    end
+  end
+
+  describe "tuples (Sprint 56)" do
+    test "parses <<a, b, c>>" do
+      expected = {:tuple, [], [[{:a, [], nil}, {:b, [], nil}, {:c, [], nil}]]}
+      assert {:ok, ^expected} = ExprParser.parse("<<a, b, c>>")
+    end
+
+    test "parses empty tuple <<>>" do
+      assert {:ok, {:tuple, [], [[]]}} = ExprParser.parse("<<>>")
+    end
+
+    test "parses single-element tuple <<a>>" do
+      expected = {:tuple, [], [[{:a, [], nil}]]}
+      assert {:ok, ^expected} = ExprParser.parse("<<a>>")
+    end
+  end
+
+  describe "Cartesian product (Sprint 56)" do
+    test "parses A \\X B" do
+      expected = {:cross, [], [{:a, [], nil}, {:b, [], nil}]}
+      assert {:ok, ^expected} = ExprParser.parse("a \\X b")
+    end
+
+    test "parses chained \\X as left-associative binary" do
+      # Matches emitter shape (binary), not n-ary.
+      expected =
+        {:cross, [],
+         [
+           {:cross, [], [{:a, [], nil}, {:b, [], nil}]},
+           {:c, [], nil}
+         ]}
+
+      assert {:ok, ^expected} = ExprParser.parse("a \\X b \\X c")
+    end
+  end
+
+  describe "function constructor / set (Sprint 56)" do
+    test "parses [x \\in S |-> expr]" do
+      expected =
+        {:fn_of, [], [:n, {:nodes, [], nil}, 0]}
+
+      assert {:ok, ^expected} = ExprParser.parse("[n \\in nodes |-> 0]")
+    end
+
+    test "parses [D -> R]" do
+      expected = {:fn_set, [], [{:nodes, [], nil}, {:boolean, [], nil}]}
+      assert {:ok, ^expected} = ExprParser.parse("[nodes -> boolean]")
+    end
+
+    test "fn_of coexists with record lookahead — record still parses" do
+      expected = {:record, [], [[a: 1]]}
+      assert {:ok, ^expected} = ExprParser.parse("[a |-> 1]")
+    end
+  end
+
   describe "Macro.to_string round-trip (Sprint 55)" do
     test "set literal round-trips" do
       {:ok, ast} = ExprParser.parse("{1, 2, 3}")

@@ -170,6 +170,7 @@ Sprint 16 — Proper parsers and AST-based code gen:
 
 | Sprint | Phase                 | Version | Summary                                                                               |
 | ------ | --------------------- | ------- | ------------------------------------------------------------------------------------- |
+| 56     | Round-Trip            | —       | Arithmetic extensions, tuples, Cartesian, function ctor/set — 9 parse-side additions  |
 | 55     | Round-Trip            | —       | Sets, quantifiers, records, EXCEPT — 21 constructs parse to structured AST            |
 | 54     | Round-Trip            | —       | Expression parser foundation — NimbleParsec producing `{:expr, ast}` for the subset   |
 | 49     | Expressiveness        | —       | `select_seq(:var, s, pred)` — `SelectSeq(s, LAMBDA var: pred)`; first LAMBDA emission |
@@ -235,7 +236,6 @@ Sprint 16 — Proper parsers and AST-based code gen:
 | ------ | ---------- | ------------------------------------------------------------------------- |
 | 44     | Tooling    | State/transition coverage — verify ExUnit tests exercise all spec states  |
 | 53     | Quality    | Fix docs build — 3 internal structs referenced in internals.md but hidden |
-| 56     | Round-Trip | Arithmetic, tuples, Cartesian, functions — Sprints 47/51/52 parse side    |
 | 57     | Round-Trip | Sequences + LAMBDA (SelectSeq-scoped) — Sprint 49 parse side              |
 | 58     | Round-Trip | CASE + temporal operators (`\U`, `\W`, `~>`, `[]`, `<>`) in properties    |
 | 59     | Round-Trip | Round-trip test matrix + CI gate — prevent future emitter/parser drift    |
