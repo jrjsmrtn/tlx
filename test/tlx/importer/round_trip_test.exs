@@ -142,7 +142,7 @@ defmodule TLX.Importer.RoundTripTest do
       source = TlaParser.to_tlx(parsed)
 
       assert source =~
-               ~r/invariant\s*\(\s*:flags_bounded,\s*e\(in_set\(flags, power_set\(nodes\)\)\)/
+               ~r/invariant\s*\(\s*:flags_bounded,\s*e\(in_set\(flags, power_set\(:nodes\)\)\)/
 
       assert source =~ ~r/invariant\s*\(\s*:empty_or_subset,\s*e\(cardinality\(flags\) >= 0\)/
     end
@@ -219,7 +219,7 @@ defmodule TLX.Importer.RoundTripTest do
       parsed = TlaParser.parse(tla)
       source = TlaParser.to_tlx(parsed)
 
-      assert source =~ ~r/await\s*\(\s*e\(x < max\)/
+      assert source =~ ~r/await\s*\(\s*e\(x < :max\)/
       assert source =~ ~r/next\s*\(\s*:x,\s*e\(x \+ 1\)/
       assert source =~ ~r/invariant\s*\(\s*:non_negative,\s*e\(x >= 0\)/
     end

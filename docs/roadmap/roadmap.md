@@ -168,84 +168,84 @@ Sprint 16 — Proper parsers and AST-based code gen:
 
 ## Sprint History
 
-| Sprint | Phase                 | Version | Summary                                                                               |
-| ------ | --------------------- | ------- | ------------------------------------------------------------------------------------- |
-| 63     | Round-Trip Polish     | —       | Property codegen canonical shape — outer temporal peeled, `e()` around predicate only |
-| 61     | DX                    | —       | Fallback logging + `mix tlx.import --verbose` — tier-2 parse gaps now visible         |
-| 62     | Round-Trip Polish     | —       | TLA+ comment stripping in TlaParser — `\*` and `(* *)` (nestable) handled             |
-| 60     | Quality               | —       | Fix nested `e()` emission — one `format_ast` clause unwraps `{:e, meta, [arg]}`       |
-| 59     | Round-Trip            | —       | Round-trip matrix + CI gate — ADR-0013 CI tripwire on 63 curated emit-side constructs |
-| 58     | Round-Trip            | —       | CASE + temporal operators in property position — property classifier is AST-informed  |
-| 57     | Round-Trip            | —       | Sequences + LAMBDA (SelectSeq-scoped) — 8 sequence ops + contextual LAMBDA parse      |
-| 56     | Round-Trip            | —       | Arithmetic extensions, tuples, Cartesian, function ctor/set — 9 parse-side additions  |
-| 55     | Round-Trip            | —       | Sets, quantifiers, records, EXCEPT — 21 constructs parse to structured AST            |
-| 54     | Round-Trip            | —       | Expression parser foundation — NimbleParsec producing `{:expr, ast}` for the subset   |
-| 49     | Expressiveness        | —       | `select_seq(:var, s, pred)` — `SelectSeq(s, LAMBDA var: pred)`; first LAMBDA emission |
-| 52     | Expressiveness        | —       | Function ctor `[x \in S \|-> expr]`, function set `[S -> T]`, Cartesian product `\X`  |
-| 50     | Simulator             | —       | `case_of` `find_value` fix — matched clause with false/nil body now wins              |
-| 51     | Expressiveness        | —       | Arithmetic completion: integer `div`, `rem` (%), `**` (^), unary `-`                  |
-| 48     | Simulator             | —       | AST-form eval for 24 set/sequence/function/logic ops inside `e()`                     |
-| 47     | Expressiveness        | —       | Set/seq/tuple gaps: difference, set_map, power_set, UNION, concat, Seq, tuple         |
-| 46     | Expressiveness        | —       | `until(p, q)` and `weak_until(p, q)` — TLA+ `\U`, `\W`                                |
-| 45     | Expressiveness        | —       | `case/do` inside `e()` — emits TLA+ `CASE ... [] OTHER`                               |
-| —      | Release               | v0.4.5  | mix tlx.check uses TLA+ emission directly (not PlusCal)                               |
-| —      | Release               | v0.4.4  | Bug fixes: atom mismatch, simulator ite/case_of/let_in                                |
-| —      | Release               | v0.4.3  | TLA+ references, pattern examples, roadmap sprints 44–47                              |
-| —      | Release               | v0.4.2  | Graph refactor, C4 model, CONTRIBUTING, examples                                      |
-| 43     | Documentation         | v0.4.1  | Diátaxis docs for v0.4.0 features                                                     |
-| —      | Release               | v0.4.0  | Squash release: Sprints 26–42 + credo/dialyzer fixes                                  |
-| 42     | Extractors            | v0.3.17 | Broadway extractor — pipeline topology via AST                                        |
-| 41     | Extractors            | v0.3.16 | Reactor extractor — step DAG via Spark introspection                                  |
-| 38-40  | Skills                | v0.3.15 | spec-audit, visualize, spec-drift skills                                              |
-| 37     | Skill                 | v0.3.14 | formal-spec skill enrichment workflow                                                 |
-| 36     | Extractors            | v0.3.13 | Ash.StateMachine extractor via runtime introspection                                  |
-| 35     | Extractors            | v0.3.12 | Erlang BEAM extractors — gen_server + gen_fsm                                         |
-| 34     | Extractors            | v0.3.11 | LiveView AST extractor + mix task + codegen                                           |
-| 33     | Visualization         | v0.3.10 | D2 state diagram emitter                                                              |
-| 32     | Visualization         | v0.3.9  | PlantUML state diagram emitter                                                        |
-| 30     | Extractors            | v0.3.8  | GenServer AST extractor + mix task + codegen                                          |
-| 31     | OTP Patterns          | v0.3.7  | Supervisor pattern — restart strategies + escalation                                  |
-| 29     | OTP Patterns          | v0.3.6  | GenServer pattern — request/response handler model                                    |
-| 28     | Extractors            | v0.3.5  | gen_statem AST extractor, ADR-0012 accepted                                           |
-| 27     | OTP Patterns          | v0.3.4  | StateMachine pattern — reusable gen_statem template                                   |
-| 26     | Visualization         | v0.3.4  | Mermaid emitter — diagrams in GitHub markdown                                         |
-| 25     | Visualization         | v0.3.3  | GraphViz DOT emitter, example diagrams                                                |
-| 24     | Documentation         | v0.3.2  | Internals docs for contributors                                                       |
-| 23     | Documentation         | v0.3.1  | Sprint index, missing retros, TlaParser subset doc                                    |
-| 22     | Quality               | v0.3.1  | SANY/pcal.trans validation, emitter bug fixes                                         |
-| 11     | Tooling               | v0.3.1  | mix tlx.list, mix tlx.watch, Mix task naming fix                                      |
-| —      | Supply Chain          | v0.3.0  | SPDX headers, SECURITY.md, CI, Dependabot                                             |
-| 21     | Expressiveness II     | v0.2.11 | Records, multi-EXCEPT, Symbols emitter, FAQ                                           |
-| 20     | Expressiveness II     | v0.2.10 | Sequences, DOMAIN, range, implies/equiv, extends                                      |
-| 19     | Expressiveness II     | v0.2.9  | at/except, CHOOSE, filter, CASE, if-syntax DX                                         |
-| 18     | Documentation         | v0.2.9  | Reference docs: DSL, mix tasks, expressions                                           |
-| 17     | Documentation         | v0.2.9  | How-tos, explanations, getting-started rewrite                                        |
-| —      | Refinement            | v0.2.8  | Refinement DSL, emitter fixes, formal-spec skill                                      |
-| 10     | Expressiveness        | v0.2.7  | ite, sets, let_in, custom init, pick from sets                                        |
-| 16     | Robustness            | v0.2.6  | NimbleParsec parsers, AST codegen, round-trip tests                                   |
-| 15     | Robustness            | v0.2.5  | TLC tool mode, PlusCal pcal.trans compat, P-syntax                                    |
-| 14     | Quality               | v0.2.4  | TLC integration testing against real subprocess                                       |
-| 12     | Integration           | v0.2.3  | TLA+ importer, GenStateMachine generator                                              |
-| 13     | Validation            | v0.2.2  | 2PC and Raft examples, simulator found Raft bugs                                      |
-| 9      | Semantic Intelligence | v0.2.1  | Auto TypeOK, empty action warning, better errors                                      |
-| 8      | DX Overhaul           | v0.2.0  | e() macro, flat sections, await, defspec, emitters                                    |
-| 7      | Production Ready      | v0.1.7  | Examples, tutorial, Hex prep, edge case tests                                         |
-| 6      | Simulation/Tooling    | v0.1.6  | Trace formatting, Spark docs generation                                               |
-| 5      | Simulation/Tooling    | v0.1.5  | Mutex example, Elixir simulator                                                       |
-| 4      | PlusCal/Concurrency   | v0.1.4  | Temporal properties, fairness, quantifiers                                            |
-| 3      | PlusCal/Concurrency   | v0.1.3  | Processes, TLC integration, config generation                                         |
-| 2      | Foundation/PlusCal    | v0.1.2  | PlusCal emitter, either/or, mix tlx.emit task                                         |
-| 1      | Foundation            | v0.1.1  | Core DSL (Spark), TLA+ emitter, quality gates                                         |
+| Sprint | Phase                 | Version | Summary                                                                                 |
+| ------ | --------------------- | ------- | --------------------------------------------------------------------------------------- |
+| 67     | Round-Trip Polish     | —       | Binder canonical shape at property root — `forall`/`exists`/`choose` peel like temporal |
+| 66     | Round-Trip Polish     | —       | Atom round-trip fidelity — CONSTANT identifiers re-emit as `:atom` literals             |
+| 64     | Round-Trip Polish     | —       | Quantifier short forms — accept `\E x : P`, `\A x : P`, `CHOOSE x : P`                  |
+| 63     | Round-Trip Polish     | —       | Property codegen canonical shape — outer temporal peeled, `e()` around predicate only   |
+| 61     | DX                    | —       | Fallback logging + `mix tlx.import --verbose` — tier-2 parse gaps now visible           |
+| 62     | Round-Trip Polish     | —       | TLA+ comment stripping in TlaParser — `\*` and `(* *)` (nestable) handled               |
+| 60     | Quality               | —       | Fix nested `e()` emission — one `format_ast` clause unwraps `{:e, meta, [arg]}`         |
+| 59     | Round-Trip            | —       | Round-trip matrix + CI gate — ADR-0013 CI tripwire on 63 curated emit-side constructs   |
+| 58     | Round-Trip            | —       | CASE + temporal operators in property position — property classifier is AST-informed    |
+| 57     | Round-Trip            | —       | Sequences + LAMBDA (SelectSeq-scoped) — 8 sequence ops + contextual LAMBDA parse        |
+| 56     | Round-Trip            | —       | Arithmetic extensions, tuples, Cartesian, function ctor/set — 9 parse-side additions    |
+| 55     | Round-Trip            | —       | Sets, quantifiers, records, EXCEPT — 21 constructs parse to structured AST              |
+| 54     | Round-Trip            | —       | Expression parser foundation — NimbleParsec producing `{:expr, ast}` for the subset     |
+| 49     | Expressiveness        | —       | `select_seq(:var, s, pred)` — `SelectSeq(s, LAMBDA var: pred)`; first LAMBDA emission   |
+| 52     | Expressiveness        | —       | Function ctor `[x \in S \|-> expr]`, function set `[S -> T]`, Cartesian product `\X`    |
+| 50     | Simulator             | —       | `case_of` `find_value` fix — matched clause with false/nil body now wins                |
+| 51     | Expressiveness        | —       | Arithmetic completion: integer `div`, `rem` (%), `**` (^), unary `-`                    |
+| 48     | Simulator             | —       | AST-form eval for 24 set/sequence/function/logic ops inside `e()`                       |
+| 47     | Expressiveness        | —       | Set/seq/tuple gaps: difference, set_map, power_set, UNION, concat, Seq, tuple           |
+| 46     | Expressiveness        | —       | `until(p, q)` and `weak_until(p, q)` — TLA+ `\U`, `\W`                                  |
+| 45     | Expressiveness        | —       | `case/do` inside `e()` — emits TLA+ `CASE ... [] OTHER`                                 |
+| —      | Release               | v0.4.5  | mix tlx.check uses TLA+ emission directly (not PlusCal)                                 |
+| —      | Release               | v0.4.4  | Bug fixes: atom mismatch, simulator ite/case_of/let_in                                  |
+| —      | Release               | v0.4.3  | TLA+ references, pattern examples, roadmap sprints 44–47                                |
+| —      | Release               | v0.4.2  | Graph refactor, C4 model, CONTRIBUTING, examples                                        |
+| 43     | Documentation         | v0.4.1  | Diátaxis docs for v0.4.0 features                                                       |
+| —      | Release               | v0.4.0  | Squash release: Sprints 26–42 + credo/dialyzer fixes                                    |
+| 42     | Extractors            | v0.3.17 | Broadway extractor — pipeline topology via AST                                          |
+| 41     | Extractors            | v0.3.16 | Reactor extractor — step DAG via Spark introspection                                    |
+| 38-40  | Skills                | v0.3.15 | spec-audit, visualize, spec-drift skills                                                |
+| 37     | Skill                 | v0.3.14 | formal-spec skill enrichment workflow                                                   |
+| 36     | Extractors            | v0.3.13 | Ash.StateMachine extractor via runtime introspection                                    |
+| 35     | Extractors            | v0.3.12 | Erlang BEAM extractors — gen_server + gen_fsm                                           |
+| 34     | Extractors            | v0.3.11 | LiveView AST extractor + mix task + codegen                                             |
+| 33     | Visualization         | v0.3.10 | D2 state diagram emitter                                                                |
+| 32     | Visualization         | v0.3.9  | PlantUML state diagram emitter                                                          |
+| 30     | Extractors            | v0.3.8  | GenServer AST extractor + mix task + codegen                                            |
+| 31     | OTP Patterns          | v0.3.7  | Supervisor pattern — restart strategies + escalation                                    |
+| 29     | OTP Patterns          | v0.3.6  | GenServer pattern — request/response handler model                                      |
+| 28     | Extractors            | v0.3.5  | gen_statem AST extractor, ADR-0012 accepted                                             |
+| 27     | OTP Patterns          | v0.3.4  | StateMachine pattern — reusable gen_statem template                                     |
+| 26     | Visualization         | v0.3.4  | Mermaid emitter — diagrams in GitHub markdown                                           |
+| 25     | Visualization         | v0.3.3  | GraphViz DOT emitter, example diagrams                                                  |
+| 24     | Documentation         | v0.3.2  | Internals docs for contributors                                                         |
+| 23     | Documentation         | v0.3.1  | Sprint index, missing retros, TlaParser subset doc                                      |
+| 22     | Quality               | v0.3.1  | SANY/pcal.trans validation, emitter bug fixes                                           |
+| 11     | Tooling               | v0.3.1  | mix tlx.list, mix tlx.watch, Mix task naming fix                                        |
+| —      | Supply Chain          | v0.3.0  | SPDX headers, SECURITY.md, CI, Dependabot                                               |
+| 21     | Expressiveness II     | v0.2.11 | Records, multi-EXCEPT, Symbols emitter, FAQ                                             |
+| 20     | Expressiveness II     | v0.2.10 | Sequences, DOMAIN, range, implies/equiv, extends                                        |
+| 19     | Expressiveness II     | v0.2.9  | at/except, CHOOSE, filter, CASE, if-syntax DX                                           |
+| 18     | Documentation         | v0.2.9  | Reference docs: DSL, mix tasks, expressions                                             |
+| 17     | Documentation         | v0.2.9  | How-tos, explanations, getting-started rewrite                                          |
+| —      | Refinement            | v0.2.8  | Refinement DSL, emitter fixes, formal-spec skill                                        |
+| 10     | Expressiveness        | v0.2.7  | ite, sets, let_in, custom init, pick from sets                                          |
+| 16     | Robustness            | v0.2.6  | NimbleParsec parsers, AST codegen, round-trip tests                                     |
+| 15     | Robustness            | v0.2.5  | TLC tool mode, PlusCal pcal.trans compat, P-syntax                                      |
+| 14     | Quality               | v0.2.4  | TLC integration testing against real subprocess                                         |
+| 12     | Integration           | v0.2.3  | TLA+ importer, GenStateMachine generator                                                |
+| 13     | Validation            | v0.2.2  | 2PC and Raft examples, simulator found Raft bugs                                        |
+| 9      | Semantic Intelligence | v0.2.1  | Auto TypeOK, empty action warning, better errors                                        |
+| 8      | DX Overhaul           | v0.2.0  | e() macro, flat sections, await, defspec, emitters                                      |
+| 7      | Production Ready      | v0.1.7  | Examples, tutorial, Hex prep, edge case tests                                           |
+| 6      | Simulation/Tooling    | v0.1.6  | Trace formatting, Spark docs generation                                                 |
+| 5      | Simulation/Tooling    | v0.1.5  | Mutex example, Elixir simulator                                                         |
+| 4      | PlusCal/Concurrency   | v0.1.4  | Temporal properties, fairness, quantifiers                                              |
+| 3      | PlusCal/Concurrency   | v0.1.3  | Processes, TLC integration, config generation                                           |
+| 2      | Foundation/PlusCal    | v0.1.2  | PlusCal emitter, either/or, mix tlx.emit task                                           |
+| 1      | Foundation            | v0.1.1  | Core DSL (Spark), TLA+ emitter, quality gates                                           |
 
 ## Proposed Sprints
 
-| Sprint | Phase             | Plan                                                                      |
-| ------ | ----------------- | ------------------------------------------------------------------------- |
-| 44     | Tooling           | State/transition coverage — verify ExUnit tests exercise all spec states  |
-| 53     | Quality           | Fix docs build — 3 internal structs referenced in internals.md but hidden |
-| 64     | Round-Trip Polish | Quantifier short forms — accept `\E x : P` / `\A x : P` / `CHOOSE x : P`  |
-| 66     | Round-Trip Polish | Atom round-trip fidelity — restore `:atom` form for CONSTANT identifiers  |
-| 67     | Round-Trip Polish | Binder canonical shape at property root — peel `forall`/`exists`/`choose` |
+| Sprint | Phase   | Plan                                                                      |
+| ------ | ------- | ------------------------------------------------------------------------- |
+| 44     | Tooling | State/transition coverage — verify ExUnit tests exercise all spec states  |
+| 53     | Quality | Fix docs build — 3 internal structs referenced in internals.md but hidden |
 
 ### Sprint 44: State/Transition Coverage
 

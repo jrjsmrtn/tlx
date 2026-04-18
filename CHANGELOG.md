@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (Sprint 64 — quantifier short forms)
+
+- `TLX.Importer.ExprParser` accepts unbounded forms: `\E x : P`, `\A x : P`, `CHOOSE x : P`. AST uses `nil` in the set position. Emitter gains matching clauses for the `nil`-set shape. TLX doesn't emit these shapes; import path for hand-written TLA+ (ADR-0013 tier-2).
+
+### Changed (Sprint 66 — atom round-trip fidelity)
+
+- `TLX.Importer.Codegen.to_tlx/1` now preprocesses the parsed map, walking every AST attachment and replacing bare-identifier nodes whose names match declared CONSTANTS with atom literals. Round-tripping a spec with `state == :done` no longer drops the `:` prefix.
+
+### Changed (Sprint 67 — binder canonical shape)
+
+- Properties with `forall`/`exists`/`choose` at the AST root now emit in canonical peeled form: `forall(:x, <recurse set>, <recurse body>)` instead of `e(forall(:x, set, body))`. Mirrors Sprint 63's temporal peel. Unbounded form falls back to `e(...)` wrapping since there's no DSL 2-arg binder.
+
 ### Changed (Sprint 63 — property codegen canonical shape)
 
 - `TLX.Importer.Codegen` now emits property bodies in canonical form: outer temporal constructors (`always`, `eventually`, `leads_to`, `until`, `weak_until`) appear as direct calls, with `e(...)` wrapping the innermost predicate. Previously wrapped the whole body in one outer `e(...)`. Round-trip output now matches hand-written idiom (`always(eventually(e(state == :done)))`). Part B of the plan (full emit→parse→emit byte-equivalence test) deferred; canonical-shape regression guard in the Sprint 59 matrix is sufficient.

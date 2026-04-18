@@ -23,6 +23,7 @@ defmodule TLX.Importer.Codegen do
     * `:processes` — (optional) list of `%{name, set, actions, variables}` maps
   """
   def to_tlx(parsed) do
+    parsed = restore_constant_atoms(parsed)
     module_name = parsed.module_name || "ImportedSpec"
     defaults = parse_init_defaults(parsed[:init] || [])
 
@@ -43,6 +44,55 @@ defmodule TLX.Importer.Codegen do
       |> Enum.join("\n")
 
     format_source(parts)
+  end
+
+  # Sprint 66 — walk every attached AST and replace bare-identifier nodes
+  # whose names match a declared CONSTANT with atom literals. Round-trips
+  # `:done` through `done` (as a TLA+ CONSTANT) back to `:done` instead of
+  # leaving it as a bare `done` identifier in the re-emitted source.
+  defp restore_constant_atoms(parsed) do
+    constants = MapSet.new(parsed[:constants] || [])
+
+    if MapSet.size(constants) == 0 do
+      parsed
+    else
+      parsed
+      |> Map.update(:invariants, [], &Enum.map(&1, fn i -> update_ast(i, constants) end))
+      |> Map.update(:properties, [], &Enum.map(&1, fn p -> update_ast(p, constants) end))
+      |> Map.update(:actions, [], fn actions ->
+        Enum.map(actions, &restore_action_atoms(&1, constants))
+      end)
+    end
+  end
+
+  defp restore_action_atoms(action, constants) do
+    action
+    |> update_guard_ast(constants)
+    |> Map.update(:transitions, [], fn trans ->
+      Enum.map(trans, &update_ast(&1, constants))
+    end)
+  end
+
+  defp update_ast(%{ast: ast} = item, constants) when not is_nil(ast) do
+    %{item | ast: restore_atoms(ast, constants)}
+  end
+
+  defp update_ast(item, _constants), do: item
+
+  defp update_guard_ast(%{guard_ast: ast} = action, constants) when not is_nil(ast) do
+    %{action | guard_ast: restore_atoms(ast, constants)}
+  end
+
+  defp update_guard_ast(action, _constants), do: action
+
+  defp restore_atoms(ast, constants) do
+    Macro.prewalk(ast, fn
+      {name, [], nil} = node when is_atom(name) ->
+        if MapSet.member?(constants, Atom.to_string(name)), do: name, else: node
+
+      other ->
+        other
+    end)
   end
 
   @doc """
@@ -550,9 +600,9 @@ defmodule TLX.Importer.Codegen do
   end
 
   # Render a property body in the canonical form: outer temporal
-  # constructors appear as direct calls, with `e(...)` wrapping the
-  # innermost non-temporal predicate. Matches the pattern users
-  # typically hand-write (`always(eventually(e(state == :done)))`).
+  # constructors and binders appear as direct calls, with `e(...)`
+  # wrapping the innermost non-constructor predicate. Matches the
+  # pattern users typically hand-write.
   defp render_property_body({op, [], [inner]}) when op in [:always, :eventually] do
     "#{op}(#{render_property_body(inner)})"
   end
@@ -560,6 +610,20 @@ defmodule TLX.Importer.Codegen do
   defp render_property_body({op, [], [left, right]})
        when op in [:leads_to, :until, :weak_until] do
     "#{op}(#{render_property_body(left)}, #{render_property_body(right)})"
+  end
+
+  # Sprint 67 — binders at property root: forall / exists / choose.
+  # Bounded form peels the same way temporal operators do.
+  defp render_property_body({op, [], [var, set, body]})
+       when op in [:forall, :exists, :choose] and is_atom(var) and not is_nil(set) do
+    "#{op}(#{inspect(var)}, #{render_property_body(set)}, #{render_property_body(body)})"
+  end
+
+  # Unbounded form (Sprint 64) — no DSL 2-arg binder exists, so wrap
+  # the whole AST in `e(...)`. The macro captures it verbatim.
+  defp render_property_body({op, [], [_var, nil, _body]} = ast)
+       when op in [:forall, :exists, :choose] do
+    "e(#{Macro.to_string(ast)})"
   end
 
   defp render_property_body(other) do

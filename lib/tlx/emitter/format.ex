@@ -162,7 +162,16 @@ defmodule TLX.Emitter.Format do
     "#{s.exists} #{Atom.to_string(var)} #{s.member} #{format_ast(set, s)} : #{format_expr(inner, s)}"
   end
 
-  # Quantifiers — 3-tuple AST form from e(forall(...)) / e(exists(...)) capture
+  # Quantifiers — 3-tuple AST form from e(forall(...)) / e(exists(...)) capture.
+  # Unbounded form (from parser Sprint 64): set is `nil`, omit `\in S`.
+  def format_ast({:forall, meta, [var, nil, inner]}, s) when is_list(meta) do
+    "#{s.forall} #{Atom.to_string(var)} : #{format_ast(inner, s)}"
+  end
+
+  def format_ast({:exists, meta, [var, nil, inner]}, s) when is_list(meta) do
+    "#{s.exists} #{Atom.to_string(var)} : #{format_ast(inner, s)}"
+  end
+
   def format_ast({:forall, meta, [var, set, inner]}, s) when is_list(meta) do
     "#{s.forall} #{Atom.to_string(var)} #{s.member} #{format_ast(set, s)} : #{format_ast(inner, s)}"
   end
@@ -210,7 +219,10 @@ defmodule TLX.Emitter.Format do
   def format_ast({:except, meta, [f, x, v]}, s) when is_list(meta),
     do: "[#{format_ast(f, s)} EXCEPT ![#{format_ast(x, s)}] = #{format_ast(v, s)}]"
 
-  # CHOOSE
+  # CHOOSE — unbounded form (Sprint 64) uses `nil` set sentinel
+  def format_ast({:choose, meta, [var, nil, inner]}, s) when is_list(meta),
+    do: "CHOOSE #{Atom.to_string(var)} : #{format_ast(inner, s)}"
+
   def format_ast({:choose, var, set, inner}, s),
     do:
       "CHOOSE #{Atom.to_string(var)} #{s.member} #{format_expr(set, s)} : #{format_expr(inner, s)}"

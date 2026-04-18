@@ -131,7 +131,8 @@ defmodule TLX.Importer.ExprParser do
     |> ignore(string(")"))
   )
 
-  # Quantifiers: \E x \in S : P, \A x \in S : P, CHOOSE x \in S : P
+  # Quantifiers: both bounded (`\E x \in S : P`) and unbounded (`\E x : P`)
+  # forms for \E, \A, CHOOSE. Unbounded form uses `nil` as set sentinel.
   defcombinatorp(
     :quantifier_expr,
     choice([
@@ -142,13 +143,21 @@ defmodule TLX.Importer.ExprParser do
     |> concat(ws_opt)
     |> concat(ident_name)
     |> concat(ws_opt)
-    |> ignore(string("\\in"))
-    |> concat(ws_opt)
-    |> parsec(:expr)
-    |> concat(ws_opt)
-    |> ignore(string(":"))
-    |> concat(ws_opt)
-    |> parsec(:expr)
+    |> choice([
+      # Bounded form: \in set : body  — pushes [set, body]
+      ignore(string("\\in"))
+      |> concat(keyword_lookahead_not)
+      |> concat(ws_opt)
+      |> parsec(:expr)
+      |> concat(ws_opt)
+      |> ignore(string(":"))
+      |> concat(ws_opt)
+      |> parsec(:expr),
+      # Unbounded form: : body  — pushes [body]
+      ignore(string(":"))
+      |> concat(ws_opt)
+      |> parsec(:expr)
+    ])
     |> reduce({__MODULE__, :build_quantifier, []})
   )
 
@@ -767,6 +776,11 @@ defmodule TLX.Importer.ExprParser do
   @doc false
   def build_quantifier([kind, var, set, body]) when kind in [:exists, :forall, :choose] do
     {kind, [], [var, set, body]}
+  end
+
+  # Unbounded form — no set position (e.g. `\E x : P`).
+  def build_quantifier([kind, var, body]) when kind in [:exists, :forall, :choose] do
+    {kind, [], [var, nil, body]}
   end
 
   @builtin_1_map %{

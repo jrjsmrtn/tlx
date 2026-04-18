@@ -96,6 +96,19 @@ defmodule TLX.Integration.RoundTripMatrixTest do
       RoundTrip.assert_lossless(TemporalSpec)
     end
 
+    test "Sprint 66 — atom round-trip restores :state == :done form" do
+      tla = TLA.emit(TemporalSpec)
+      parsed = TlaParser.parse(tla)
+      source = TlaParser.to_tlx(parsed)
+
+      # All atoms emitted as TLA+ CONSTANTS should round-trip as `:atom`.
+      assert source =~ ":done"
+      assert source =~ ":idle"
+      assert source =~ ":running"
+      # And bare unprefixed forms should NOT appear at atom positions.
+      refute source =~ ~r/state == done\b/
+    end
+
     test "Sprint 63 — TemporalSpec: property emits in canonical shape" do
       # emit → parse → codegen should produce `always(eventually(e(...)))`
       # NOT `e(always(eventually(...)))`.

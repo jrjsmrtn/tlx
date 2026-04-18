@@ -601,6 +601,28 @@ defmodule TLX.Importer.ExprParserTest do
     end
   end
 
+  describe "quantifier short forms (Sprint 64)" do
+    test "parses \\E x : P (unbounded)" do
+      expected = {:exists, [], [:x, nil, {:>, [], [{:x, [], nil}, 0]}]}
+      assert {:ok, ^expected} = ExprParser.parse("\\E x : x > 0")
+    end
+
+    test "parses \\A x : P (unbounded)" do
+      expected = {:forall, [], [:x, nil, {:>=, [], [{:x, [], nil}, 0]}]}
+      assert {:ok, ^expected} = ExprParser.parse("\\A x : x >= 0")
+    end
+
+    test "parses CHOOSE x : P (unbounded)" do
+      expected = {:choose, [], [:x, nil, {:>, [], [{:x, [], nil}, 0]}]}
+      assert {:ok, ^expected} = ExprParser.parse("CHOOSE x : x > 0")
+    end
+
+    test "bounded form still parses (regression guard)" do
+      expected = {:exists, [], [:x, {:s, [], nil}, {:>, [], [{:x, [], nil}, 0]}]}
+      assert {:ok, ^expected} = ExprParser.parse("\\E x \\in s : x > 0")
+    end
+  end
+
   describe "Macro.to_string round-trip (Sprint 55)" do
     test "set literal round-trips" do
       {:ok, ast} = ExprParser.parse("{1, 2, 3}")
