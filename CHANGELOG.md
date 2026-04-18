@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-04-18
+
+Minor release per the ADR-0002 CHANGELOG-oracle rule. Closes the round-trip track (sprints 54–59) that ADR-0013 scoped, plus seven follow-up sprints polishing the surface.
+
+**Highlights**:
+
+- Importer round-trips TLA+ to structured AST for 63 constructs (every emit-side construct from sprints 45–52 plus the foundation).
+- CI gate prevents future emitter/parser drift.
+- Property classifier is AST-informed, not string-heuristic.
+- Atom round-trip fidelity: re-imported specs preserve `:atom` form.
+- Canonical codegen shape for properties (temporal + binder peel).
+- TLA+ comment stripping.
+- Observability: `Logger.warning` on fallback + `mix tlx.import --verbose`.
+- Zero `mix docs` warnings (16 modules documented + 3 prose fixes).
+
 ### Fixed (Sprint 53 — zero `mix docs` warnings)
 
 - `mix docs` now runs warning-free. Added one-line moduledocs to 12 IR struct modules (`TLX.Variable`, `Constant`, `Action`, `Transition`, `Branch`, `Invariant`, `Property`, `Process`, `Refinement`, `RefinementMapping`, `InitConstraint`, `WithChoice`) and to 4 DSL internals (`TLX.Dsl`, `Transformers.TypeOK`, `Verifiers.EmptyAction`, `Verifiers.TransitionTargets`). Rewrote 3 prose references (CHANGELOG + roadmap) that pointed to private or non-existent functions. Scope grew from the original plan's 3 structs once `mix docs` revealed the full 52-warning picture.

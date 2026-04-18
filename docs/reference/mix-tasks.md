@@ -73,16 +73,18 @@ Import a TLA+ or PlusCal file into TLX DSL syntax.
 mix tlx.import spec.tla                     # TLA+ import
 mix tlx.import spec.tla --format pluscal    # PlusCal import
 mix tlx.import spec.tla --output my_spec.ex # write to file
+mix tlx.import spec.tla --verbose           # print parse-coverage summary
 ```
 
 **Flags:**
 
-| Flag             | Default | Description                      |
-| ---------------- | ------- | -------------------------------- |
-| `--format`, `-f` | `tla`   | Input format: `tla` or `pluscal` |
-| `--output`, `-o` | stdout  | Write to file instead of stdout  |
+| Flag              | Default | Description                                           |
+| ----------------- | ------- | ----------------------------------------------------- |
+| `--format`, `-f`  | `tla`   | Input format: `tla` or `pluscal`                      |
+| `--output`, `-o`  | stdout  | Write to file instead of stdout                       |
+| `--verbose`, `-v` | `false` | Print parse-coverage summary (TLA+ only) after import |
 
-Best-effort parser. Works well for TLX-emitted TLA+ and simple hand-written specs. Complex TLA+ may need manual cleanup.
+Per [ADR-0013](../adr/0013-importer-scope-lossless-for-tlx-output.md), round-trip for TLX-emitted output is lossless (every expression parses to structured AST). Hand-written TLA+ is best-effort: constructs outside the parser's grammar fall back to raw-string capture with a `Logger.warning`. The `--verbose` summary reports attempted vs fallback counts per category.
 
 ## Extraction Tasks
 

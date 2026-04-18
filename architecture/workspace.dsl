@@ -58,10 +58,11 @@ workspace "TLX" "Spark DSL for TLA+/PlusCal specifications in Elixir" {
 
             simulator = container "Elixir Simulator" "Random walk state exploration with invariant checking" "Elixir" "Simulator"
 
-            importers = container "Importers" "Parse TLA+ and PlusCal back to TLX DSL" "Elixir/NimbleParsec" "Importer" {
-                tlaParser = component "TLA+ Parser" "NimbleParsec-based TLA+ parser"
+            importers = container "Importers" "Parse TLA+ and PlusCal back to TLX DSL (lossless for TLX-emitted output per ADR-0013)" "Elixir/NimbleParsec" "Importer" {
+                tlaParser = component "TLA+ Parser" "NimbleParsec-based TLA+ parser — modules, vars, constants, actions, comment stripping"
+                exprParser = component "Expression Parser" "TLA+ expression grammar producing Elixir AST for 63 constructs (sprints 54-58)"
                 plusCalParser = component "PlusCal Parser" "Parses both C and P syntax"
-                codegen = component "Codegen" "AST-based Elixir source generation for all extractor types"
+                codegen = component "Codegen" "AST-driven Elixir source generation with atom restoration and canonical property shape"
             }
 
             mixTasks = container "Mix Tasks" "14 tasks: emit, check, simulate, watch, list, import, 7x gen.from_*" "Elixir/Mix" "CLI"
@@ -99,6 +100,8 @@ workspace "TLX" "Spark DSL for TLA+/PlusCal specifications in Elixir" {
         tlx.emitters -> tlx.format "Delegates formatting to" "Symbol tables"
         tlx.emitters -> tlc "Generates .tla/.cfg files for" "File I/O"
         tlx.importers -> tlx.ir "Parses into"
+        tlx.importers.tlaParser -> tlx.importers.exprParser "Delegates expression parsing to"
+        tlx.importers.tlaParser -> tlx.importers.codegen "Feeds parsed map to"
         tlx.mixTasks -> tlx.emitters "Invokes"
         tlx.mixTasks -> tlx.simulator "Invokes"
         tlx.mixTasks -> tlx.importers "Invokes"

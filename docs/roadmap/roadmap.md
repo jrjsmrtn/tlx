@@ -170,20 +170,21 @@ Sprint 16 — Proper parsers and AST-based code gen:
 
 | Sprint | Phase                 | Version | Summary                                                                                 |
 | ------ | --------------------- | ------- | --------------------------------------------------------------------------------------- |
-| 53     | Quality               | —       | Fix docs build warnings — 12 struct moduledocs + 4 DSL internals + prose rewrites       |
-| 67     | Round-Trip Polish     | —       | Binder canonical shape at property root — `forall`/`exists`/`choose` peel like temporal |
-| 66     | Round-Trip Polish     | —       | Atom round-trip fidelity — CONSTANT identifiers re-emit as `:atom` literals             |
-| 64     | Round-Trip Polish     | —       | Quantifier short forms — accept `\E x : P`, `\A x : P`, `CHOOSE x : P`                  |
-| 63     | Round-Trip Polish     | —       | Property codegen canonical shape — outer temporal peeled, `e()` around predicate only   |
-| 61     | DX                    | —       | Fallback logging + `mix tlx.import --verbose` — tier-2 parse gaps now visible           |
-| 62     | Round-Trip Polish     | —       | TLA+ comment stripping in TlaParser — `\*` and `(* *)` (nestable) handled               |
-| 60     | Quality               | —       | Fix nested `e()` emission — one `format_ast` clause unwraps `{:e, meta, [arg]}`         |
-| 59     | Round-Trip            | —       | Round-trip matrix + CI gate — ADR-0013 CI tripwire on 63 curated emit-side constructs   |
-| 58     | Round-Trip            | —       | CASE + temporal operators in property position — property classifier is AST-informed    |
-| 57     | Round-Trip            | —       | Sequences + LAMBDA (SelectSeq-scoped) — 8 sequence ops + contextual LAMBDA parse        |
-| 56     | Round-Trip            | —       | Arithmetic extensions, tuples, Cartesian, function ctor/set — 9 parse-side additions    |
-| 55     | Round-Trip            | —       | Sets, quantifiers, records, EXCEPT — 21 constructs parse to structured AST              |
-| 54     | Round-Trip            | —       | Expression parser foundation — NimbleParsec producing `{:expr, ast}` for the subset     |
+| —      | Release               | v0.5.0  | Squash release: round-trip track (sprints 54–59) + handoff polish (sprints 53, 60–67)   |
+| 53     | Quality               | v0.5.0  | Fix docs build warnings — 12 struct moduledocs + 4 DSL internals + prose rewrites       |
+| 67     | Round-Trip Polish     | v0.5.0  | Binder canonical shape at property root — `forall`/`exists`/`choose` peel like temporal |
+| 66     | Round-Trip Polish     | v0.5.0  | Atom round-trip fidelity — CONSTANT identifiers re-emit as `:atom` literals             |
+| 64     | Round-Trip Polish     | v0.5.0  | Quantifier short forms — accept `\E x : P`, `\A x : P`, `CHOOSE x : P`                  |
+| 63     | Round-Trip Polish     | v0.5.0  | Property codegen canonical shape — outer temporal peeled, `e()` around predicate only   |
+| 61     | DX                    | v0.5.0  | Fallback logging + `mix tlx.import --verbose` — tier-2 parse gaps now visible           |
+| 62     | Round-Trip Polish     | v0.5.0  | TLA+ comment stripping in TlaParser — `\*` and `(* *)` (nestable) handled               |
+| 60     | Quality               | v0.5.0  | Fix nested `e()` emission — one `format_ast` clause unwraps `{:e, meta, [arg]}`         |
+| 59     | Round-Trip            | v0.5.0  | Round-trip matrix + CI gate — ADR-0013 CI tripwire on 63 curated emit-side constructs   |
+| 58     | Round-Trip            | v0.5.0  | CASE + temporal operators in property position — property classifier is AST-informed    |
+| 57     | Round-Trip            | v0.5.0  | Sequences + LAMBDA (SelectSeq-scoped) — 8 sequence ops + contextual LAMBDA parse        |
+| 56     | Round-Trip            | v0.5.0  | Arithmetic extensions, tuples, Cartesian, function ctor/set — 9 parse-side additions    |
+| 55     | Round-Trip            | v0.5.0  | Sets, quantifiers, records, EXCEPT — 21 constructs parse to structured AST              |
+| 54     | Round-Trip            | v0.5.0  | Expression parser foundation — NimbleParsec producing `{:expr, ast}` for the subset     |
 | 49     | Expressiveness        | —       | `select_seq(:var, s, pred)` — `SelectSeq(s, LAMBDA var: pred)`; first LAMBDA emission   |
 | 52     | Expressiveness        | —       | Function ctor `[x \in S \|-> expr]`, function set `[S -> T]`, Cartesian product `\X`    |
 | 50     | Simulator             | —       | `case_of` `find_value` fix — matched clause with false/nil body now wins                |
