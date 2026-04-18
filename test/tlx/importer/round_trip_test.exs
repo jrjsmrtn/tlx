@@ -100,6 +100,44 @@ defmodule TLX.Importer.RoundTripTest do
     end
   end
 
+  describe "Sprint 54 — AST-driven round-trip" do
+    test "Counter: guard body round-trips as structured AST, not raw string" do
+      tla = TLA.emit(Counter)
+      parsed = TlaParser.parse(tla)
+
+      inc = Enum.find(parsed.actions, &(&1.name == "increment"))
+      assert inc.guard_ast != nil
+      assert inc.guard_ast == {:<, [], [{:x, [], nil}, {:max, [], nil}]}
+    end
+
+    test "Counter: transition RHS round-trips as AST" do
+      tla = TLA.emit(Counter)
+      parsed = TlaParser.parse(tla)
+
+      inc = Enum.find(parsed.actions, &(&1.name == "increment"))
+      [t] = inc.transitions
+      assert t.ast == {:+, [], [{:x, [], nil}, 1]}
+    end
+
+    test "Counter: invariant body round-trips as AST" do
+      tla = TLA.emit(Counter)
+      parsed = TlaParser.parse(tla)
+
+      nn = Enum.find(parsed.invariants, &(&1.name == "non_negative"))
+      assert nn.ast == {:>=, [], [{:x, [], nil}, 0]}
+    end
+
+    test "Counter: codegen emits structured e() calls, not tla_to_elixir strings" do
+      tla = TLA.emit(Counter)
+      parsed = TlaParser.parse(tla)
+      source = TlaParser.to_tlx(parsed)
+
+      assert source =~ ~r/await\s*\(\s*e\(x < max\)/
+      assert source =~ ~r/next\s*\(\s*:x,\s*e\(x \+ 1\)/
+      assert source =~ ~r/invariant\s*\(\s*:non_negative,\s*e\(x >= 0\)/
+    end
+  end
+
   describe "PlusCal C-syntax round-trip" do
     test "Counter: emit → parse → preserves structure" do
       pluscal = PlusCalC.emit(Counter)

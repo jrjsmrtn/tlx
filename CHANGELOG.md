@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (Sprint 54 — expression parser foundation)
+
+- `TLX.Importer.ExprParser` — NimbleParsec-based TLA+ expression parser producing Elixir AST matching the form `TLX.Expr.e/1` builds at DSL compile time. Foundation subset: integer/boolean literals, identifiers, parenthesization, equality/comparison/arithmetic/logical operators, implication (`=>`), equivalence (`<=>`), and `IF ... THEN ... ELSE`.
+- `TLX.Importer.TlaParser` now attaches structured ASTs to actions (`:guard_ast`), transitions (`:ast`), and invariants (`:ast`) when bodies parse successfully. Raw-string fields preserved for tier-2 best-effort fallback per [ADR-0013](docs/adr/0013-importer-scope-lossless-for-tlx-output.md).
+- `TLX.Importer.Codegen` emits structured `e(<Macro.to_string(ast)>)` calls when an AST is available, falling back to the string-replacement `tla_to_elixir/1` path otherwise. Round-trip through `mix tlx.import` now produces real Elixir expressions, not comment-wrapped raw TLA+.
+- Tests: 35 ExprParser unit tests (literals, operators, precedence, parens, IF/THEN/ELSE, error cases, `Macro.to_string` round-trip) + 4 Sprint-54-specific round-trip assertions on Counter spec.
+
 ## [0.4.6] - 2026-04-18
 
 Eight sprints of expressiveness and simulator work: every sprint-retro follow-up from 45–47 is closed, every basic TLA+ primitive gap identified by codebase audit is shipped.

@@ -47,12 +47,12 @@ Closing the `partial` / `✗` gap is the focus of [sprints 54–59](../roadmap/r
 
 ## Actions and Guards
 
-| TLA+                          | TLX                                               | Importer  | Notes                                   |
-| ----------------------------- | ------------------------------------------------- | --------- | --------------------------------------- |
-| `/\ condition` (guard)        | `guard(e(condition))` or `await(e(condition))`    | `✗`       | Condition body not parsed to AST        |
-| `A == guard /\ x' = v`        | `action :a do guard(e(...)); next :x, v end`      | `partial` | Structural split; individual bodies raw |
-| `A == P1 \/ P2` (disjunction) | `branch :p1 do ... end` + `branch :p2 do ... end` | `✗`       | Disjunction body captured as raw string |
-| `\E x \in S : action(x)`      | `pick :x, :s do ... end`                          | `✗`       | Body captured raw                       |
+| TLA+                          | TLX                                               | Importer | Notes                                                       |
+| ----------------------------- | ------------------------------------------------- | -------- | ----------------------------------------------------------- |
+| `/\ condition` (guard)        | `guard(e(condition))` or `await(e(condition))`    | `✓`      | Sprint 54: conjunct bodies parse to AST (foundation subset) |
+| `A == guard /\ x' = v`        | `action :a do guard(e(...)); next :x, v end`      | `✓`      | Sprint 54: guard + transition RHS both parse to AST         |
+| `A == P1 \/ P2` (disjunction) | `branch :p1 do ... end` + `branch :p2 do ... end` | `✗`      | Disjunction body captured as raw string                     |
+| `\E x \in S : action(x)`      | `pick :x, :s do ... end`                          | `✗`      | Body captured raw — Sprint 55                               |
 
 ## Processes (PlusCal)
 
@@ -63,22 +63,23 @@ Closing the `partial` / `✗` gap is the focus of [sprints 54–59](../roadmap/r
 
 ## Invariants and Properties
 
-| TLA+                           | TLX                                        | Importer  | Notes                                         |
-| ------------------------------ | ------------------------------------------ | --------- | --------------------------------------------- |
-| `Inv == predicate` (INVARIANT) | `invariant :inv, e(predicate)`             | `partial` | Name ✓, body captured raw                     |
-| `Prop == []P`                  | `property :prop, always(e(p))`             | `✗`       | `[]` actively excluded at `tla_parser.ex:273` |
-| `Prop == <>P`                  | `property :prop, eventually(e(p))`         | `✗`       | Temporal operators not parsed                 |
-| `Prop == []<>P`                | `property :prop, always(eventually(e(p)))` | `✗`       | Temporal nesting not parsed                   |
-| `Prop == P ~> Q`               | `property :prop, leads_to(e(p), e(q))`     | `✗`       | Leads-to not parsed                           |
-| `Prop == P \U Q`               | `property :prop, until(e(p), e(q))`        | `✗`       | Strong until not parsed                       |
-| `Prop == P \W Q`               | `property :prop, weak_until(e(p), e(q))`   | `✗`       | Weak until not parsed                         |
+| TLA+                           | TLX                                        | Importer | Notes                                             |
+| ------------------------------ | ------------------------------------------ | -------- | ------------------------------------------------- |
+| `Inv == predicate` (INVARIANT) | `invariant :inv, e(predicate)`             | `✓`      | Sprint 54: body parses to AST (foundation subset) |
+| `Prop == []P`                  | `property :prop, always(e(p))`             | `✗`      | `[]` actively excluded at `tla_parser.ex:273`     |
+| `Prop == <>P`                  | `property :prop, eventually(e(p))`         | `✗`      | Temporal operators not parsed                     |
+| `Prop == []<>P`                | `property :prop, always(eventually(e(p)))` | `✗`      | Temporal nesting not parsed                       |
+| `Prop == P ~> Q`               | `property :prop, leads_to(e(p), e(q))`     | `✗`      | Leads-to not parsed                               |
+| `Prop == P \U Q`               | `property :prop, until(e(p), e(q))`        | `✗`      | Strong until not parsed                           |
+| `Prop == P \W Q`               | `property :prop, weak_until(e(p), e(q))`   | `✗`      | Weak until not parsed                             |
 
 ## Expressions
 
-> **Importer note**: Everything inside `e(...)` is currently `✗` — the
-> importer has no TLA+ expression grammar, so expression bodies survive
-> only as opaque strings attached to their enclosing operator. Sprint 54
-> introduces the foundation; sprints 55–58 cover specific constructs.
+> **Importer note**: Sprint 54 ships the foundation — integer/boolean
+> literals, identifiers, parens, `+`/`-`/`*`, equality and comparison,
+> `/\`/`\/`/`~`, `=>`/`<=>`, and IF/THEN/ELSE round-trip as AST (`✓`).
+> Extended arithmetic (`\div`, `%`, `^`, unary `-`) remains `✗` until
+> Sprint 56.
 
 | TLA+                      | TLX inside `e()`          | Notes            |
 | ------------------------- | ------------------------- | ---------------- |

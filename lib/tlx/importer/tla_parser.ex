@@ -182,6 +182,7 @@ defmodule TLX.Importer.TlaParser do
   end
 
   alias TLX.Importer.Codegen
+  alias TLX.Importer.ExprParser
 
   @doc """
   Convert parsed TLA+ into TLX DSL source code.
@@ -275,7 +276,16 @@ defmodule TLX.Importer.TlaParser do
         not String.contains?(body, "WF_") and
         not String.contains?(body, "SF_")
     end)
-    |> Enum.map(fn {name, body} -> %{name: name, expr: body} end)
+    |> Enum.map(fn {name, body} ->
+      %{name: name, expr: body, ast: try_parse_expr(body)}
+    end)
+  end
+
+  defp try_parse_expr(body) when is_binary(body) do
+    case ExprParser.parse(body) do
+      {:ok, ast} -> ast
+      _ -> nil
+    end
   end
 
   defp parse_action(name, body) do
@@ -296,22 +306,44 @@ defmodule TLX.Importer.TlaParser do
         String.contains?(line, "'") and not String.contains?(line, "UNCHANGED")
       end)
 
+    conjunct_bodies =
+      guard_lines
+      |> Enum.map(&String.replace_leading(&1, "/\\ ", ""))
+      |> Enum.map(&String.trim/1)
+
     guard =
-      case guard_lines do
+      case conjunct_bodies do
         [] -> nil
-        _ -> Enum.map_join(guard_lines, " and ", &String.replace_leading(&1, "/\\ ", ""))
+        _ -> Enum.join(conjunct_bodies, " and ")
       end
+
+    guard_ast = build_guard_ast(conjunct_bodies)
 
     transitions =
       transition_lines
       |> Enum.map(fn line ->
         case Regex.run(~r|/\\\s+(\w+)'\s*=\s*(.+)|, line) do
-          [_, var, expr] -> %{variable: var, expr: String.trim(expr)}
-          _ -> nil
+          [_, var, expr] ->
+            trimmed = String.trim(expr)
+            %{variable: var, expr: trimmed, ast: try_parse_expr(trimmed)}
+
+          _ ->
+            nil
         end
       end)
       |> Enum.reject(&is_nil/1)
 
-    %{name: name, guard: guard, transitions: transitions}
+    %{name: name, guard: guard, guard_ast: guard_ast, transitions: transitions}
+  end
+
+  defp build_guard_ast([]), do: nil
+
+  defp build_guard_ast(conjunct_bodies) do
+    parsed = Enum.map(conjunct_bodies, &ExprParser.parse/1)
+
+    if Enum.all?(parsed, &match?({:ok, _}, &1)) do
+      asts = Enum.map(parsed, fn {:ok, ast} -> ast end)
+      Enum.reduce(tl(asts), hd(asts), fn rhs, acc -> {:and, [], [acc, rhs]} end)
+    end
   end
 end

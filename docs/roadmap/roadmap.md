@@ -170,6 +170,7 @@ Sprint 16 — Proper parsers and AST-based code gen:
 
 | Sprint | Phase                 | Version | Summary                                                                               |
 | ------ | --------------------- | ------- | ------------------------------------------------------------------------------------- |
+| 54     | Round-Trip            | —       | Expression parser foundation — NimbleParsec producing `{:expr, ast}` for the subset   |
 | 49     | Expressiveness        | —       | `select_seq(:var, s, pred)` — `SelectSeq(s, LAMBDA var: pred)`; first LAMBDA emission |
 | 52     | Expressiveness        | —       | Function ctor `[x \in S \|-> expr]`, function set `[S -> T]`, Cartesian product `\X`  |
 | 50     | Simulator             | —       | `case_of` `find_value` fix — matched clause with false/nil body now wins              |
@@ -233,7 +234,6 @@ Sprint 16 — Proper parsers and AST-based code gen:
 | ------ | ---------- | ------------------------------------------------------------------------- |
 | 44     | Tooling    | State/transition coverage — verify ExUnit tests exercise all spec states  |
 | 53     | Quality    | Fix docs build — 3 internal structs referenced in internals.md but hidden |
-| 54     | Round-Trip | Expression parser foundation — NimbleParsec producing `{:expr, ast}`      |
 | 55     | Round-Trip | Sets, quantifiers, records, EXCEPT — largest chunk of the parse gap       |
 | 56     | Round-Trip | Arithmetic, tuples, Cartesian, functions — Sprints 47/51/52 parse side    |
 | 57     | Round-Trip | Sequences + LAMBDA (SelectSeq-scoped) — Sprint 49 parse side              |

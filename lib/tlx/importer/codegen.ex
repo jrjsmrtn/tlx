@@ -476,27 +476,44 @@ defmodule TLX.Importer.Codegen do
     end) <> "\n"
   end
 
-  defp emit_action(%{name: name, guard: guard, transitions: transitions}, indent) do
+  defp emit_action(%{name: name} = action, indent) do
+    guard = Map.get(action, :guard)
+    guard_ast = Map.get(action, :guard_ast)
+    transitions = Map.get(action, :transitions, [])
+
     parts = ["#{indent}action :#{name} do"]
 
     parts =
-      if guard do
-        parts ++ ["#{indent}  await e(#{tla_to_elixir(guard)})"]
-      else
-        parts
+      cond do
+        guard_ast ->
+          parts ++ ["#{indent}  await e(#{Macro.to_string(guard_ast)})"]
+
+        guard ->
+          parts ++ ["#{indent}  await e(#{tla_to_elixir(guard)})"]
+
+        true ->
+          parts
       end
 
-    parts =
-      parts ++
-        Enum.map(transitions, fn %{variable: var, expr: expr} ->
-          elixir_expr = tla_to_elixir(expr)
-
-          if simple_literal?(elixir_expr),
-            do: "#{indent}  next :#{var}, #{elixir_expr}",
-            else: "#{indent}  next :#{var}, e(#{elixir_expr})"
-        end)
+    parts = parts ++ Enum.map(transitions, &emit_transition(&1, indent))
 
     Enum.join(parts ++ ["#{indent}end"], "\n")
+  end
+
+  defp emit_transition(%{variable: var, ast: ast}, indent) when not is_nil(ast) do
+    rendered = Macro.to_string(ast)
+
+    if simple_literal?(rendered),
+      do: "#{indent}  next :#{var}, #{rendered}",
+      else: "#{indent}  next :#{var}, e(#{rendered})"
+  end
+
+  defp emit_transition(%{variable: var, expr: expr}, indent) do
+    elixir_expr = tla_to_elixir(expr)
+
+    if simple_literal?(elixir_expr),
+      do: "#{indent}  next :#{var}, #{elixir_expr}",
+      else: "#{indent}  next :#{var}, e(#{elixir_expr})"
   end
 
   # --- Invariant emission ---
@@ -504,9 +521,15 @@ defmodule TLX.Importer.Codegen do
   defp emit_invariants([]), do: nil
 
   defp emit_invariants(invariants) do
-    Enum.map_join(invariants, "\n", fn %{name: name, expr: expr} ->
-      "  invariant :#{name}, e(#{tla_to_elixir(expr)})"
-    end) <> "\n"
+    Enum.map_join(invariants, "\n", &emit_invariant/1) <> "\n"
+  end
+
+  defp emit_invariant(%{name: name, ast: ast}) when not is_nil(ast) do
+    "  invariant :#{name}, e(#{Macro.to_string(ast)})"
+  end
+
+  defp emit_invariant(%{name: name, expr: expr}) do
+    "  invariant :#{name}, e(#{tla_to_elixir(expr)})"
   end
 
   # --- Expression translation ---
