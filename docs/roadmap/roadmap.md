@@ -239,10 +239,13 @@ Sprint 16 — Proper parsers and AST-based code gen:
 
 ## Proposed Sprints
 
-| Sprint | Phase   | Plan                                                                      |
-| ------ | ------- | ------------------------------------------------------------------------- |
-| 44     | Tooling | State/transition coverage — verify ExUnit tests exercise all spec states  |
-| 53     | Quality | Fix docs build — 3 internal structs referenced in internals.md but hidden |
+| Sprint | Phase             | Plan                                                                      |
+| ------ | ----------------- | ------------------------------------------------------------------------- |
+| 44     | Tooling           | State/transition coverage — verify ExUnit tests exercise all spec states  |
+| 53     | Quality           | Fix docs build — 3 internal structs referenced in internals.md but hidden |
+| 64     | Round-Trip Polish | Quantifier short forms — accept `\E x : P` / `\A x : P` / `CHOOSE x : P`  |
+| 66     | Round-Trip Polish | Atom round-trip fidelity — restore `:atom` form for CONSTANT identifiers  |
+| 67     | Round-Trip Polish | Binder canonical shape at property root — peel `forall`/`exists`/`choose` |
 
 ### Sprint 44: State/Transition Coverage
 
