@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT
 
 defmodule TLX.Verifiers.EmptyAction do
-  @moduledoc false
+  @moduledoc "Spark verifier that warns when an action has no transitions or branches — catches likely-unintended empty actions."
   use Spark.Dsl.Verifier
 
   alias Spark.Dsl.Verifier, as: V

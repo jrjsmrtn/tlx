@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed (Sprint 53 — zero `mix docs` warnings)
+
+- `mix docs` now runs warning-free. Added one-line moduledocs to 12 IR struct modules (`TLX.Variable`, `Constant`, `Action`, `Transition`, `Branch`, `Invariant`, `Property`, `Process`, `Refinement`, `RefinementMapping`, `InitConstraint`, `WithChoice`) and to 4 DSL internals (`TLX.Dsl`, `Transformers.TypeOK`, `Verifiers.EmptyAction`, `Verifiers.TransitionTargets`). Rewrote 3 prose references (CHANGELOG + roadmap) that pointed to private or non-existent functions. Scope grew from the original plan's 3 structs once `mix docs` revealed the full 52-warning picture.
+
 ### Added (Sprint 64 — quantifier short forms)
 
 - `TLX.Importer.ExprParser` accepts unbounded forms: `\E x : P`, `\A x : P`, `CHOOSE x : P`. AST uses `nil` in the set position. Emitter gains matching clauses for the `nil`-set shape. TLX doesn't emit these shapes; import path for hand-written TLA+ (ADR-0013 tier-2).
@@ -25,13 +29,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added (Sprint 61 — fallback logging and import observability)
 
-- `Logger.warning` from `TLX.Importer.TlaParser.try_parse_expr/1` on parse failure — snippet truncated to 80 chars + parse reason. Tier-2 fallbacks are now visible in the logs.
+- `Logger.warning` when the expression parser falls back to raw-string capture — snippet truncated to 80 chars + parse reason. Tier-2 fallbacks are now visible in the logs.
 - `:coverage` map in `TlaParser.parse/1` output — attempted vs fallback counts per category (invariants, properties, guards, transitions) plus a total. Additive field; existing consumers unaffected.
 - `mix tlx.import --verbose` (alias `-v`) — prints parse-coverage summary after import. Zero noise for TLX-emitted input (which round-trips losslessly per ADR-0013).
 
 ### Added (Sprint 62 — TLA+ comment stripping)
 
-- `TLX.Importer.TlaParser.strip_comments/1` — preprocesses source to strip `\*` line comments and `(* ... *)` block comments (nestable) before parsing. Replaces comment content with spaces so parser error messages preserve line/column accuracy. Fixes the pre-existing false-positive in the Sprint 58 property classifier where `[]` inside a comment would misclassify an invariant as a property.
+- `TlaParser.parse/1` now strips `\*` line comments and `(* ... *)` block comments (nestable) before parsing. Replaces comment content with spaces so parser error messages preserve line/column accuracy. Fixes the pre-existing false-positive in the Sprint 58 property classifier where `[]` inside a comment would misclassify an invariant as a property.
 
 ### Fixed (Sprint 60)
 

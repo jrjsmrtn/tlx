@@ -2,6 +2,6 @@
 # SPDX-License-Identifier: MIT
 
 defmodule TLX.Branch do
-  @moduledoc false
+  @moduledoc "IR struct for a `branch` inside an action — a non-deterministic alternative."
   defstruct [:name, :guard, :__identifier__, :__spark_metadata__, transitions: []]
 end

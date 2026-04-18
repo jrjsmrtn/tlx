@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT
 
 defmodule TLX.Process do
-  @moduledoc false
+  @moduledoc "IR struct for a `process` DSL entity — a concurrent actor with its own variables and actions."
   defstruct [
     :name,
     :set,
