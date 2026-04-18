@@ -151,6 +151,39 @@ defmodule TLX.Importer.TlaParserTest do
     end
   end
 
+  describe "parse coverage (Sprint 61)" do
+    test "computes coverage stats on parse" do
+      parsed = TlaParser.parse(@simple_tla)
+      assert parsed.coverage
+      assert parsed.coverage.total.attempted > 0
+      # Simple counter spec has no fallbacks
+      assert parsed.coverage.total.fallbacks == 0
+    end
+
+    test "logs a warning when try_parse_expr falls back" do
+      # Construct a TLA+ spec whose invariant body contains something
+      # our parser can't handle (e.g. an unknown infix operator).
+      malformed = """
+      ---- MODULE M ----
+      VARIABLES x
+
+      bad == x @@@ 5
+
+      ====
+      """
+
+      import ExUnit.CaptureLog
+
+      log =
+        capture_log(fn ->
+          parsed = TlaParser.parse(malformed)
+          assert parsed.coverage.total.fallbacks >= 1
+        end)
+
+      assert log =~ "TlaParser fallback"
+    end
+  end
+
   describe "round-trip" do
     test "imports our own emitted TLA+" do
       # Read the mutex.tla we generated

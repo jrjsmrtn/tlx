@@ -226,6 +226,8 @@ defmodule TLX.Importer.TlaParser do
   alias TLX.Importer.Codegen
   alias TLX.Importer.ExprParser
 
+  require Logger
+
   @doc """
   Convert parsed TLA+ into TLX DSL source code.
 
@@ -240,7 +242,7 @@ defmodule TLX.Importer.TlaParser do
   defp build_parsed(tokens) do
     operators = extract_operators(tokens)
 
-    %{
+    parsed = %{
       module_name: extract_module_name(tokens),
       variables: extract_tag(tokens, :variables),
       constants: extract_tag(tokens, :constants),
@@ -249,6 +251,53 @@ defmodule TLX.Importer.TlaParser do
       invariants: extract_invariants(operators),
       properties: extract_properties(operators),
       next_actions: extract_next(operators)
+    }
+
+    Map.put(parsed, :coverage, compute_coverage(parsed))
+  end
+
+  @doc """
+  Compute parse coverage stats from a parsed spec map.
+
+  Returns a map with `:attempted` (total expressions we tried to parse)
+  and `:fallbacks` (how many fell back to raw string). Consumers (like
+  `mix tlx.import --verbose`) render this as a summary table.
+  """
+  def compute_coverage(parsed) do
+    invariants = parsed[:invariants] || []
+    properties = parsed[:properties] || []
+    actions = parsed[:actions] || []
+
+    inv_attempted = length(invariants)
+    inv_fallbacks = Enum.count(invariants, &is_nil(&1[:ast]))
+
+    prop_attempted = length(properties)
+    prop_fallbacks = Enum.count(properties, &is_nil(&1[:ast]))
+
+    {guard_attempted, guard_fallbacks, trans_attempted, trans_fallbacks} =
+      Enum.reduce(actions, {0, 0, 0, 0}, fn a, {ga, gf, ta, tf} ->
+        guard_present = not is_nil(a[:guard])
+        guard_missing = guard_present and is_nil(a[:guard_ast])
+        trans = a[:transitions] || []
+        trans_missing = Enum.count(trans, &is_nil(&1[:ast]))
+
+        {
+          ga + if(guard_present, do: 1, else: 0),
+          gf + if(guard_missing, do: 1, else: 0),
+          ta + length(trans),
+          tf + trans_missing
+        }
+      end)
+
+    %{
+      invariants: %{attempted: inv_attempted, fallbacks: inv_fallbacks},
+      properties: %{attempted: prop_attempted, fallbacks: prop_fallbacks},
+      guards: %{attempted: guard_attempted, fallbacks: guard_fallbacks},
+      transitions: %{attempted: trans_attempted, fallbacks: trans_fallbacks},
+      total: %{
+        attempted: inv_attempted + prop_attempted + guard_attempted + trans_attempted,
+        fallbacks: inv_fallbacks + prop_fallbacks + guard_fallbacks + trans_fallbacks
+      }
     }
   end
 
@@ -353,10 +402,18 @@ defmodule TLX.Importer.TlaParser do
 
   defp try_parse_expr(body) when is_binary(body) do
     case ExprParser.parse(body) do
-      {:ok, ast} -> ast
-      _ -> nil
+      {:ok, ast} ->
+        ast
+
+      {:error, reason} ->
+        snippet = truncate(body, 80)
+        Logger.warning("TlaParser fallback: #{inspect(snippet)} — #{inspect(reason)}")
+        nil
     end
   end
+
+  defp truncate(s, max) when byte_size(s) <= max, do: s
+  defp truncate(s, max), do: binary_part(s, 0, max) <> "…"
 
   defp parse_action(name, body) do
     lines =
