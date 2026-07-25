@@ -4,6 +4,9 @@
 defmodule TLX.Integration.TLCTest do
   use ExUnit.Case
 
+  import ExUnit.CaptureIO
+
+  alias Mix.Tasks.Tlx.Check
   alias TLX.Emitter.Config
   alias TLX.Emitter.PlusCalC
   alias TLX.Emitter.PlusCalP
@@ -44,6 +47,53 @@ defmodule TLX.Integration.TLCTest do
     end
 
     invariant :bounded, e(x <= 2)
+  end
+
+  defmodule AbstractToggle do
+    use TLX.Spec
+
+    variable :is_on, false
+
+    action :switch_on do
+      guard(e(not is_on))
+      next :is_on, true
+    end
+
+    action :switch_off do
+      guard(e(is_on))
+      next :is_on, false
+    end
+  end
+
+  defmodule ConcreteToggle do
+    use TLX.Spec
+
+    variable :state, :off
+
+    action :turn_on do
+      guard(e(state == :off))
+      next :state, :on
+    end
+
+    action :turn_off do
+      guard(e(state == :on))
+      next :state, :off
+    end
+
+    refines AbstractToggle do
+      mapping(:is_on, e(state == :on))
+    end
+  end
+
+  defmodule TerminalSpec do
+    use TLX.Spec
+
+    variable :state, :running
+
+    action :finish do
+      guard(e(state == :running))
+      next :state, :done
+    end
   end
 
   setup do
@@ -143,6 +193,32 @@ defmodule TLX.Integration.TLCTest do
       assert result.states != nil
       assert result.states > 0
       assert result.violation == nil
+    end
+  end
+
+  describe "mix tlx.check with refinements" do
+    # Regression: the task used to emit only the target spec's .tla, so the
+    # `INSTANCE Abstract` a `refines` block generates had no module to resolve
+    # against. TLC failed to parse and reported no recognisable violation.
+    test "emits refined abstract modules so TLC can resolve INSTANCE" do
+      output =
+        capture_io(fn ->
+          Check.run([to_string(ConcreteToggle), "--tla2tools", @tla2tools])
+        end)
+
+      assert output =~ "TLC: OK"
+    end
+
+    test "--no-deadlock allows a spec with a terminal state to pass" do
+      argv = [to_string(TerminalSpec), "--tla2tools", @tla2tools]
+
+      assert_raise Mix.Error, fn ->
+        capture_io(fn -> Check.run(argv) end)
+      end
+
+      output = capture_io(fn -> Check.run(argv ++ ["--no-deadlock"]) end)
+
+      assert output =~ "TLC: OK"
     end
   end
 end
