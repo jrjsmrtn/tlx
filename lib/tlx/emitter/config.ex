@@ -14,7 +14,10 @@ defmodule TLX.Emitter.Config do
 
   Options:
     * `:model_values` — map of constant name to list of model values
-      (e.g., `%{nodes: ["n1", "n2"]}`)
+      (e.g., `%{nodes: ["n1", "n2"]}`), emitted as a set
+    * `:constant_values` — map of constant name to a scalar
+      (e.g., `%{quorum: 2}`), emitted as `CONSTANT quorum = 2`. Overrides a
+      value declared on the `constant` entity itself.
   """
   def emit(module, opts \\ []) do
     constants = Extension.get_entities(module, [:constants])
@@ -22,11 +25,12 @@ defmodule TLX.Emitter.Config do
     properties = Extension.get_entities(module, [:properties])
     refinements = Extension.get_entities(module, [:refinements])
     model_values = opts[:model_values] || %{}
+    constant_values = opts[:constant_values] || %{}
     atom_values = Atoms.collect(module)
 
     [
       emit_specification(),
-      emit_constants(constants, model_values),
+      emit_constants(constants, model_values, constant_values),
       emit_atom_model_values(atom_values),
       emit_invariants(invariants),
       emit_properties(properties),
@@ -40,25 +44,39 @@ defmodule TLX.Emitter.Config do
     "SPECIFICATION Spec\n"
   end
 
-  defp emit_constants([], _model_values), do: nil
+  defp emit_constants([], _model_values, _values), do: nil
 
-  defp emit_constants(constants, model_values) do
+  defp emit_constants(constants, model_values, scalar_values) do
     lines =
       Enum.map_join(constants, "\n", fn c ->
         name = Atom.to_string(c.name)
 
-        case Map.get(model_values, c.name) do
-          nil ->
-            "CONSTANT #{name} = #{name}"
+        # A caller-supplied scalar wins over the one declared on the entity,
+        # so a spec can be re-checked at a different bound without editing.
+        scalar = Map.get(scalar_values, c.name, c.value)
 
-          values when is_list(values) ->
-            formatted = Enum.map_join(values, ", ", &"#{&1}")
-            "CONSTANT #{name} = {#{formatted}}"
+        cond do
+          values = Map.get(model_values, c.name) ->
+            "CONSTANT #{name} = {#{Enum.map_join(values, ", ", &"#{&1}")}}"
+
+          not is_nil(scalar) ->
+            "CONSTANT #{name} = #{format_scalar(scalar)}"
+
+          true ->
+            "CONSTANT #{name} = #{name}"
         end
       end)
 
     lines <> "\n"
   end
+
+  # TLA+ has no atom syntax: booleans become TRUE/FALSE and any other atom is
+  # written bare, matching how atom model values are emitted elsewhere.
+  defp format_scalar(true), do: "TRUE"
+  defp format_scalar(false), do: "FALSE"
+  defp format_scalar(value) when is_atom(value), do: Atom.to_string(value)
+  defp format_scalar(value) when is_binary(value), do: value
+  defp format_scalar(value), do: to_string(value)
 
   defp emit_atom_model_values([]), do: nil
 

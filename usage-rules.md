@@ -8,7 +8,11 @@ TLX is a Spark DSL for writing TLA+/PlusCal specifications in Elixir with TLC mo
 - `extends [:Sequences]` adds extra TLA+ modules (Integers + FiniteSets always included)
 - Use `e(expr)` to capture Elixir expressions as TLA+ AST
 - Variables: `variable :name, default_value`
-- Constants: `constant :name` (bound at model-checking time)
+- Constants: `constant :name` (uninterpreted model value, e.g. node names) or
+  `constant :name, value` to bind a scalar. Use the scalar form whenever the
+  spec compares against the constant or does arithmetic on it — TLC can neither
+  order nor add a model value. Override at check time with
+  `mix tlx.check Spec --constant 'name=value'`.
 - Actions: `action :name do guard(...); next :var, value end`
 - Branches: `branch :name do ... end` inside actions for non-deterministic choice
 - Pick: `pick :var, :set do ... end` for non-deterministic selection from sets

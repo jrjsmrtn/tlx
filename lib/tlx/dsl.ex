@@ -49,16 +49,26 @@ defmodule TLX.Dsl do
   @constant %Spark.Dsl.Entity{
     name: :constant,
     target: TLX.Constant,
-    args: [:name],
+    args: [:name, {:optional, :value}],
     identifier: :name,
     schema: [
       name: [
         type: :atom,
         required: true,
         doc: "Constant name (bound at model-checking time)."
+      ],
+      value: [
+        type: :any,
+        doc: """
+        Scalar value to bind the constant to in the generated `.cfg`
+        (`CONSTANT quorum = 2`). Required when the spec compares against the
+        constant or does arithmetic on it — TLC can neither order nor add a
+        model value. Omit for uninterpreted identifiers such as node names,
+        which are emitted as model values (`CONSTANT n = n`).
+        """
       ]
     ],
-    describe: "Declare a model constant."
+    describe: "Declare a model constant, optionally bound to a scalar value."
   }
 
   @with_choice %Spark.Dsl.Entity{

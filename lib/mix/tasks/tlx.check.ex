@@ -10,6 +10,7 @@ defmodule Mix.Tasks.Tlx.Check do
       mix tlx.check MyApp.MySpec
       mix tlx.check MyApp.MySpec --tla2tools path/to/tla2tools.jar
       mix tlx.check MyApp.MySpec --model-values 'procs=n1,n2'
+      mix tlx.check MyApp.MySpec --constant 'quorum=2'
       mix tlx.check MyApp.MySpec --no-deadlock
 
   When the spec declares `refines`, the abstract modules it instantiates are
@@ -20,7 +21,13 @@ defmodule Mix.Tasks.Tlx.Check do
   ## Options
 
     * `--tla2tools` - Path to tla2tools.jar
-    * `--model-values` - Comma-separated model values per constant (repeatable)
+    * `--model-values` - Comma-separated model values per constant (repeatable),
+      emitted as a set: `CONSTANT procs = {n1, n2}`
+    * `--constant` - Bind a constant to a scalar (repeatable), emitted as
+      `CONSTANT quorum = 2`. Use this when the spec compares against the
+      constant or does arithmetic on it — TLC can neither order nor add a model
+      value. Overrides a value declared on the `constant` entity, so a spec can
+      be re-checked at a different bound without editing it.
     * `--workers` - TLC worker threads (default: auto)
     * `--no-deadlock` - Disable TLC deadlock checking. Useful for specs with
       terminal states, where having no successor is intended rather than a bug.
@@ -37,10 +44,11 @@ defmodule Mix.Tasks.Tlx.Check do
   @switches [
     tla2tools: :string,
     model_values: [:string, :keep],
+    constant: [:string, :keep],
     workers: :string,
     deadlock: :boolean
   ]
-  @aliases [t: :tla2tools, m: :model_values, w: :workers]
+  @aliases [t: :tla2tools, m: :model_values, c: :constant, w: :workers]
 
   @impl Mix.Task
   def run(args) do
@@ -51,13 +59,16 @@ defmodule Mix.Tasks.Tlx.Check do
     case argv do
       [module_string] ->
         module = Module.concat([module_string])
-        model_values = parse_model_values(opts[:model_values] || [])
-        do_check(module, model_values, opts)
+        # :keep options accumulate as repeated keys, so opts[:key] would yield
+        # only the first occurrence — and as a bare string, not a list.
+        model_values = parse_model_values(Keyword.get_values(opts, :model_values))
+        constant_values = parse_constant_values(Keyword.get_values(opts, :constant))
+        do_check(module, model_values, constant_values, opts)
 
       [] ->
         Mix.raise(
           "Usage: mix tlx.check MyApp.MySpec [--tla2tools jar] [--model-values 'const=v1,v2'] " <>
-            "[--no-deadlock]"
+            "[--constant 'name=value'] [--no-deadlock]"
         )
 
       _ ->
@@ -65,7 +76,7 @@ defmodule Mix.Tasks.Tlx.Check do
     end
   end
 
-  defp do_check(module, model_values, opts) do
+  defp do_check(module, model_values, constant_values, opts) do
     dir = Path.join(System.tmp_dir!(), "tlx_#{:erlang.phash2(module)}")
     File.mkdir_p!(dir)
 
@@ -83,7 +94,12 @@ defmodule Mix.Tasks.Tlx.Check do
     write_referenced_modules(module, dir)
 
     # Emit .cfg
-    cfg = Emitter.Config.emit(module, model_values: model_values)
+    cfg =
+      Emitter.Config.emit(module,
+        model_values: model_values,
+        constant_values: constant_values
+      )
+
     File.write!(cfg_path, cfg <> "\n")
 
     # Run TLC
@@ -182,6 +198,30 @@ defmodule Mix.Tasks.Tlx.Check do
     end
 
     Mix.raise("TLC verification failed")
+  end
+
+  defp parse_constant_values(values) when is_list(values) do
+    Enum.reduce(values, %{}, fn str, acc ->
+      case String.split(str, "=", parts: 2) do
+        [key, value] ->
+          Map.put(acc, String.to_atom(String.trim(key)), cast_scalar(String.trim(value)))
+
+        _ ->
+          Mix.raise("Expected --constant 'name=value', got: #{inspect(str)}")
+      end
+    end)
+  end
+
+  # Integers and booleans are the values TLC actually needs typed; anything else
+  # is passed through as a bare TLA+ identifier.
+  defp cast_scalar("true"), do: true
+  defp cast_scalar("false"), do: false
+
+  defp cast_scalar(value) do
+    case Integer.parse(value) do
+      {int, ""} -> int
+      _ -> value
+    end
   end
 
   defp parse_model_values(values) when is_list(values) do

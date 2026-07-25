@@ -96,6 +96,27 @@ defmodule TLX.Integration.TLCTest do
     end
   end
 
+  defmodule QuorumSpec do
+    use TLX.Spec
+
+    variable :approvals, 0
+    variable :approved, false
+
+    constant :quorum, 2
+
+    action :approve do
+      guard(e(not approved and approvals < quorum))
+      next :approvals, e(approvals + 1)
+    end
+
+    action :reach_quorum do
+      guard(e(not approved and approvals >= quorum))
+      next :approved, true
+    end
+
+    invariant :never_over_quorum, e(approvals <= quorum)
+  end
+
   setup do
     if File.exists?(@tla2tools) do
       dir = Path.join(System.tmp_dir!(), "tlx_integration_#{:rand.uniform(100_000)}")
@@ -219,6 +240,37 @@ defmodule TLX.Integration.TLCTest do
       output = capture_io(fn -> Check.run(argv ++ ["--no-deadlock"]) end)
 
       assert output =~ "TLC: OK"
+    end
+
+    # Regression: a constant with no value emits as a model value
+    # (`CONSTANT quorum = quorum`), which TLC cannot compare or add. Any spec
+    # doing arithmetic on a constant was uncheckable.
+    test "checks a spec whose constant is bound to a scalar" do
+      output =
+        capture_io(fn ->
+          Check.run([to_string(QuorumSpec), "--tla2tools", @tla2tools, "--no-deadlock"])
+        end)
+
+      # quorum = 2 admits approvals 0..2, plus the approved state.
+      assert output =~ "TLC: OK (4 distinct states)"
+    end
+
+    test "--constant overrides the declared value" do
+      output =
+        capture_io(fn ->
+          Check.run([
+            to_string(QuorumSpec),
+            "--tla2tools",
+            @tla2tools,
+            "--constant",
+            "quorum=4",
+            "--no-deadlock"
+          ])
+        end)
+
+      # quorum = 4 admits approvals 0..4, so the state space grows from 4 to 6.
+      # Proves the override reached TLC rather than the declared value.
+      assert output =~ "TLC: OK (6 distinct states)"
     end
   end
 end
