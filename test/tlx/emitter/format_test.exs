@@ -179,4 +179,25 @@ defmodule TLX.Emitter.FormatTest do
       assert Format.unwrap_expr(:atom) == :atom
     end
   end
+
+  describe "format_ast/2 multi-key EXCEPT" do
+    setup do
+      {:ok, s: Format.tla_symbols()}
+    end
+
+    # DSL form: `except_many(e(f), [...])` wraps operands as {:expr, ast}.
+    test "formats the DSL form", %{s: s} do
+      ast = {:except_many, {:expr, var_ast(:f)}, [{:k1, 1}, {:k2, 2}]}
+      assert Format.format_ast(ast, s) == "[f EXCEPT ![k1] = 1, ![k2] = 2]"
+    end
+
+    # Regression: the DSL clause above matches any 3-tuple, so it used to
+    # shadow this shape and receive [f, pairs] as its pair list. This is what
+    # TLX.Importer.ExprParser produces, so round-tripped input never reached
+    # the guarded clause.
+    test "formats the imported macro-call form", %{s: s} do
+      ast = {:except_many, [], [var_ast(:f), [{:k1, 1}, {:k2, 2}]]}
+      assert Format.format_ast(ast, s) == "[f EXCEPT ![k1] = 1, ![k2] = 2]"
+    end
+  end
 end

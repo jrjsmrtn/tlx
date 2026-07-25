@@ -276,16 +276,10 @@ defmodule TLX.Emitter.Format do
     "[#{fields}]"
   end
 
-  # Multi-key EXCEPT
-  def format_ast({:except_many, f, pairs}, s) when is_list(pairs) do
-    updates =
-      Enum.map_join(pairs, ", ", fn {k, v} ->
-        "![#{format_expr(k, s)}] = #{format_expr(v, s)}"
-      end)
-
-    "[#{format_expr(f, s)} EXCEPT #{updates}]"
-  end
-
+  # Multi-key EXCEPT — guarded AST form first.
+  # The DSL form below matches any 3-tuple, so it shadowed this clause and fed
+  # `[f, pairs]` in as the pair list. Imported `{:except_many, [], [f, pairs]}`
+  # (TLX.Importer.ExprParser) never reached the right branch.
   def format_ast({:except_many, meta, [f, pairs]}, s) when is_list(meta) and is_list(pairs) do
     updates =
       Enum.map_join(pairs, ", ", fn {k, v} ->
@@ -293,6 +287,15 @@ defmodule TLX.Emitter.Format do
       end)
 
     "[#{format_ast(f, s)} EXCEPT #{updates}]"
+  end
+
+  def format_ast({:except_many, f, pairs}, s) when is_list(pairs) do
+    updates =
+      Enum.map_join(pairs, ", ", fn {k, v} ->
+        "![#{format_expr(k, s)}] = #{format_expr(v, s)}"
+      end)
+
+    "[#{format_expr(f, s)} EXCEPT #{updates}]"
   end
 
   # Implication / Equivalence — guarded AST form first

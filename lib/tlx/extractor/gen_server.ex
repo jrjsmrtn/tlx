@@ -158,11 +158,11 @@ defmodule TLX.Extractor.GenServer do
 
   defp extract_kv_pairs(_), do: []
 
+  # Booleans are atoms, so the is_atom/1 clause already covers true and false.
   defp extract_literal(val) when is_atom(val), do: {:ok, val}
   defp extract_literal(val) when is_integer(val), do: {:ok, val}
   defp extract_literal(val) when is_float(val), do: {:ok, val}
   defp extract_literal(val) when is_binary(val), do: {:ok, val}
-  defp extract_literal(val) when is_boolean(val), do: {:ok, val}
   defp extract_literal([]), do: {:ok, []}
   defp extract_literal(_), do: :not_literal
 
