@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-07-25
+
+Patch release. Refinement checking did not work through `mix tlx.check` — a headline v0.4 feature that no caller could reach from the Mix task.
+
+### Fixed (Sprint 68 — refinement checking through `mix tlx.check`)
+
+- `mix tlx.check` now emits the abstract modules a spec refines, so TLC can resolve the `INSTANCE` references the emitter generates. Previously only the target spec's `.tla` was written, and every spec declaring `refines` failed with `Cannot find source file for module <Abstract>` before checking anything — surfacing as an unexplained `TLC: FAILED (:unknown)`. Refinement checking did not work through the Mix task at all. Resolution is transitive (an abstract spec that itself refines another pulls that module in too) and cycle-safe. Two refinement targets whose final module segments collide now raise, rather than overwriting each other's file and silently checking against the wrong abstract spec.
+- `TLC: FAILED (:unknown)` now prints TLC's raw output. `:unknown` means TLC exited non-zero without emitting a violation code TLX recognises — nearly always a parse or semantic error, where TLC's own message is the only actionable detail. It was previously discarded.
+
+### Added (Sprint 68)
+
+- `mix tlx.check --no-deadlock` exposes the `:deadlock` option `TLX.TLC.check/3` already accepted. Specs that intentionally reach an absorbing state (`:committed`, `:failed`, `:done`) previously reported a deadlock violation with no way to suppress it.
+
 ## [0.5.0] - 2026-04-18
 
 Minor release per the ADR-0002 CHANGELOG-oracle rule. Closes the round-trip track (sprints 54–59) that ADR-0013 scoped, plus seven follow-up sprints polishing the surface.
