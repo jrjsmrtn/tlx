@@ -17,9 +17,9 @@ A Spark DSL for writing TLA+/PlusCal specifications, with TLA+ emission for TLC 
 
 ## Current Development Status
 
-- **Latest Release**: v0.5.2
-- **Status**: Active — 5 examples, 602 unit + 89 integration tests, Diátaxis docs complete
-- **Completed sprints**: 1-69 + refinement (ADR-0013 round-trip track shipped)
+- **Latest Release**: v0.5.3
+- **Status**: Active — 5 examples, 609 unit + 91 integration tests, Diátaxis docs complete
+- **Completed sprints**: 1-70 + refinement (ADR-0013 round-trip track shipped)
 - **Proposed sprints**: 44 (state/transition coverage tooling)
 
 ## Foundational ADRs
@@ -98,7 +98,7 @@ Key TLA+/PlusCal concepts mapped to DSL constructs:
 | Invariants `[]P`    | `invariant :name, e(...)`                                                     | Safety properties               |
 | Liveness `<>P`      | `property :name, always(eventually(...))`                                     | Temporal properties             |
 | Until `P \U Q`      | `property :name, until(p, q)` / `weak_until(p, q)`                            | Strong/weak until               |
-| Constants           | `constant :name`                                                              | Model parameters                |
+| Constants           | `constant :name` / `constant :name, value`                                    | Model parameters                |
 | Processes           | `process :name do set(:s); ... end`                                           | Concurrent actors               |
 | Non-determinism     | `branch`, `pick`                                                              | Branching exploration           |
 | Quantifiers         | `exists/forall`                                                               | Set predicates                  |
