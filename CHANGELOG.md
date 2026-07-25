@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.2] - 2026-07-25
+
+Patch release. Fixes a multi-key EXCEPT emission bug on imported ASTs, clears all dependency advisories, and restores the `compile` pre-push gate under Elixir 1.20.
+
+### Fixed (Sprint 69 — green pre-push gates)
+
+- `TLX.Emitter.Format.format_ast/2` emitted multi-key EXCEPT incorrectly for imported ASTs. The DSL-form clause `{:except_many, f, pairs}` matches any 3-tuple, so it shadowed the guarded `{:except_many, meta, [f, pairs]}` clause below it and received `[f, pairs]` as its pair list. `TLX.Importer.ExprParser` produces exactly that shape, so a round-tripped `[f EXCEPT ![k1] = v1, ![k2] = v2]` never reached the correct branch. Guarded form now comes first, matching `TLX.Simulator` and the convention used by the neighbouring `implies`/`equiv` clauses.
+- Removed clauses that Elixir 1.20's type inference proves unreachable: `is_boolean/1` cases shadowed by an earlier `is_atom/1` clause in `TLX.Transformers.TypeOK`, `TLX.Extractor.GenServer` and `TLX.Extractor.LiveView` (booleans are atoms), and the unused `parse_model_values/1` nil clause. Behaviour is unchanged.
+- `TLX.Extractor.AshStateMachine.get_deprecated_states/1` now calls `state_machine_deprecated_states!/1`, the accessor ash_state_machine's own transformers use. The DSL option defaults to `[]`, so this returns the same value as the previous `{:ok, _}`-with-fallback `case` without the unreachable clause.
+- `mix compile --warnings-as-errors` passes again, restoring the `compile` pre-push gate.
+
+### Changed (Sprint 69 — dependency security)
+
+- Updated dev/test dependencies to clear all `mix deps.audit` advisories: `ash` 3.24.3 → 3.30.1, which lifted `ecto` to 3.14.1 and in turn allowed `decimal` 2.3.0 → 3.1.1 (GHSA-rhv4-8758-jx7v, unbounded exponent DoS — unreachable at 2.x because `ecto ~> 3.13` pinned `decimal ~> 2.0`). `mint` 1.7.1 → 1.9.3 clears GHSA-g586-ccqf-7x4r (high) and three further advisories. `spark` moved 2.6.1 → 2.7.2 as a result; it is TLX's only runtime dependency alongside `nimble_parsec`, and the full suite passes against it.
+
 ## [0.5.1] - 2026-07-25
 
 Patch release. Refinement checking did not work through `mix tlx.check` — a headline v0.4 feature that no caller could reach from the Mix task.

@@ -197,6 +197,4 @@ defmodule Mix.Tasks.Tlx.Check do
       end
     end)
   end
-
-  defp parse_model_values(nil), do: %{}
 end

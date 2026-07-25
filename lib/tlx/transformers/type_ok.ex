@@ -67,10 +67,9 @@ defmodule TLX.Transformers.TypeOK do
     end
   end
 
+  # Booleans are atoms, so the is_atom/1 clauses already cover true and false.
   defp extract_literal({:expr, value}) when is_atom(value), do: {:ok, value}
-  defp extract_literal({:expr, value}) when is_boolean(value), do: {:ok, value}
   defp extract_literal(value) when is_atom(value) and not is_nil(value), do: {:ok, value}
-  defp extract_literal(value) when is_boolean(value), do: {:ok, value}
   defp extract_literal(_), do: :not_literal
 
   defp enum_value?(value) when is_atom(value) and value not in [nil, true, false], do: true

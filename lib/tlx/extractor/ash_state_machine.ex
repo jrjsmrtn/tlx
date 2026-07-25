@@ -96,11 +96,12 @@ defmodule TLX.Extractor.AshStateMachine do
     |> Enum.flat_map(&expand_transition(&1, all_states, deprecated))
   end
 
+  # The bang variant is what ash_state_machine's own transformers use. The DSL
+  # option defaults to [], so it returns [] rather than raising when unset —
+  # same result as the former {:ok, _} / fallback case, without the unreachable
+  # clause.
   defp get_deprecated_states(module) do
-    case AshStateMachine.Info.state_machine_deprecated_states(module) do
-      {:ok, states} -> states
-      _ -> []
-    end
+    AshStateMachine.Info.state_machine_deprecated_states!(module)
   end
 
   defp expand_transition(transition, all_states, deprecated) do
