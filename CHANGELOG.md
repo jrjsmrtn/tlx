@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.3] - 2026-07-25
+
+Patch release. Adds scalar constant binding, without which no spec that compares against or does arithmetic on a `constant` could be model-checked at all.
+
+### Added (Sprint 70 — scalar constants)
+
+- `constant :name, value` binds a constant to a scalar, emitted as `CONSTANT quorum = 2`. A constant with no value keeps its previous meaning — a TLA+ model value (`CONSTANT n = n`), correct for uninterpreted identifiers such as node names, but neither orderable nor addable by TLC. Any spec doing `x < max` or `approvals + 1 >= quorum` therefore failed with `The second argument of < should be an integer, but instead it is: max`, and no combination of existing options could express the binding: `--model-values 'max=3'` emits the _set_ `{3}`, not the scalar `3`.
+- `mix tlx.check --constant 'name=value'` (alias `-c`, repeatable) overrides the declared value, so a spec can be re-checked at a different bound without editing it. Integers and `true`/`false` are cast; anything else is passed through as a bare TLA+ identifier.
+- `TLX.Emitter.Config.emit/2` accepts `:constant_values`. Precedence is `:model_values` (set) → `:constant_values` (scalar) → entity value → model value.
+
+### Fixed (Sprint 70)
+
+- `mix tlx.check` read repeatable `:keep` switches with `opts[:key]`, which returns only the _first_ occurrence and as a bare string rather than a list. Both value parsers pattern-match on a list, so a single `--model-values` raised `FunctionClauseError` — the option had never worked. Now uses `Keyword.get_values/2`.
+
 ## [0.5.2] - 2026-07-25
 
 Patch release. Fixes a multi-key EXCEPT emission bug on imported ASTs, clears all dependency advisories, and restores the `compile` pre-push gate under Elixir 1.20.
